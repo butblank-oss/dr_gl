@@ -1,0 +1,107 @@
+export const COUNTRIES = ["국내", "해외"] as const;
+export const COUNTRY_FILTERS = ["전체", "국내", "해외"] as const;
+export const CREATOR_LABELS = ["감독", "연출", "작가"] as const;
+export const PLATFORM_TYPES = ["무료", "유료"] as const;
+
+export const SUBMISSION_STATUSES = ["pending", "approved", "rejected"] as const;
+export const COMMENT_STATUSES = ["visible", "hidden"] as const;
+export const ADMIN_ROLES = ["ADMIN", "EDITOR"] as const;
+
+export type Country = (typeof COUNTRIES)[number];
+export type CreatorLabel = (typeof CREATOR_LABELS)[number];
+export type PlatformType = (typeof PLATFORM_TYPES)[number];
+export type SubmissionStatus = (typeof SUBMISSION_STATUSES)[number];
+export type CommentStatus = (typeof COMMENT_STATUSES)[number];
+export type AdminRole = (typeof ADMIN_ROLES)[number];
+
+export type Platform = {
+  name: string;
+  type: PlatformType;
+  url: string;
+};
+
+export type ContentDTO = {
+  id: number;
+  title: string;
+  category: string;
+  country: string;
+  countryDetail: string;
+  year: number;
+  creatorLabel: string;
+  creatorName: string;
+  leads: string[];
+  tags: string[];
+  juice: boolean;
+  poster: boolean;
+  posterUrl: string | null;
+  backdropUrl: string | null;
+  synopsis: string;
+  platforms: Platform[];
+};
+
+export type CategoryDTO = {
+  id: number;
+  name: string;
+  sortOrder: number;
+  count?: number;
+};
+
+export type SubmissionDTO = {
+  id: number;
+  title: string;
+  category: string;
+  country: string;
+  juice: boolean;
+  url: string;
+  note: string;
+  contact: string;
+  status: SubmissionStatus;
+  contentId: number | null;
+  createdAt: string;
+};
+
+export type CommentDTO = {
+  id: number;
+  itemId: number;
+  text: string;
+  status: CommentStatus;
+  createdAt: string;
+};
+
+export type AdminCommentDTO = CommentDTO & { itemTitle: string };
+
+export type HomeRowDTO = {
+  id: number;
+  title: string;
+  sortOrder: number;
+  isActive: boolean;
+  items: ContentDTO[];
+};
+
+export type SessionUser = {
+  id: number;
+  email: string;
+  name: string;
+  role: AdminRole;
+};
+
+/** 제보 상태 <-> 어드민 필터 탭 라벨 */
+export const SUBMISSION_FILTER_LABELS = ["대기중", "승인됨", "반려됨", "전체"] as const;
+export const SUBMISSION_STATUS_TEXT: Record<SubmissionStatus, string> = {
+  pending: "대기중",
+  approved: "승인됨",
+  rejected: "반려됨",
+};
+export const SUBMISSION_FILTER_TO_STATUS: Record<string, SubmissionStatus | undefined> = {
+  대기중: "pending",
+  승인됨: "approved",
+  반려됨: "rejected",
+  전체: undefined,
+};
+
+export const COMMENT_FILTER_LABELS = ["전체", "노출중", "숨김"] as const;
+export const COMMENT_FILTER_TO_STATUS: Record<string, CommentStatus | undefined> = {
+  전체: undefined,
+  노출중: "visible",
+  숨김: "hidden",
+};

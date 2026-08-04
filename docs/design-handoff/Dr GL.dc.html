@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" rel="stylesheet">
+<script src="./image-slot.js"></script>
+<style>
+body{margin:0;background:#0b0a0f;font-family:'Pretendard',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:#9B7EE8;text-decoration:none}
+a:hover{color:#B49BF0}
+::-webkit-scrollbar{height:6px;width:6px}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.15);border-radius:10px}
+input::placeholder{color:rgba(245,243,247,0.35)}
+</style>
+</helmet>
+<div style="min-height:100vh;background:#0b0a0f;color:#f5f3f7">
+
+  <div style="position:sticky;top:0;z-index:50;display:flex;align-items:center;justify-content:space-between;gap:24px;padding:0 40px;height:72px;background:rgba(11,10,15,0.85);backdrop-filter:blur(14px);border-bottom:1px solid rgba(255,255,255,0.08)">
+    <div style="display:flex;align-items:center;gap:48px">
+      <div onClick="{{goHome}}" style="cursor:pointer;font-size:22px;font-weight:800;letter-spacing:-0.5px;color:#f5f3f7;display:flex;gap:1px;flex:none">Dr.<span style="color:#9B7EE8">GL</span></div>
+      <nav style="display:flex;align-items:center;gap:32px">
+        <div onClick="{{goHome}}" style="cursor:pointer;font-size:14px;{{navHomeStyle}}">홈</div>
+        <div onClick="{{goCategory}}" style="cursor:pointer;font-size:14px;{{navCategoryStyle}}">카테고리</div>
+        <div onClick="{{goBoard}}" style="cursor:pointer;font-size:14px;display:flex;align-items:center;gap:7px;{{navBoardStyle}}">게시판<span style="font-size:10px;font-weight:700;color:#9B7EE8;background:rgba(155,126,232,0.14);border-radius:20px;padding:2px 7px">OPEN 예정</span></div>
+        <button onClick="{{goSubmit}}" style="{{submitBtnStyle}}">+ 제보하기</button>
+      </nav>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;background:#17151d;border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:0 14px;height:40px;width:280px;flex:none">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(245,243,247,0.4)" stroke-width="2"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+      <input value="{{query}}" onChange="{{setQuery}}" onKeyDown="{{onSearchKey}}" placeholder="작품, 감독, 작가로 검색" style="flex:1;background:transparent;border:none;outline:none;color:#f5f3f7;font-size:13px;font-family:inherit"/>
+    </div>
+  </div>
+
+  <sc-if value="{{isHome}}" hint-placeholder-val="{{true}}">
+    <div>
+      <div style="position:relative;width:100%;height:520px;overflow:hidden">
+        <sc-if value="{{hero.poster}}" hint-placeholder-val="{{true}}">
+          <image-slot id="hero-backdrop-{{hero.id}}" shape="rect" placeholder="{{hero.title}} 배경 이미지" style="position:absolute;inset:0;width:100%;height:100%"></image-slot>
+        </sc-if>
+        <sc-if value="{{hero.noPoster}}" hint-placeholder-val="{{false}}">
+          <div style="position:absolute;inset:0;background:linear-gradient(135deg,#181521,#0d0c12);display:flex;align-items:center;justify-content:center">
+            <div style="font-size:13px;font-weight:600;letter-spacing:2px;color:rgba(245,243,247,0.22);text-transform:uppercase">포스터 준비중</div>
+          </div>
+        </sc-if>
+        <div style="position:absolute;inset:0;background:linear-gradient(90deg,rgba(11,10,15,0.96) 28%,rgba(11,10,15,0.3) 78%),linear-gradient(0deg,rgba(11,10,15,0.92),rgba(11,10,15,0.05) 42%);pointer-events:none"></div>
+        <div style="position:absolute;left:40px;bottom:56px;max-width:600px;display:flex;flex-direction:column;gap:16px">
+          <div style="display:flex;gap:8px;align-items:center">
+            <span style="font-size:12px;font-weight:600;color:#f5f3f7;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.16);border-radius:20px;padding:4px 11px">{{hero.category}}</span>
+            <span style="font-size:12px;color:rgba(245,243,247,0.55)">{{hero.countryDetail}} · {{hero.year}}</span>
+          </div>
+          <div style="font-size:44px;font-weight:800;letter-spacing:-1px;line-height:1.15">{{hero.title}}</div>
+          <div style="font-size:14px;line-height:1.6;color:rgba(245,243,247,0.68);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">{{hero.synopsis}}</div>
+          <div style="display:flex;gap:10px;margin-top:4px">
+            <button onClick="{{openHeroDetail}}" style="padding:12px 22px;border-radius:10px;border:none;background:linear-gradient(135deg,#8A6EEA,#6F4FD1);color:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit" style-hover="filter:brightness(1.12)">상세보기</button>
+            <button onClick="{{openHeroDetail}}" style="padding:12px 22px;border-radius:10px;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.05);color:#f5f3f7;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit">시청 가능한 곳</button>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:36px;padding:40px 40px 60px">
+        <sc-for list="{{rows}}" as="row" hint-placeholder-count="4">
+          <div style="display:flex;flex-direction:column;gap:16px">
+            <div style="font-size:19px;font-weight:700;color:#f5f3f7">{{row.title}}</div>
+            <div style="display:flex;gap:18px;overflow-x:auto;padding-bottom:6px">
+              <sc-for list="{{row.items}}" as="item" hint-placeholder-count="6">
+                <div style="flex:none;width:170px">
+                  <dc-import name="ContentCard" item="{{item}}" on-click="{{openDetail}}" hint-size="170px,190px"></dc-import>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{isCategory}}" hint-placeholder-val="{{false}}">
+    <div style="padding:40px">
+      <div style="font-size:28px;font-weight:800;margin-bottom:6px">카테고리 탐색</div>
+      <div style="font-size:14px;color:rgba(245,243,247,0.55);margin-bottom:28px">장르와 형식을 넘나들며, 원하는 콘텐츠를 찾아보세요.</div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px">
+        <sc-for list="{{categoryChips}}" as="chip" hint-placeholder-count="8">
+          <button onClick="{{chip.onClick}}" style="{{chip.style}}">{{chip.label}}</button>
+        </sc-for>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:32px">
+        <sc-for list="{{countryChips}}" as="chip" hint-placeholder-count="3">
+          <button onClick="{{chip.onClick}}" style="{{chip.style}}">{{chip.label}}</button>
+        </sc-for>
+        <div style="width:1px;height:20px;background:rgba(255,255,255,0.12);margin:0 6px"></div>
+        <button onClick="{{toggleJuice}}" style="{{juiceToggleStyle}}">착즙만 보기</button>
+      </div>
+      <sc-if value="{{hasCategoryResults}}" hint-placeholder-val="{{true}}">
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:22px">
+          <sc-for list="{{filteredCategoryItems}}" as="item" hint-placeholder-count="8">
+            <dc-import name="ContentCard" item="{{item}}" on-click="{{openDetail}}" hint-size="170px,190px"></dc-import>
+          </sc-for>
+        </div>
+      </sc-if>
+      <sc-if value="{{noCategoryResults}}" hint-placeholder-val="{{false}}">
+        <div style="padding:80px 0;text-align:center;color:rgba(245,243,247,0.45);font-size:14px">조건에 맞는 작품이 없어요. 필터를 조정해보세요.</div>
+      </sc-if>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{isSearch}}" hint-placeholder-val="{{false}}">
+    <div style="padding:40px;max-width:1200px;margin:0 auto">
+      <sc-if value="{{hasQuery}}" hint-placeholder-val="{{false}}">
+        <div style="font-size:15px;color:rgba(245,243,247,0.6);margin-bottom:20px"><span style="color:#f5f3f7;font-weight:700">'{{query}}'</span> 검색 결과 {{searchCount}}건</div>
+        <sc-if value="{{hasSearchResults}}" hint-placeholder-val="{{true}}">
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:22px">
+            <sc-for list="{{searchResults}}" as="item" hint-placeholder-count="6">
+              <dc-import name="ContentCard" item="{{item}}" on-click="{{openDetail}}" hint-size="170px,190px"></dc-import>
+            </sc-for>
+          </div>
+        </sc-if>
+        <sc-if value="{{noSearchResults}}" hint-placeholder-val="{{false}}">
+          <div style="padding:80px 0;text-align:center;color:rgba(245,243,247,0.45);font-size:14px">일치하는 작품이 없어요. 다른 검색어로 시도해보세요.</div>
+        </sc-if>
+      </sc-if>
+      <sc-if value="{{noQuery}}" hint-placeholder-val="{{true}}">
+        <div style="display:flex;flex-direction:column;align-items:center;gap:20px;padding:100px 0;text-align:center">
+          <div style="font-size:18px;font-weight:700">찾고 싶은 작품을 검색해보세요</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;max-width:480px">
+            <sc-for list="{{suggestedTags}}" as="tag" hint-placeholder-count="5">
+              <button onClick="{{tag.onClick}}" style="padding:8px 16px;border-radius:20px;border:1px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.04);color:rgba(245,243,247,0.7);font-size:13px;cursor:pointer;font-family:inherit">#{{tag.label}}</button>
+            </sc-for>
+          </div>
+        </div>
+      </sc-if>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{isDetail}}" hint-placeholder-val="{{false}}">
+    <div>
+      <div style="padding:20px 40px 0">
+        <button onClick="{{goBack}}" style="padding:9px 16px;border-radius:9px;border:1px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.04);color:rgba(245,243,247,0.75);font-size:13px;cursor:pointer;font-family:inherit">← 돌아가기</button>
+      </div>
+      <div style="position:relative;width:100%;height:440px;overflow:hidden;margin-top:8px">
+        <sc-if value="{{selectedItem.poster}}" hint-placeholder-val="{{true}}">
+          <image-slot id="backdrop-{{selectedItem.id}}" shape="rect" placeholder="{{selectedItem.title}} 배경 이미지" style="position:absolute;inset:0;width:100%;height:100%"></image-slot>
+        </sc-if>
+        <sc-if value="{{selectedItem.noPoster}}" hint-placeholder-val="{{false}}">
+          <div style="position:absolute;inset:0;background:linear-gradient(135deg,#181521,#0d0c12);display:flex;align-items:center;justify-content:center">
+            <div style="font-size:13px;font-weight:600;letter-spacing:2px;color:rgba(245,243,247,0.22);text-transform:uppercase">포스터 준비중</div>
+          </div>
+        </sc-if>
+        <div style="position:absolute;inset:0;background:linear-gradient(90deg,rgba(11,10,15,0.96) 30%,rgba(11,10,15,0.3) 78%),linear-gradient(0deg,rgba(11,10,15,0.92),rgba(11,10,15,0.05) 42%);pointer-events:none"></div>
+        <div style="position:absolute;left:40px;bottom:40px;max-width:640px;display:flex;flex-direction:column;gap:14px">
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+            <span style="font-size:12px;font-weight:600;color:#f5f3f7;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.16);border-radius:20px;padding:4px 11px">{{selectedItem.category}}</span>
+            <sc-if value="{{selectedItem.juice}}" hint-placeholder-val="{{false}}">
+              <span style="font-size:12px;font-weight:700;color:#fff;background:linear-gradient(135deg,#E5486B,#C93356);border-radius:20px;padding:4px 11px">착즙</span>
+            </sc-if>
+            <span style="font-size:12px;color:rgba(245,243,247,0.55)">{{selectedItem.countryDetail}} · {{selectedItem.year}}</span>
+          </div>
+          <div style="font-size:38px;font-weight:800;letter-spacing:-0.5px">{{selectedItem.title}}</div>
+          <div style="font-size:13px;color:rgba(245,243,247,0.6)">{{selectedItem.creatorLabel}} {{selectedItem.creatorName}}</div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 320px;gap:48px;padding:40px 40px 60px;max-width:1400px;margin:0 auto">
+        <div style="display:flex;flex-direction:column;gap:28px">
+          <div>
+            <div style="font-size:16px;font-weight:700;margin-bottom:10px">줄거리</div>
+            <div style="font-size:15px;line-height:1.75;color:rgba(245,243,247,0.72)">{{selectedItem.synopsis}}</div>
+          </div>
+          <div>
+            <div style="font-size:16px;font-weight:700;margin-bottom:10px">출연</div>
+            <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:24px">
+              <sc-for list="{{selectedItem.leads}}" as="name" hint-placeholder-count="2">
+                <span style="padding:6px 12px;border-radius:20px;background:rgba(155,126,232,0.12);color:#9B7EE8;font-size:12px;font-weight:600">{{name}}</span>
+              </sc-for>
+            </div>
+          </div>
+          <div>
+          <div style="font-size:16px;font-weight:700;margin-bottom:10px">태그</div>
+            <div style="display:flex;flex-wrap:wrap;gap:8px">
+              <sc-for list="{{selectedItem.tags}}" as="tag" hint-placeholder-count="3">
+                <span style="padding:6px 12px;border-radius:20px;background:rgba(255,255,255,0.06);color:rgba(245,243,247,0.7);font-size:12px">#{{tag}}</span>
+              </sc-for>
+            </div>
+          </div>
+          <div>
+            <div style="font-size:16px;font-weight:700;margin-bottom:14px">이런 작품은 어때요?</div>
+            <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:18px">
+              <sc-for list="{{relatedItems}}" as="item" hint-placeholder-count="4">
+                <dc-import name="ContentCard" item="{{item}}" on-click="{{openDetail}}" hint-size="150px,170px"></dc-import>
+              </sc-for>
+            </div>
+          </div>
+          <sc-if value="{{hasRelatedByLead}}" hint-placeholder-val="{{false}}">
+            <div>
+              <div style="font-size:16px;font-weight:700;margin-bottom:14px">{{sharedLeadName}}의 다른 작품</div>
+              <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:18px">
+                <sc-for list="{{relatedByLead}}" as="item" hint-placeholder-count="3">
+                  <dc-import name="ContentCard" item="{{item}}" on-click="{{openDetail}}" hint-size="150px,170px"></dc-import>
+                </sc-for>
+              </div>
+            </div>
+          </sc-if>
+          <div>
+            <div style="font-size:16px;font-weight:700;margin-bottom:10px">한줄평</div>
+            <div style="display:flex;gap:8px;margin-bottom:14px">
+              <input value="{{commentDraft}}" onChange="{{setCommentDraft}}" placeholder="한줄평을 남겨보세요" style="flex:1;height:44px;padding:0 14px;border-radius:10px;border:1px solid rgba(255,255,255,0.12);background:#141219;color:#f5f3f7;font-size:13px;font-family:inherit;outline:none"/>
+              <button onClick="{{submitComment}}" style="padding:0 18px;height:44px;border-radius:10px;border:none;background:linear-gradient(135deg,#8A6EEA,#6F4FD1);color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap">남기기</button>
+            </div>
+            <sc-if value="{{hasComments}}" hint-placeholder-val="{{false}}">
+              <div style="display:flex;flex-direction:column">
+                <sc-for list="{{itemComments}}" as="c" hint-placeholder-count="2">
+                  <div style="display:flex;align-items:baseline;gap:12px;padding:11px 0;border-bottom:1px solid rgba(255,255,255,0.06)">
+                    <span style="font-size:11px;color:rgba(245,243,247,0.32);flex:none">{{c.dateText}}</span>
+                    <span style="font-size:14px;color:rgba(245,243,247,0.8);line-height:1.5">{{c.text}}</span>
+                  </div>
+                </sc-for>
+              </div>
+              <sc-if value="{{hasMoreToggle}}" hint-placeholder-val="{{false}}">
+                <button onClick="{{toggleShowAllComments}}" style="margin-top:12px;padding:10px 18px;border-radius:10px;border:1px solid rgba(255,255,255,0.14);background:rgba(255,255,255,0.04);color:rgba(245,243,247,0.75);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">{{showMoreLabel}}</button>
+              </sc-if>
+            </sc-if>
+            <sc-if value="{{noComments}}" hint-placeholder-val="{{true}}">
+              <div style="font-size:13px;color:rgba(245,243,247,0.35)">아직 한줄평이 없어요. 첫 한줄평을 남겨보세요.</div>
+            </sc-if>
+          </div>
+        </div>
+        <div style="background:#141219;border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:22px;height:fit-content;display:flex;flex-direction:column;gap:14px">
+          <div style="font-size:15px;font-weight:700">시청·감상 가능한 곳</div>
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <sc-for list="{{selectedItem.platforms}}" as="p" hint-placeholder-count="2">
+              <div onClick="{{p.onOpen}}" style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-radius:10px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);cursor:pointer" style-hover="background:rgba(255,255,255,0.06)">
+                <span style="font-size:13px;font-weight:600;color:#f5f3f7">{{p.name}}</span>
+                <div style="display:flex;align-items:center;gap:8px">
+                  <span style="{{p.typeStyle}}">{{p.type}}</span>
+                  <sc-if value="{{p.hasUrl}}" hint-placeholder-val="{{false}}">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="rgba(245,243,247,0.4)" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><path d="M15 3h6v6"></path><path d="M10 14L21 3"></path></svg>
+                  </sc-if>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{isBoard}}" hint-placeholder-val="{{false}}">
+    <div style="display:flex;flex-direction:column;align-items:center;gap:26px;padding:130px 40px 160px;text-align:center">
+      <div style="width:76px;height:76px;border-radius:50%;background:rgba(155,126,232,0.12);display:flex;align-items:center;justify-content:center">
+        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#9B7EE8" stroke-width="1.6"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
+      </div>
+      <div style="font-size:26px;font-weight:800">게시판, 곧 열립니다</div>
+      <div style="font-size:14px;color:rgba(245,243,247,0.55);max-width:420px;line-height:1.65">회원들과 작품 취향을 나누고, 후기와 추천을 주고받는 공간을 준비하고 있어요.</div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;opacity:0.4;pointer-events:none">
+        <span style="padding:9px 16px;border-radius:20px;border:1px solid rgba(255,255,255,0.14);font-size:13px">자유게시판</span>
+        <span style="padding:9px 16px;border-radius:20px;border:1px solid rgba(255,255,255,0.14);font-size:13px">작품 후기</span>
+        <span style="padding:9px 16px;border-radius:20px;border:1px solid rgba(255,255,255,0.14);font-size:13px">추천 요청</span>
+        <span style="padding:9px 16px;border-radius:20px;border:1px solid rgba(255,255,255,0.14);font-size:13px">착즙 정보 공유</span>
+      </div>
+      <sc-if value="{{notNotified}}" hint-placeholder-val="{{true}}">
+        <div style="display:flex;gap:10px;margin-top:6px">
+          <input placeholder="이메일 주소" style="width:220px;height:44px;padding:0 16px;border-radius:10px;border:1px solid rgba(255,255,255,0.12);background:#141219;color:#f5f3f7;font-size:13px;font-family:inherit;outline:none"/>
+          <button onClick="{{submitNotify}}" style="padding:0 20px;height:44px;border-radius:10px;border:none;background:linear-gradient(135deg,#8A6EEA,#6F4FD1);color:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit">오픈 알림 받기</button>
+        </div>
+      </sc-if>
+      <sc-if value="{{notified}}" hint-placeholder-val="{{false}}">
+        <div style="font-size:14px;color:#9B7EE8;font-weight:600;margin-top:6px">알림 신청 완료! 오픈하면 가장 먼저 알려드릴게요.</div>
+      </sc-if>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{isSubmit}}" hint-placeholder-val="{{false}}">
+    <sc-if value="{{submitSuccess}}" hint-placeholder-val="{{false}}">
+      <div style="display:flex;flex-direction:column;align-items:center;gap:22px;padding:130px 40px 160px;text-align:center">
+        <div style="width:76px;height:76px;border-radius:50%;background:rgba(155,126,232,0.12);display:flex;align-items:center;justify-content:center">
+          <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#9B7EE8" stroke-width="1.8"><path d="M20 6L9 17l-5-5"></path></svg>
+        </div>
+        <div style="font-size:24px;font-weight:800">제보 완료! 검토 후 등록할게요</div>
+        <div style="font-size:14px;color:rgba(245,243,247,0.55);max-width:440px;line-height:1.65">운영팀이 링크와 내용을 확인한 뒤 실제 목록에 반영해요. 기준에 맞지 않는 제보는 별도 안내 없이 반영되지 않을 수 있어요.</div>
+        <div style="display:flex;gap:10px;margin-top:6px">
+          <button onClick="{{resetSubmit}}" style="padding:12px 22px;border-radius:10px;border:1px solid rgba(255,255,255,0.16);background:rgba(255,255,255,0.05);color:#f5f3f7;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit">제보 하나 더 하기</button>
+          <button onClick="{{goHome}}" style="padding:12px 22px;border-radius:10px;border:none;background:linear-gradient(135deg,#8A6EEA,#6F4FD1);color:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit">홈으로</button>
+        </div>
+      </div>
+    </sc-if>
+    <sc-if value="{{submitFormVisible}}" hint-placeholder-val="{{true}}">
+      <div style="max-width:640px;margin:0 auto;padding:56px 40px 100px;display:flex;flex-direction:column;gap:26px">
+        <div>
+          <div style="font-size:26px;font-weight:800;margin-bottom:8px">콘텐츠 제보하기</div>
+          <div style="font-size:14px;color:rgba(245,243,247,0.55);line-height:1.6">놓치기 아까운 작품이 있다면 알려주세요. 제보된 콘텐츠는 운영팀 검토 후 목록에 등록돼요.</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <label style="font-size:13px;font-weight:600;color:rgba(245,243,247,0.75)">작품 제목</label>
+          <input value="{{form.title}}" onChange="{{setFormTitle}}" placeholder="예: 아가씨" style="height:44px;padding:0 14px;border-radius:10px;border:1px solid rgba(255,255,255,0.12);background:#141219;color:#f5f3f7;font-size:14px;font-family:inherit;outline:none"/>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <label style="font-size:13px;font-weight:600;color:rgba(245,243,247,0.75)">형식</label>
+          <div style="display:flex;flex-wrap:wrap;gap:8px">
+            <sc-for list="{{formCategoryChips}}" as="chip" hint-placeholder-count="7">
+              <button onClick="{{chip.onClick}}" style="{{chip.style}}">{{chip.label}}</button>
+            </sc-for>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <label style="font-size:13px;font-weight:600;color:rgba(245,243,247,0.75)">국가</label>
+          <div style="display:flex;flex-wrap:wrap;gap:8px">
+            <sc-for list="{{formCountryChips}}" as="chip" hint-placeholder-count="2">
+              <button onClick="{{chip.onClick}}" style="{{chip.style}}">{{chip.label}}</button>
+            </sc-for>
+          </div>
+        </div>
+        <div>
+          <button onClick="{{toggleFormJuice}}" style="{{formJuiceStyle}}">착즙 작품이에요 (서브 · 약한 GL 코드)</button>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <label style="font-size:13px;font-weight:600;color:rgba(245,243,247,0.75)">시청/감상 링크</label>
+          <input value="{{form.url}}" onChange="{{setFormUrl}}" placeholder="https://" style="height:44px;padding:0 14px;border-radius:10px;border:1px solid rgba(255,255,255,0.12);background:#141219;color:#f5f3f7;font-size:14px;font-family:inherit;outline:none"/>
+          <div style="font-size:12px;color:rgba(245,243,247,0.4);line-height:1.6">공식 링크가 없다면 구글 드라이브에 자료를 올리고 폴더 링크를 붙여넣어도 돼요. <a href="https://drive.google.com" target="_blank" rel="noreferrer">구글 드라이브 열기 →</a></div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <label style="font-size:13px;font-weight:600;color:rgba(245,243,247,0.75)">제보 사유 · 한줄 코멘트 (선택)</label>
+          <textarea value="{{form.note}}" onChange="{{setFormNote}}" placeholder="어떤 점이 좋았는지 알려주세요" style="height:88px;padding:12px 14px;border-radius:10px;border:1px solid rgba(255,255,255,0.12);background:#141219;color:#f5f3f7;font-size:14px;font-family:inherit;outline:none;resize:none"></textarea>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <label style="font-size:13px;font-weight:600;color:rgba(245,243,247,0.75)">답변 받을 이메일 (선택)</label>
+          <input value="{{form.contact}}" onChange="{{setFormContact}}" placeholder="you@example.com" style="height:44px;padding:0 14px;border-radius:10px;border:1px solid rgba(255,255,255,0.12);background:#141219;color:#f5f3f7;font-size:14px;font-family:inherit;outline:none"/>
+        </div>
+        <sc-if value="{{formError}}" hint-placeholder-val="{{false}}">
+          <div style="font-size:13px;color:#E5486B">제목과 링크는 꼭 입력해주세요.</div>
+        </sc-if>
+        <button onClick="{{submitReport}}" style="height:50px;border-radius:10px;border:none;background:linear-gradient(135deg,#8A6EEA,#6F4FD1);color:#fff;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit">제보 제출하기</button>
+      </div>
+    </sc-if>
+  </sc-if>
+
+  <div style="padding:24px 40px;border-top:1px solid rgba(255,255,255,0.06);font-size:12px;color:rgba(245,243,247,0.32)">© 2026 Dr. GL · GL 콘텐츠 큐레이션 플랫폼</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;defaultScreen&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;home&quot;,&quot;options&quot;:[&quot;home&quot;,&quot;category&quot;,&quot;search&quot;,&quot;detail&quot;,&quot;board&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;동작&quot;},&quot;showJuiceBadge&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;동작&quot;},&quot;featuredId&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;아가씨&quot;,&quot;options&quot;:[&quot;아가씨&quot;,&quot;캐롤&quot;,&quot;너와 나의 계절&quot;,&quot;회귀한 대공님이 자꾸 저를 좋아합니다&quot;,&quot;스물, 다시 봄&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;동작&quot;}}">
+const ACTIVE = "color:#f5f3f7;font-weight:700";
+const INACTIVE = "color:rgba(245,243,247,0.55);font-weight:500";
+const CHIP_BASE = "padding:9px 16px;border-radius:20px;font-size:13px;cursor:pointer;font-family:inherit;border:1px solid ";
+const CHIP_ON = CHIP_BASE + "transparent;background:linear-gradient(135deg,#8A6EEA,#6F4FD1);color:#fff;font-weight:700";
+const CHIP_OFF = CHIP_BASE + "rgba(255,255,255,0.12);background:rgba(255,255,255,0.04);color:rgba(245,243,247,0.7)";
+const PILL_FREE = "font-size:11px;font-weight:700;color:#9B7EE8;background:rgba(155,126,232,0.14);border-radius:20px;padding:4px 10px";
+const PILL_PAID = "font-size:11px;font-weight:600;color:rgba(245,243,247,0.55);background:rgba(255,255,255,0.06);border-radius:20px;padding:4px 10px";
+const STORE_KEY = 'drgl_store_v1';
+const DEMO_COMMENTS = [
+  { id:1001, itemId:1, text:'20년대 감성 연출이 진짜 예쁘다', status:'visible', createdAt: Date.now() - 1000*60*60*48 },
+  { id:1002, itemId:1, text:'결말 반전 소름', status:'visible', createdAt: Date.now() - 1000*60*60*24 },
+  { id:1003, itemId:5, text:'이 드라마 학생 때 봤어야 했는데ㅠㅠ', status:'visible', createdAt: Date.now() - 1000*60*60*5 },
+  { id:1004, itemId:9, text:'이세계 로판 국룰 전개인데 은근 중독성 있음 (결말 스포 있음)', status:'hidden', createdAt: Date.now() - 1000*60*60*10 },
+  { id:1005, itemId:12, text:'코미디 타이밍 미쳤다 ㅋㅋㅋ', status:'visible', createdAt: Date.now() - 1000*60*30 }
+];
+const DEFAULT_CATEGORIES = ['영화','드라마','웹툰','웹소설','소설','애니','만화'];
+const DEFAULT_ITEMS = [
+    { id:1, title:'아가씨', category:'영화', country:'국내', countryDetail:'한국', year:2016, creatorLabel:'감독', creatorName:'박찬욱', leads:['김민희','김태리'], tags:['스릴러','로맨스','시대극'], juice:false, synopsis:'1930년대 일제강점기, 상속녀 히데코의 새 하녀로 들어온 숙희. 신뢰와 욕망이 뒤엉킨 두 여자의 관계가 예상 밖의 반전으로 이어지는 이야기.', platforms:[{name:'왓챠',type:'유료'},{name:'웨이브',type:'유료'},{name:'넷플릭스',type:'유료'}] },
+    { id:2, title:'캐롤', category:'영화', country:'해외', countryDetail:'미국', year:2015, creatorLabel:'감독', creatorName:'토드 헤인즈', leads:['케이트 블란쳇','루니 마라'], tags:['로맨스','드라마'], juice:false, synopsis:'1950년대 뉴욕, 백화점 점원 테레즈와 상류층 여성 캐롤. 서로에게 이끌리며 벌어지는 조용하고 강렬한 사랑 이야기.', platforms:[{name:'왓챠',type:'유료'},{name:'디즈니플러스',type:'유료'}] },
+    { id:3, title:'오렌지만이 과일은 아니다', category:'소설', country:'해외', countryDetail:'영국', year:1985, creatorLabel:'작가', creatorName:'지넷 윈터슨', leads:['잔넷'], tags:['성장','자전','문학'], juice:false, synopsis:'엄격한 종교 공동체에서 자란 소녀가 자기 자신을 발견해가는 과정을 그린 반자전적 성장 소설.', platforms:[{name:'리디북스',type:'유료'},{name:'교보문고 전자책',type:'유료'}] },
+    { id:4, title:'밤의 화원', category:'드라마', country:'국내', countryDetail:'한국', year:2024, creatorLabel:'연출', creatorName:'정하은', leads:['이수아','진세은'], tags:['오피스','미스터리'], juice:true, poster:false, synopsis:'경쟁 관계였던 두 팀장이 사내 비리 사건을 함께 파헤치며 예상치 못한 감정을 마주하는 오피스 미스터리.', platforms:[{name:'티빙',type:'유료'},{name:'웨이브',type:'유료'}] },
+    { id:5, title:'너와 나의 계절', category:'드라마', country:'해외', countryDetail:'일본', year:2023, creatorLabel:'연출', creatorName:'사토 유이', leads:['유나','미즈키'], tags:['청춘','학원'], juice:false, synopsis:'전학생 유나와 반장 미즈키. 마지막 학년, 짧고 선명한 한 시절을 함께 통과하는 두 사람의 이야기.', platforms:[{name:'왓챠',type:'유료'},{name:'라프텔',type:'유료'}] },
+    { id:6, title:'여름, 그녀와', category:'웹툰', country:'국내', countryDetail:'한국', year:2022, creatorLabel:'작가', creatorName:'하이재', leads:['서하늘','강초록'], tags:['일상','힐링'], juice:false, poster:false, synopsis:'바닷가 마을에 내려온 사진작가와 오래된 서점을 지키는 로컬 청년의 잔잔한 여름 일상.', platforms:[{name:'네이버웹툰',type:'무료'},{name:'네이버시리즈',type:'유료'}] },
+    { id:7, title:'붉은 실', category:'웹소설', country:'국내', countryDetail:'한국', year:2023, creatorLabel:'작가', creatorName:'주안', leads:['라이엘라','세라핀'], tags:['로맨스판타지'], juice:false, poster:false, synopsis:'서로 다른 왕국의 후계자로 태어난 두 사람. 정략적으로 얽힌 운명이 진짜 마음으로 바뀌어가는 로맨스 판타지.', platforms:[{name:'카카오페이지',type:'유료'},{name:'리디북스',type:'유료'}] },
+    { id:8, title:'있잖아, 그날의 우리', category:'웹툰', country:'국내', countryDetail:'한국', year:2021, creatorLabel:'작가', creatorName:'모카린', leads:['윤소이','하다은'], tags:['학원'], juice:true, synopsis:'졸업을 앞둔 단짝 두 명. 우정인 줄로만 알았던 감정의 정체를 각자의 속도로 깨달아가는 학원물.', platforms:[{name:'네이버웹툰',type:'무료'}] },
+    { id:9, title:'회귀한 대공님이 자꾸 저를 좋아합니다', category:'웹소설', country:'국내', countryDetail:'한국', year:2024, creatorLabel:'작가', creatorName:'나비잠', leads:['하르젠','이자벨'], tags:['로맨스판타지','회귀물'], juice:true, synopsis:'죽음 직전 과거로 돌아온 대공. 이번 생에는 자신을 구해준 은인, 그 여기사만을 지키기로 결심하는데.', platforms:[{name:'카카오페이지',type:'유료'},{name:'문피아',type:'유료'}] },
+    { id:10, title:'물의 결', category:'소설', country:'국내', countryDetail:'한국', year:2020, creatorLabel:'작가', creatorName:'한소림', leads:['윤강','문서희'], tags:['문학','성장'], juice:false, synopsis:'강가 마을에서 나고 자란 두 여자의 30년. 떠남과 돌아옴을 반복하며 이어지는 관계를 담은 장편소설.', platforms:[{name:'교보문고',type:'유료'},{name:'예스24 전자책',type:'유료'}] },
+    { id:11, title:'여름의 파랑', category:'애니', country:'해외', countryDetail:'일본', year:2019, creatorLabel:'감독', creatorName:'미야모토 케이', leads:['하나','소라'], tags:['청춘','드라마'], juice:false, synopsis:'전학과 함께 시작된 만남. 두 소녀가 나눈 한 시절의 감정을 섬세한 그림체로 그린 청춘 애니메이션.', platforms:[{name:'라프텔',type:'유료'},{name:'넷플릭스',type:'유료'}] },
+    { id:12, title:'부실장님과 나', category:'드라마', country:'국내', countryDetail:'한국', year:2023, creatorLabel:'연출', creatorName:'김도윤', leads:['오하람','진세은'], tags:['오피스','코미디'], juice:true, synopsis:'까칠한 부실장과 신입사원. 매일 부딪히던 두 사람 사이에 묘한 기류가 흐르기 시작하는 오피스 코미디.', platforms:[{name:'티빙',type:'유료'}] },
+    { id:13, title:'리본과 나이프', category:'만화', country:'해외', countryDetail:'일본', year:2018, creatorLabel:'작가', creatorName:'아오이 렌', leads:['레이','유즈하'], tags:['액션','드라마'], juice:false, synopsis:'뒷골목 해결사로 살아가는 두 여자. 서로를 지키기 위해 싸우며 신뢰를 쌓아가는 액션 드라마.', platforms:[{name:'리디북스',type:'유료'}] },
+    { id:14, title:'스물, 다시 봄', category:'영화', country:'국내', countryDetail:'한국', year:2022, creatorLabel:'감독', creatorName:'윤지수', leads:['한지우','오세인'], tags:['청춘','로맨스'], juice:false, synopsis:'대학 신입생 시절 서로를 스쳐간 두 사람이 10년 만에 다시 마주치며 시작되는 이야기.', platforms:[{name:'왓챠',type:'유료'}] },
+    { id:15, title:'파란 리본', category:'웹툰', country:'해외', countryDetail:'일본', year:2022, creatorLabel:'작가', creatorName:'유키노', leads:['미유','하즈키'], tags:['학원','판타지'], juice:false, synopsis:'마법 학교의 낙제생과 수석. 함께 치르는 시험을 통해 서로를 알아가는 학원 판타지.', platforms:[{name:'네이버웹툰',type:'무료'}] },
+    { id:16, title:'계약 연애의 방식', category:'웹소설', country:'국내', countryDetail:'한국', year:2023, creatorLabel:'작가', creatorName:'별밤지기', leads:['서지안','한이레'], tags:['로맨스'], juice:false, poster:false, synopsis:'가문의 압박을 피하려 계약 연애를 시작한 두 사람. 계약이 진심으로 바뀌어가는 과정을 그린 로맨스.', platforms:[{name:'카카오페이지',type:'유료'}] },
+    { id:17, title:'마지막 여름학기', category:'드라마', country:'해외', countryDetail:'태국', year:2022, creatorLabel:'연출', creatorName:'나타야 촘차이', leads:['핌','난'], tags:['청춘'], juice:false, synopsis:'교환학생으로 만난 두 사람의 한 학기. 헤어짐을 앞두고서야 선명해지는 마음을 그린 청춘 드라마.', platforms:[{name:'왓챠',type:'유료'}] },
+    { id:18, title:'우리만 아는 계절', category:'애니', country:'국내', countryDetail:'한국', year:2023, creatorLabel:'감독', creatorName:'배지훈', leads:['하나','바다'], tags:['힐링'], juice:false, synopsis:'작은 섬마을로 전학 온 소녀와 그 섬을 지키는 등대지기 딸. 계절이 바뀌며 가까워지는 두 사람.', platforms:[{name:'라프텔',type:'유료'}] }
+];
+
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    const saved = this.loadStore();
+    const seed = { items: DEFAULT_ITEMS, categories: DEFAULT_CATEGORIES, submissions: [], comments: DEMO_COMMENTS };
+    const store = saved || seed;
+    if (!saved) { try { localStorage.setItem(STORE_KEY, JSON.stringify(seed)); } catch (e) {} }
+    else if (!store.comments || store.comments.length === 0) {
+      store.comments = DEMO_COMMENTS;
+      try { localStorage.setItem(STORE_KEY, JSON.stringify(store)); } catch (e) {}
+    }
+    let initialScreen = props.defaultScreen || 'home';
+    let initialSelectedId = 1;
+    try {
+      const detailParam = new URLSearchParams(window.location.search).get('detail');
+      if (detailParam && store.items.some(i => i.id === Number(detailParam))) {
+        initialScreen = 'detail';
+        initialSelectedId = Number(detailParam);
+      }
+    } catch (e) {}
+    this.state = {
+      screen: initialScreen,
+      prevScreen: 'home',
+      selectedId: initialSelectedId,
+      category: '전체',
+      country: '전체',
+      juiceOnly: false,
+      query: '',
+      notified: false,
+      formSubmitted: false,
+      formError: false,
+      form: { title:'', category:'영화', country:'국내', juice:false, url:'', note:'', contact:'' },
+      commentDraft: '',
+      showAllComments: false,
+      items: store.items,
+      categories: store.categories,
+      submissions: store.submissions,
+      comments: store.comments
+    };
+  }
+
+  loadStore() {
+    try {
+      const raw = localStorage.getItem(STORE_KEY);
+      if (!raw) return null;
+      const parsed = JSON.parse(raw);
+      if (!Array.isArray(parsed.items) || !Array.isArray(parsed.categories)) return null;
+      if (!Array.isArray(parsed.submissions)) parsed.submissions = [];
+      if (!Array.isArray(parsed.comments)) parsed.comments = [];
+      return parsed;
+    } catch (e) { return null; }
+  }
+  persist = (partial) => {
+    this.setState(s => {
+      const next = { ...s, ...partial };
+      try { localStorage.setItem(STORE_KEY, JSON.stringify({ items:next.items, categories:next.categories, submissions:next.submissions, comments:next.comments })); } catch (e) {}
+      return partial;
+    });
+  };
+  componentDidMount() {
+    this._onStorage = (e) => {
+      if (e.key !== STORE_KEY || !e.newValue) return;
+      try {
+        const store = JSON.parse(e.newValue);
+        this.setState({ items:store.items, categories:store.categories, submissions:store.submissions, comments:store.comments });
+      } catch (err) {}
+    };
+    window.addEventListener('storage', this._onStorage);
+  }
+  componentWillUnmount() {
+    window.removeEventListener('storage', this._onStorage);
+  }
+
+  countries = ['전체','국내','해외'];
+  homeRowDefs = [
+    { title:'이번 주 추천', ids:[1,2,5,9,11,14] },
+    { title:'착즙 인생작 · 서브도 진심이야', ids:[4,8,9,12] },
+    { title:'웹소설 · 웹툰 원작 인기작', ids:[6,7,8,9,15,16] },
+    { title:'해외 콘텐츠 모음', ids:[2,3,5,11,13,17] }
+  ];
+  suggestedTagList = ['오피스','학원','로맨스판타지','시대극','착즙'];
+
+  goHome = () => this.setState({ screen:'home' });
+  goCategory = () => this.setState({ screen:'category' });
+  goBoard = () => this.setState({ screen:'board' });
+  goSearch = () => this.setState({ screen:'search' });
+  openDetail = (id) => this.setState(s => ({ screen:'detail', selectedId:id, prevScreen: s.screen==='detail' ? s.prevScreen : s.screen, showAllComments:false }));
+  toggleShowAllComments = () => this.setState(s => ({ showAllComments:!s.showAllComments }));
+  formatCommentDate = (ts) => {
+    const d = new Date(ts);
+    const pad = (n) => String(n).padStart(2,'0');
+    return d.getFullYear()+'.'+pad(d.getMonth()+1)+'.'+pad(d.getDate());
+  };
+  goBack = () => this.setState(s => ({ screen:s.prevScreen }));
+  setCategory = (c) => this.setState({ category:c });
+  setCountry = (c) => this.setState({ country:c });
+  toggleJuice = () => this.setState(s => ({ juiceOnly:!s.juiceOnly }));
+  setQuery = (e) => this.setState({ query:e.target.value, screen: this.state.screen==='detail'||this.state.screen==='board' ? 'search' : this.state.screen });
+  onSearchKey = (e) => { if (e.key==='Enter') this.setState({ screen:'search' }); };
+  submitNotify = () => this.setState({ notified:true });
+  setQueryChip = (q) => this.setState({ query:q, screen:'search' });
+
+  goSubmit = () => this.setState({ screen:'submit' });
+  setFormTitle = (e) => this.setState(s => ({ form:{ ...s.form, title:e.target.value } }));
+  setFormUrl = (e) => this.setState(s => ({ form:{ ...s.form, url:e.target.value } }));
+  setFormNote = (e) => this.setState(s => ({ form:{ ...s.form, note:e.target.value } }));
+  setFormContact = (e) => this.setState(s => ({ form:{ ...s.form, contact:e.target.value } }));
+  setFormCategory = (c) => this.setState(s => ({ form:{ ...s.form, category:c } }));
+  setFormCountry = (c) => this.setState(s => ({ form:{ ...s.form, country:c } }));
+  toggleFormJuice = () => this.setState(s => ({ form:{ ...s.form, juice:!s.form.juice } }));
+  submitReport = () => {
+    const f = this.state.form;
+    if (!f.title.trim() || !f.url.trim()) { this.setState({ formError:true }); return; }
+    const entry = { id:Date.now(), title:f.title, category:f.category, country:f.country, juice:f.juice, url:f.url, note:f.note, contact:f.contact, status:'pending', createdAt:Date.now() };
+    this.persist({ submissions: [...this.state.submissions, entry] });
+    this.setState({ formSubmitted:true, formError:false });
+  };
+  setCommentDraft = (e) => this.setState({ commentDraft:e.target.value });
+  submitComment = () => {
+    const text = this.state.commentDraft.trim();
+    if (!text) return;
+    const entry = { id:Date.now(), itemId:this.state.selectedId, text, status:'visible', createdAt:Date.now() };
+    this.persist({ comments: [...this.state.comments, entry] });
+    this.setState({ commentDraft:'' });
+  };
+  resetSubmit = () => this.setState({
+    formSubmitted:false, formError:false,
+    form:{ title:'', category:'영화', country:'국내', juice:false, url:'', note:'', contact:'' }
+  });
+
+  renderVals() {
+    const s = this.state;
+    const showJuiceBadge = this.props.showJuiceBadge ?? true;
+    const displayItems = s.items.map(i => ({ ...i, juice: i.juice && showJuiceBadge, poster: i.poster !== false, noPoster: i.poster === false, leadsText: (i.leads||[]).join(', ') }));
+    const byId = (id) => displayItems.find(i => i.id === id);
+
+    const featuredTitle = this.props.featuredId || '아가씨';
+    const hero = displayItems.find(i => i.title === featuredTitle) || byId(1) || displayItems[0];
+
+    const rows = this.homeRowDefs.map(r => ({ title:r.title, items:r.ids.map(byId).filter(Boolean) })).filter(r => r.items.length);
+
+    const categoryChips = ['전체', ...s.categories].map(c => ({
+      label:c, onClick:() => this.setCategory(c), style: s.category===c ? CHIP_ON : CHIP_OFF
+    }));
+    const countryChips = this.countries.map(c => ({
+      label:c, onClick:() => this.setCountry(c), style: s.country===c ? CHIP_ON : CHIP_OFF
+    }));
+    const juiceToggleStyle = s.juiceOnly
+      ? CHIP_BASE + "transparent;background:linear-gradient(135deg,#E5486B,#C93356);color:#fff;font-weight:700"
+      : CHIP_OFF;
+
+    const filteredCategoryItems = displayItems.filter(i =>
+      (s.category==='전체' || i.category===s.category) &&
+      (s.country==='전체' || i.country===s.country) &&
+      (!s.juiceOnly || i.juice)
+    );
+
+    const q = s.query.trim();
+    const searchResults = q ? displayItems.filter(i =>
+      i.title.includes(q) || i.creatorName.includes(q) || i.tags.some(t => t.includes(q)) || i.category.includes(q)
+    ) : [];
+
+    const rawSelected = byId(s.selectedId) || hero;
+    const selectedItem = {
+      ...rawSelected,
+      platforms: rawSelected.platforms.map(p => ({
+        ...p, typeStyle: p.type==='무료' ? PILL_FREE : PILL_PAID,
+        hasUrl: !!p.url, onOpen: () => { if (p.url) window.open(p.url, '_blank', 'noopener'); }
+      }))
+    };
+    const relatedItems = displayItems.filter(i => i.id !== selectedItem.id && i.category === selectedItem.category).slice(0,6);
+    const relatedByLead = displayItems.filter(i => i.id !== selectedItem.id && i.leads.some(n => selectedItem.leads.includes(n))).slice(0,6);
+    const sharedLeadName = relatedByLead.length ? selectedItem.leads.find(n => relatedByLead[0].leads.includes(n)) : '';
+
+    const itemComments = s.comments.filter(c => c.itemId === s.selectedId && c.status === 'visible')
+      .map(c => ({ text:c.text, dateText: this.formatCommentDate(c.createdAt) }));
+    const displayedComments = s.showAllComments ? itemComments : itemComments.slice(0,5);
+    const hasMoreToggle = itemComments.length > 5;
+    const showMoreLabel = s.showAllComments ? '접기' : ('더보기 (' + (itemComments.length-5) + ')');
+
+    const suggestedTags = this.suggestedTagList.map(t => ({ label:t, onClick:() => this.setQueryChip(t) }));
+
+    const isSubmit = s.screen === 'submit';
+    const submitBtnStyle = isSubmit
+      ? "display:flex;align-items:center;gap:6px;padding:0 16px;height:40px;border-radius:10px;border:none;background:linear-gradient(135deg,#8A6EEA,#6F4FD1);color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap"
+      : "display:flex;align-items:center;gap:6px;padding:0 16px;height:40px;border-radius:10px;border:1px solid rgba(155,126,232,0.4);background:rgba(155,126,232,0.08);color:#9B7EE8;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap";
+    const formCategoryChips = s.categories.map(c => ({
+      label:c, onClick:() => this.setFormCategory(c), style: s.form.category===c ? CHIP_ON : CHIP_OFF
+    }));
+    const formCountryChips = this.countries.filter(c => c !== '전체').map(c => ({
+      label:c, onClick:() => this.setFormCountry(c), style: s.form.country===c ? CHIP_ON : CHIP_OFF
+    }));
+    const formJuiceStyle = s.form.juice
+      ? CHIP_BASE + "transparent;background:linear-gradient(135deg,#E5486B,#C93356);color:#fff;font-weight:700"
+      : CHIP_OFF;
+
+    return {
+      query: s.query, setQuery: this.setQuery, onSearchKey: this.onSearchKey,
+      goHome: this.goHome, goCategory: this.goCategory, goBoard: this.goBoard,
+      navHomeStyle: s.screen==='home' ? ACTIVE : INACTIVE,
+      navCategoryStyle: s.screen==='category' ? ACTIVE : INACTIVE,
+      navBoardStyle: s.screen==='board' ? ACTIVE : INACTIVE,
+      isHome: s.screen==='home', isCategory: s.screen==='category', isSearch: s.screen==='search',
+      isDetail: s.screen==='detail', isBoard: s.screen==='board',
+      hero, openHeroDetail: () => this.openDetail(hero.id),
+      rows, openDetail: this.openDetail,
+      categoryChips, countryChips, toggleJuice: this.toggleJuice, juiceToggleStyle,
+      filteredCategoryItems, hasCategoryResults: filteredCategoryItems.length > 0, noCategoryResults: filteredCategoryItems.length === 0,
+      searchResults, searchCount: searchResults.length,
+      hasQuery: q.length > 0, noQuery: q.length === 0,
+      hasSearchResults: searchResults.length > 0, noSearchResults: q.length > 0 && searchResults.length === 0,
+      suggestedTags,
+      selectedItem, relatedItems, goBack: this.goBack,
+      relatedByLead, hasRelatedByLead: relatedByLead.length > 0, sharedLeadName,
+      itemComments: displayedComments, hasComments: itemComments.length > 0, noComments: itemComments.length === 0,
+      hasMoreToggle, showMoreLabel, toggleShowAllComments: this.toggleShowAllComments,
+      commentDraft: s.commentDraft, setCommentDraft: this.setCommentDraft, submitComment: this.submitComment,
+      notified: s.notified, notNotified: !s.notified, submitNotify: this.submitNotify,
+      goSubmit: this.goSubmit, isSubmit, submitBtnStyle,
+      submitSuccess: s.formSubmitted, submitFormVisible: !s.formSubmitted,
+      form: s.form, setFormTitle: this.setFormTitle, setFormUrl: this.setFormUrl,
+      setFormNote: this.setFormNote, setFormContact: this.setFormContact,
+      formCategoryChips, formCountryChips, toggleFormJuice: this.toggleFormJuice, formJuiceStyle,
+      formError: s.formError, submitReport: this.submitReport, resetSubmit: this.resetSubmit
+    };
+  }
+}
+</script>
+</body>
+</html>

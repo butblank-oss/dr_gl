@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" rel="stylesheet">
+<script src="./image-slot.js"></script>
+<style>
+body{margin:0;background:#0b0a0f;font-family:'Pretendard',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:#9B7EE8;text-decoration:none}
+a:hover{color:#B49BF0}
+::-webkit-scrollbar{height:6px;width:6px}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.15);border-radius:10px}
+input::placeholder,textarea::placeholder{color:rgba(245,243,247,0.3)}
+select{color-scheme:dark}
+</style>
+</helmet>
+<div style="display:flex;min-height:100vh;background:#0b0a0f;color:#f5f3f7">
+
+  <div style="width:232px;flex:none;background:#100f14;border-right:1px solid rgba(255,255,255,0.08);display:flex;flex-direction:column;padding:24px 14px;gap:2px">
+    <div style="display:flex;align-items:baseline;gap:7px;padding:6px 10px 26px">
+      <span style="font-size:18px;font-weight:800;letter-spacing:-0.5px">Dr.<span style="color:#9B7EE8">GL</span></span>
+      <span style="font-size:11px;font-weight:600;color:rgba(245,243,247,0.4)">Admin</span>
+    </div>
+    <sc-for list="{{navItems}}" as="nav" hint-placeholder-count="5">
+      <div onClick="{{nav.onClick}}" style="{{nav.style}}" style-hover="background:rgba(255,255,255,0.05)">
+        <span>{{nav.label}}</span>
+        <sc-if value="{{nav.hasBadge}}" hint-placeholder-val="{{false}}">
+          <span style="font-size:10px;font-weight:700;color:#fff;background:#E5486B;border-radius:20px;padding:2px 7px;min-width:16px;text-align:center">{{nav.badgeText}}</span>
+        </sc-if>
+      </div>
+    </sc-for>
+    <div style="margin-top:auto;padding:14px 10px 4px;font-size:11px;color:rgba(245,243,247,0.3);line-height:1.6">사이트와 동일한 저장소를 사용해요. 이 브라우저의 다른 탭에 즉시 반영돼요.</div>
+  </div>
+
+  <div style="flex:1;min-width:0;padding:36px 44px 80px;display:flex;flex-direction:column;gap:26px">
+
+    <sc-if value="{{isDashboard}}" hint-placeholder-val="{{true}}">
+      <div style="font-size:24px;font-weight:800">대시보드</div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px">
+        <div style="background:#141219;border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:20px;display:flex;flex-direction:column;gap:8px">
+          <div style="font-size:12px;color:rgba(245,243,247,0.5)">전체 콘텐츠</div>
+          <div style="font-size:28px;font-weight:800">{{stats.itemCount}}</div>
+        </div>
+        <div style="background:#141219;border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:20px;display:flex;flex-direction:column;gap:8px">
+          <div style="font-size:12px;color:rgba(245,243,247,0.5)">대기중인 제보</div>
+          <div style="font-size:28px;font-weight:800;color:#E5486B">{{stats.pendingCount}}</div>
+        </div>
+        <div style="background:#141219;border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:20px;display:flex;flex-direction:column;gap:8px">
+          <div style="font-size:12px;color:rgba(245,243,247,0.5)">노출중인 한줄평</div>
+          <div style="font-size:28px;font-weight:800">{{stats.visibleCommentCount}}</div>
+        </div>
+        <div style="background:#141219;border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:20px;display:flex;flex-direction:column;gap:8px">
+          <div style="font-size:12px;color:rgba(245,243,247,0.5)">카테고리 수</div>
+          <div style="font-size:28px;font-weight:800">{{stats.categoryCount}}</div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+        <div style="background:#100f14;border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:18px 20px;display:flex;flex-direction:column;gap:12px">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div style="font-size:14px;font-weight:700">대기중인 제보</div>
+            <div onClick="{{goSubmissions}}" style="font-size:12px;color:#9B7EE8;cursor:pointer">전체 보기 →</div>
+          </div>
+          <sc-if value="{{stats.hasPending}}" hint-placeholder-val="{{false}}">
+            <sc-for list="{{stats.recentPending}}" as="p" hint-placeholder-count="2">
+              <div style="font-size:13px;color:rgba(245,243,247,0.75);padding:8px 0;border-top:1px solid rgba(255,255,255,0.05)">{{p.title}}</div>
+            </sc-for>
+          </sc-if>
+          <sc-if value="{{stats.noPending}}" hint-placeholder-val="{{true}}">
+            <div style="font-size:13px;color:rgba(245,243,247,0.35)">대기중인 제보가 없어요.</div>
+          </sc-if>
+        </div>
+        <div style="background:#100f14;border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:18px 20px;display:flex;flex-direction:column;gap:12px">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div style="font-size:14px;font-weight:700">최근 한줄평</div>
+            <div onClick="{{goComments}}" style="font-size:12px;color:#9B7EE8;cursor:pointer">전체 보기 →</div>
+          </div>
+          <sc-if value="{{stats.hasRecentComments}}" hint-placeholder-val="{{false}}">
+            <sc-for list="{{stats.recentComments}}" as="c" hint-placeholder-count="2">
+              <div style="font-size:13px;color:rgba(245,243,247,0.75);padding:8px 0;border-top:1px solid rgba(255,255,255,0.05)">{{c.itemTitle}} · {{c.text}}</div>
+            </sc-for>
+          </sc-if>
+          <sc-if value="{{stats.noRecentComments}}" hint-placeholder-val="{{true}}">
+            <div style="font-size:13px;color:rgba(245,243,247,0.35)">아직 한줄평이 없어요.</div>
+          </sc-if>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{isContent}}" hint-placeholder-val="{{false}}">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div style="font-size:24px;font-weight:800">콘텐츠 관리</div>
+        <button onClick="{{openAddContent}}" style="padding:0 18px;height:42px;border-radius:10px;border:none;background:linear-gradient(135deg,#8A6EEA,#6F4FD1);color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">+ 콘텐츠 추가</button>
+      </div>
+      <input value="{{contentSearch}}" onChange="{{setContentSearch}}" placeholder="제목으로 검색" style="height:38px;padding:0 14px;border-radius:9px;border:1px solid rgba(255,255,255,0.12);background:#141219;color:#f5f3f7;font-size:13px;font-family:inherit;outline:none;width:220px"><div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+        
+        <sc-for list="{{contentFilterChips}}" as="chip" hint-placeholder-count="6">
+          <button onClick="{{chip.onClick}}" style="{{chip.style}}">{{chip.label}}</button>
+        </sc-for>
+        <button onClick="{{toggleContentJuiceOnly}}" style="{{contentJuiceOnlyStyle}}">착즙만 보기</button>
+      </div>
+      <div style="background:#100f14;border:1px solid rgba(255,255,255,0.08);border-radius:14px;overflow:hidden">
+        <div style="display:grid;grid-template-columns:48px minmax(0,1fr) 90px 110px 64px 120px;gap:12px;padding:10px 18px;font-size:11px;font-weight:600;color:rgba(245,243,247,0.4);border-bottom:1px solid rgba(255,255,255,0.06)">
+          <div></div><div>제목</div><div>카테고리</div><div>국가·연도</div><div>착즙</div><div>관리</div>
+        </div>
+        <sc-for list="{{filteredAdminItems}}" as="item" hint-placeholder-count="6">
+          <div style="display:grid;grid-template-columns:48px minmax(0,1fr) 90px 110px 64px 120px;gap:12px;padding:10px 18px;align-items:center;border-bottom:1px solid rgba(255,255,255,0.04)">
+            <div style="width:38px;height:38px;border-radius:8px;overflow:hidden;background:#1c1a24;position:relative;flex:none">
+              <sc-if value="{{item.poster}}" hint-placeholder-val="{{true}}">
+                <image-slot id="poster-{{item.id}}" shape="rect" placeholder="포스터" style="position:absolute;inset:0;width:100%;height:100%"></image-slot>
+              </sc-if>
+              <sc-if value="{{item.noPoster}}" hint-placeholder-val="{{false}}">
+                <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:10px;color:rgba(245,243,247,0.3)">-</div>
+              </sc-if>
+            </div>
+            <div style="font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{item.title}}</div>
+            <div style="font-size:12px;color:rgba(245,243,247,0.55)">{{item.category}}</div>
+            <div style="font-size:12px;color:rgba(245,243,247,0.55)">{{item.countryDetail}} · {{item.year}}</div>
+            <div>
+              <sc-if value="{{item.juice}}" hint-placeholder-val="{{false}}">
+                <span style="font-size:10px;font-weight:700;color:#fff;background:linear-gradient(135deg,#E5486B,#C93356);border-radius:20px;padding:3px 8px">착즙</span>
+              </sc-if>
+            </div>
+            <div style="display:flex;gap:6px">
+              <button onClick="{{item.onEdit}}" style="padding:6px 11px;border-radius:8px;border:1px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.04);color:#f5f3f7;font-size:12px;cursor:pointer;font-family:inherit">수정</button>
+              <button onClick="{{item.onDelete}}" style="padding:6px 11px;border-radius:8px;border:1px solid rgba(229,72,107,0.3);background:rgba(229,72,107,0.08);color:#E5486B;font-size:12px;cursor:pointer;font-family:inherit">삭제</button>
+            </div>
+          </div>
+        </sc-for>
+        <sc-if value="{{noAdminItems}}" hint-placeholder-val="{{false}}">
+          <div style="padding:60px 0;text-align:center;font-size:13px;color:rgba(245,243,247,0.35)">조건에 맞는 콘텐츠가 없어요.</div>
+        </sc-if>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{isCategories}}" hint-placeholder-val="{{false}}">
+      <div style="font-size:24px;font-weight:800">카테고리 관리</div>
+      <div style="display:flex;gap:8px">
+        <input value="{{newCategoryName}}" onChange="{{setNewCategoryName}}" placeholder="새 카테고리 이름" style="height:42px;padding:0 14px;border-radius:10px;border:1px solid rgba(255,255,255,0.12);background:#141219;color:#f5f3f7;font-size:13px;font-family:inherit;outline:none;width:240px">
+        <button onClick="{{addCategory}}" style="padding:0 18px;height:42px;border-radius:10px;border:none;background:linear-gradient(135deg,#8A6EEA,#6F4FD1);color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">+ 추가</button>
+      </div>
+      <div style="padding:12px 16px;border-radius:10px;background:rgba(155,126,232,0.08);border:1px solid rgba(155,126,232,0.18);font-size:12px;color:rgba(245,243,247,0.65);line-height:1.6">참고: "착즙"은 카테고리가 아니라 콘텐츠별 태그예요. 콘텐츠 관리의 추가·수정 화면에서 "착즙 작품" 토글로 켜고 끌 수 있어요. 여기에는 형식(영화·드라마·웹툰 등)만 추가하세요.</div>
+      <sc-if value="{{hasCategoryError}}" hint-placeholder-val="{{false}}">
+        <div style="font-size:13px;color:#E5486B">{{categoryError}}</div>
+      </sc-if>
+      <div style="background:#100f14;border:1px solid rgba(255,255,255,0.08);border-radius:14px;overflow:hidden">
+        <sc-for list="{{categoryRows}}" as="row" hint-placeholder-count="7">
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid rgba(255,255,255,0.06)">
+            <sc-if value="{{row.isRenaming}}" hint-placeholder-val="{{false}}">
+              <input value="{{row.renameValue}}" onChange="{{row.onRenameChange}}" style="height:36px;padding:0 12px;border-radius:8px;border:1px solid rgba(155,126,232,0.4);background:#141219;color:#f5f3f7;font-size:13px;font-family:inherit;outline:none;width:200px">
+            </sc-if>
+            <sc-if value="{{row.isNotRenaming}}" hint-placeholder-val="{{true}}">
+              <div style="display:flex;align-items:center;gap:10px">
+                <span style="font-size:14px;font-weight:700">{{row.name}}</span>
+                <span style="font-size:12px;color:rgba(245,243,247,0.4)">콘텐츠 {{row.count}}개</span>
+              </div>
+            </sc-if>
+            <sc-if value="{{row.isRenaming}}" hint-placeholder-val="{{false}}">
+              <div style="display:flex;gap:6px">
+                <button onClick="{{row.onRenameConfirm}}" style="padding:6px 12px;border-radius:8px;border:none;background:linear-gradient(135deg,#8A6EEA,#6F4FD1);color:#fff;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">확인</button>
+                <button onClick="{{row.onRenameCancel}}" style="padding:6px 12px;border-radius:8px;border:1px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.04);color:#f5f3f7;font-size:12px;cursor:pointer;font-family:inherit">취소</button>
+              </div>
+            </sc-if>
+            <sc-if value="{{row.isNotRenaming}}" hint-placeholder-val="{{true}}">
+              <div style="display:flex;gap:6px">
+                <button onClick="{{row.onRenameStart}}" style="padding:6px 12px;border-radius:8px;border:1px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.04);color:#f5f3f7;font-size:12px;cursor:pointer;font-family:inherit">이름변경</button>
+                <button onClick="{{row.onDelete}}" style="padding:6px 12px;border-radius:8px;border:1px solid rgba(229,72,107,0.3);background:rgba(229,72,107,0.08);color:#E5486B;font-size:12px;cursor:pointer;font-family:inherit">삭제</button>
+              </div>
+            </sc-if>
+          </div>
+        </sc-for>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{isSubmissions}}" hint-placeholder-val="{{false}}">
+      <div style="font-size:24px;font-weight:800">제보 검토</div>
+      <div style="display:flex;gap:8px">
+        <sc-for list="{{submissionFilterChips}}" as="chip" hint-placeholder-count="4">
+          <button onClick="{{chip.onClick}}" style="{{chip.style}}">{{chip.label}}</button>
+        </sc-for>
+      </div>
+      <div style="background:#100f14;border:1px solid rgba(255,255,255,0.08);border-radius:14px;overflow:hidden">
+        <sc-for list="{{filteredSubmissions}}" as="sub" hint-placeholder-count="3">
+          <div style="display:flex;flex-direction:column;gap:8px;padding:16px 18px;border-bottom:1px solid rgba(255,255,255,0.06)">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+              <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+                <span style="font-size:14px;font-weight:700">{{sub.title}}</span>
+                <span style="font-size:11px;font-weight:600;color:rgba(245,243,247,0.55);background:rgba(255,255,255,0.06);border-radius:20px;padding:3px 9px">{{sub.category}} · {{sub.country}}</span>
+                <sc-if value="{{sub.juice}}" hint-placeholder-val="{{false}}">
+                  <span style="font-size:10px;font-weight:700;color:#fff;background:linear-gradient(135deg,#E5486B,#C93356);border-radius:20px;padding:3px 8px">착즙</span>
+                </sc-if>
+                <span style="{{sub.statusStyle}}">{{sub.statusText}}</span>
+              </div>
+              <sc-if value="{{sub.isPending}}" hint-placeholder-val="{{true}}">
+                <div style="display:flex;gap:6px">
+                  <button onClick="{{sub.onReview}}" style="padding:7px 14px;border-radius:8px;border:none;background:linear-gradient(135deg,#8A6EEA,#6F4FD1);color:#fff;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">검토 · 발행</button>
+                  <button onClick="{{sub.onReject}}" style="padding:7px 14px;border-radius:8px;border:1px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.04);color:#f5f3f7;font-size:12px;cursor:pointer;font-family:inherit">반려</button>
+                </div>
+              </sc-if>
+            </div>
+            <div style="font-size:13px;color:rgba(245,243,247,0.55)">{{sub.noteText}}</div>
+            <div style="display:flex;gap:16px;font-size:12px;color:rgba(245,243,247,0.4);flex-wrap:wrap">
+              <a href="{{sub.url}}" target="_blank" rel="noreferrer">{{sub.url}}</a>
+              <span>연락처: {{sub.contactText}}</span>
+            </div>
+          </div>
+        </sc-for>
+        <sc-if value="{{noSubmissions}}" hint-placeholder-val="{{false}}">
+          <div style="padding:60px 0;text-align:center;font-size:13px;color:rgba(245,243,247,0.35)">해당하는 제보가 없어요.</div>
+        </sc-if>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{isComments}}" hint-placeholder-val="{{false}}">
+      <div style="font-size:24px;font-weight:800">한줄평 검수</div>
+      <div style="display:flex;gap:8px">
+        <sc-for list="{{commentFilterChips}}" as="chip" hint-placeholder-count="3">
+          <button onClick="{{chip.onClick}}" style="{{chip.style}}">{{chip.label}}</button>
+        </sc-for>
+      </div>
+      <div style="background:#100f14;border:1px solid rgba(255,255,255,0.08);border-radius:14px;overflow:hidden">
+        <sc-for list="{{filteredComments}}" as="c" hint-placeholder-count="4">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 18px;border-bottom:1px solid rgba(255,255,255,0.06)">
+            <div style="display:flex;flex-direction:column;gap:4px;min-width:0">
+              <span onClick="{{c.onGoToContent}}" style="font-size:11px;color:#9B7EE8;cursor:pointer;width:fit-content">{{c.itemTitle}} · 사이트에서 보기 ↗</span>
+              <span style="font-size:14px;color:#f5f3f7;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{c.text}}</span>
+              <span style="font-size:11px;color:rgba(245,243,247,0.3)">{{c.timeText}}</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;flex:none">
+              <span style="{{c.statusStyle}}">{{c.statusText}}</span>
+              <button onClick="{{c.onToggle}}" style="padding:6px 11px;border-radius:8px;border:1px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.04);color:#f5f3f7;font-size:12px;cursor:pointer;font-family:inherit;white-space:nowrap">{{c.toggleLabel}}</button>
+              <button onClick="{{c.onDelete}}" style="padding:6px 11px;border-radius:8px;border:1px solid rgba(229,72,107,0.3);background:rgba(229,72,107,0.08);color:#E5486B;font-size:12px;cursor:pointer;font-family:inherit">삭제</button>
+            </div>
+          </div>
+        </sc-for>
+        <sc-if value="{{noComments}}" hint-placeholder-val="{{false}}">
+          <div style="padding:60px 0;text-align:center;font-size:13px;color:rgba(245,243,247,0.35)">해당하는 한줄평이 없어요.</div>
+        </sc-if>
+      </div>
+    </sc-if>
+
+  </div>
+
+  <sc-if value="{{contentModalOpen}}" hint-placeholder-val="{{false}}">
+    <div style="position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:100;display:flex;align-items:center;justify-content:center;padding:40px" onClick="{{closeContentModal}}">
+      <div style="background:#15131c;border:1px solid rgba(255,255,255,0.1);border-radius:18px;max-width:620px;width:100%;max-height:88vh;overflow-y:auto;padding:30px;display:flex;flex-direction:column;gap:18px" onClick="{{stopPropagation}}">
+        <div style="font-size:20px;font-weight:800">{{draftModalTitle}}</div>
+
+        <sc-if value="{{draftIsFromSubmission}}" hint-placeholder-val="{{false}}">
+          <div style="padding:12px 14px;border-radius:10px;background:rgba(155,126,232,0.08);border:1px solid rgba(155,126,232,0.2);display:flex;flex-direction:column;gap:6px">
+            <div style="font-size:11px;font-weight:700;color:#9B7EE8">제보 원본 (참고용)</div>
+            <div style="font-size:12px;color:rgba(245,243,247,0.6);word-break:break-all">링크: {{draft.sourceUrl}}</div>
+            <div style="font-size:12px;color:rgba(245,243,247,0.6)">연락처: {{draftSourceContactText}}</div>
+          </div>
+        </sc-if>
+
+        <div style="display:flex;flex-direction:column;gap:7px">
+          <label style="font-size:12px;font-weight:600;color:rgba(245,243,247,0.7)">제목</label>
+          <input value="{{draft.title}}" onChange="{{setDraftTitle}}" style="height:42px;padding:0 13px;border-radius:9px;border:1px solid rgba(255,255,255,0.12);background:#141219;color:#f5f3f7;font-size:13px;font-family:inherit;outline:none">
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+          <div style="display:flex;flex-direction:column;gap:7px">
+            <label style="font-size:12px;font-weight:600;color:rgba(245,243,247,0.7)">카테고리</label>
+            <select value="{{draft.category}}" onChange="{{setDraftCategory}}" style="height:42px;padding:0 13px;border-radius:9px;border:1px solid rgba(255,255,255,0.12);background:#141219;color:#f5f3f7;font-size:13px;font-family:inherit;outline:none">
+              <sc-for list="{{categories}}" as="cat" hint-placeholder-count="7">
+                <option value="{{cat}}">{{cat}}</option>
+              </sc-for>
+            </select>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:7px">
+            <label style="font-size:12px;font-weight:600;color:rgba(245,243,247,0.7)">연도</label>
+            <input value="{{draft.year}}" onChange="{{setDraftYear}}" style="height:42px;padding:0 13px;border-radius:9px;border:1px solid rgba(255,255,255,0.12);background:#141219;color:#f5f3f7;font-size:13px;font-family:inherit;outline:none">
+          </div>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:7px">
+          <label style="font-size:12px;font-weight:600;color:rgba(245,243,247,0.7)">국가</label>
+          <div style="display:flex;gap:8px">
+            <sc-for list="{{draftCountryChips}}" as="chip" hint-placeholder-count="2">
+              <button onClick="{{chip.onClick}}" style="{{chip.style}}">{{chip.label}}</button>
+            </sc-for>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:7px">
+          <label style="font-size:12px;font-weight:600;color:rgba(245,243,247,0.7)">국가 상세 (예: 한국, 일본, 미국)</label>
+          <input value="{{draft.countryDetail}}" onChange="{{setDraftCountryDetail}}" style="height:42px;padding:0 13px;border-radius:9px;border:1px solid rgba(255,255,255,0.12);background:#141219;color:#f5f3f7;font-size:13px;font-family:inherit;outline:none">
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:7px">
+          <label style="font-size:12px;font-weight:600;color:rgba(245,243,247,0.7)">제작자 구분</label>
+          <div style="display:flex;gap:8px">
+            <sc-for list="{{draftCreatorLabelChips}}" as="chip" hint-placeholder-count="3">
+              <button onClick="{{chip.onClick}}" style="{{chip.style}}">{{chip.label}}</button>
+            </sc-for>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:7px">
+          <label style="font-size:12px;font-weight:600;color:rgba(245,243,247,0.7)">제작자 이름</label>
+          <input value="{{draft.creatorName}}" onChange="{{setDraftCreatorName}}" style="height:42px;padding:0 13px;border-radius:9px;border:1px solid rgba(255,255,255,0.12);background:#141219;color:#f5f3f7;font-size:13px;font-family:inherit;outline:none">
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:7px">
+          <label style="font-size:12px;font-weight:600;color:rgba(245,243,247,0.7)">출연 · 주인공 (쉼표로 구분)</label>
+          <input value="{{draft.leadsInput}}" onChange="{{setDraftLeadsInput}}" placeholder="예: 김민희, 김태리" style="height:42px;padding:0 13px;border-radius:9px;border:1px solid rgba(255,255,255,0.12);background:#141219;color:#f5f3f7;font-size:13px;font-family:inherit;outline:none">
+        </div>
+        <div style="display:flex;flex-direction:column;gap:7px">
+          <label style="font-size:12px;font-weight:600;color:rgba(245,243,247,0.7)">태그 (쉼표로 구분)</label>
+          <input value="{{draft.tagsInput}}" onChange="{{setDraftTagsInput}}" placeholder="예: 로맨스, 시대극" style="height:42px;padding:0 13px;border-radius:9px;border:1px solid rgba(255,255,255,0.12);background:#141219;color:#f5f3f7;font-size:13px;font-family:inherit;outline:none">
+        </div>
+
+        <div style="display:flex;gap:10px">
+          <button onClick="{{toggleDraftJuice}}" style="{{draftJuiceStyle}}">착즙 작품</button>
+          <button onClick="{{toggleDraftPoster}}" style="{{draftPosterStyle}}">포스터 이미지 사용</button>
+        </div>
+
+        <sc-if value="{{draftHasPoster}}" hint-placeholder-val="{{false}}">
+          <div style="display:flex;flex-direction:column;gap:7px">
+            <label style="font-size:12px;font-weight:600;color:rgba(245,243,247,0.7)">카드 썸네일 (사이트에 바로 반영돼요)</label>
+            <div style="width:160px;height:120px;border-radius:10px;overflow:hidden;background:#1c1a24;position:relative">
+              <image-slot id="poster-{{draft.id}}" shape="rect" placeholder="썸네일 업로드" style="position:absolute;inset:0;width:100%;height:100%"></image-slot>
+            </div>
+          </div>
+        </sc-if>
+
+        <div style="display:flex;flex-direction:column;gap:7px">
+          <label style="font-size:12px;font-weight:600;color:rgba(245,243,247,0.7)">줄거리</label>
+          <textarea value="{{draft.synopsis}}" onChange="{{setDraftSynopsis}}" style="height:90px;padding:12px 13px;border-radius:9px;border:1px solid rgba(255,255,255,0.12);background:#141219;color:#f5f3f7;font-size:13px;font-family:inherit;outline:none;resize:none"></textarea>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <label style="font-size:12px;font-weight:600;color:rgba(245,243,247,0.7)">시청·감상 가능한 곳</label>
+          <sc-for list="{{draftPlatformRows}}" as="row" hint-placeholder-count="2">
+            <div style="display:flex;gap:8px;align-items:center">
+              <input value="{{row.name}}" onChange="{{row.onNameChange}}" placeholder="플랫폼 이름 (예: 왓챠)" style="width:150px;flex:none;height:40px;padding:0 12px;border-radius:8px;border:1px solid rgba(255,255,255,0.12);background:#141219;color:#f5f3f7;font-size:13px;font-family:inherit;outline:none">
+              <input value="{{row.url}}" onChange="{{row.onUrlChange}}" placeholder="https:// 실제 링크" style="flex:1;height:40px;padding:0 12px;border-radius:8px;border:1px solid rgba(255,255,255,0.12);background:#141219;color:#f5f3f7;font-size:13px;font-family:inherit;outline:none">
+              <button onClick="{{row.onToggleType}}" style="{{row.typeStyle}}">{{row.type}}</button>
+              <button onClick="{{row.onRemove}}" style="width:36px;height:36px;border-radius:8px;border:1px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.04);color:rgba(245,243,247,0.6);cursor:pointer;font-size:14px">×</button>
+            </div>
+          </sc-for>
+          <button onClick="{{addPlatformRow}}" style="align-self:flex-start;padding:7px 14px;border-radius:8px;border:1px dashed rgba(255,255,255,0.2);background:transparent;color:rgba(245,243,247,0.6);font-size:12px;cursor:pointer;font-family:inherit">+ 링크 추가</button>
+        </div>
+
+        <sc-if value="{{hasDraftError}}" hint-placeholder-val="{{false}}">
+          <div style="font-size:13px;color:#E5486B">{{draftError}}</div>
+        </sc-if>
+
+        <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:6px">
+          <button onClick="{{closeContentModal}}" style="padding:11px 20px;border-radius:10px;border:1px solid rgba(255,255,255,0.16);background:rgba(255,255,255,0.05);color:#f5f3f7;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">취소</button>
+          <button onClick="{{saveContent}}" style="padding:11px 22px;border-radius:10px;border:none;background:linear-gradient(135deg,#8A6EEA,#6F4FD1);color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">{{draftSaveLabel}}</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const STORE_KEY = 'drgl_store_v1';
+const DEFAULT_CATEGORIES = ['영화','드라마','웹툰','웹소설','소설','애니','만화'];
+const DEFAULT_ITEMS = [
+    { id:1, title:'아가씨', category:'영화', country:'국내', countryDetail:'한국', year:2016, creatorLabel:'감독', creatorName:'박찬욱', leads:['김민희','김태리'], tags:['스릴러','로맨스','시대극'], juice:false, synopsis:'1930년대 일제강점기, 상속녀 히데코의 새 하녀로 들어온 숙희. 신뢰와 욕망이 뒤엉킨 두 여자의 관계가 예상 밖의 반전으로 이어지는 이야기.', platforms:[{name:'왓챠',type:'유료'},{name:'웨이브',type:'유료'},{name:'넷플릭스',type:'유료'}] },
+    { id:2, title:'캐롤', category:'영화', country:'해외', countryDetail:'미국', year:2015, creatorLabel:'감독', creatorName:'토드 헤인즈', leads:['케이트 블란쳇','루니 마라'], tags:['로맨스','드라마'], juice:false, synopsis:'1950년대 뉴욕, 백화점 점원 테레즈와 상류층 여성 캐롤. 서로에게 이끌리며 벌어지는 조용하고 강렬한 사랑 이야기.', platforms:[{name:'왓챠',type:'유료'},{name:'디즈니플러스',type:'유료'}] },
+    { id:3, title:'오렌지만이 과일은 아니다', category:'소설', country:'해외', countryDetail:'영국', year:1985, creatorLabel:'작가', creatorName:'지넷 윈터슨', leads:['잔넷'], tags:['성장','자전','문학'], juice:false, synopsis:'엄격한 종교 공동체에서 자란 소녀가 자기 자신을 발견해가는 과정을 그린 반자전적 성장 소설.', platforms:[{name:'리디북스',type:'유료'},{name:'교보문고 전자책',type:'유료'}] },
+    { id:4, title:'밤의 화원', category:'드라마', country:'국내', countryDetail:'한국', year:2024, creatorLabel:'연출', creatorName:'정하은', leads:['이수아','진세은'], tags:['오피스','미스터리'], juice:true, poster:false, synopsis:'경쟁 관계였던 두 팀장이 사내 비리 사건을 함께 파헤치며 예상치 못한 감정을 마주하는 오피스 미스터리.', platforms:[{name:'티빙',type:'유료'},{name:'웨이브',type:'유료'}] },
+    { id:5, title:'너와 나의 계절', category:'드라마', country:'해외', countryDetail:'일본', year:2023, creatorLabel:'연출', creatorName:'사토 유이', leads:['유나','미즈키'], tags:['청춘','학원'], juice:false, synopsis:'전학생 유나와 반장 미즈키. 마지막 학년, 짧고 선명한 한 시절을 함께 통과하는 두 사람의 이야기.', platforms:[{name:'왓챠',type:'유료'},{name:'라프텔',type:'유료'}] },
+    { id:6, title:'여름, 그녀와', category:'웹툰', country:'국내', countryDetail:'한국', year:2022, creatorLabel:'작가', creatorName:'하이재', leads:['서하늘','강초록'], tags:['일상','힐링'], juice:false, poster:false, synopsis:'바닷가 마을에 내려온 사진작가와 오래된 서점을 지키는 로컬 청년의 잔잔한 여름 일상.', platforms:[{name:'네이버웹툰',type:'무료'},{name:'네이버시리즈',type:'유료'}] },
+    { id:7, title:'붉은 실', category:'웹소설', country:'국내', countryDetail:'한국', year:2023, creatorLabel:'작가', creatorName:'주안', leads:['라이엘라','세라핀'], tags:['로맨스판타지'], juice:false, poster:false, synopsis:'서로 다른 왕국의 후계자로 태어난 두 사람. 정략적으로 얽힌 운명이 진짜 마음으로 바뀌어가는 로맨스 판타지.', platforms:[{name:'카카오페이지',type:'유료'},{name:'리디북스',type:'유료'}] },
+    { id:8, title:'있잖아, 그날의 우리', category:'웹툰', country:'국내', countryDetail:'한국', year:2021, creatorLabel:'작가', creatorName:'모카린', leads:['윤소이','하다은'], tags:['학원'], juice:true, synopsis:'졸업을 앞둔 단짝 두 명. 우정인 줄로만 알았던 감정의 정체를 각자의 속도로 깨달아가는 학원물.', platforms:[{name:'네이버웹툰',type:'무료'}] },
+    { id:9, title:'회귀한 대공님이 자꾸 저를 좋아합니다', category:'웹소설', country:'국내', countryDetail:'한국', year:2024, creatorLabel:'작가', creatorName:'나비잠', leads:['하르젠','이자벨'], tags:['로맨스판타지','회귀물'], juice:true, synopsis:'죽음 직전 과거로 돌아온 대공. 이번 생에는 자신을 구해준 은인, 그 여기사만을 지키기로 결심하는데.', platforms:[{name:'카카오페이지',type:'유료'},{name:'문피아',type:'유료'}] },
+    { id:10, title:'물의 결', category:'소설', country:'국내', countryDetail:'한국', year:2020, creatorLabel:'작가', creatorName:'한소림', leads:['윤강','문서희'], tags:['문학','성장'], juice:false, synopsis:'강가 마을에서 나고 자란 두 여자의 30년. 떠남과 돌아옴을 반복하며 이어지는 관계를 담은 장편소설.', platforms:[{name:'교보문고',type:'유료'},{name:'예스24 전자책',type:'유료'}] },
+    { id:11, title:'여름의 파랑', category:'애니', country:'해외', countryDetail:'일본', year:2019, creatorLabel:'감독', creatorName:'미야모토 케이', leads:['하나','소라'], tags:['청춘','드라마'], juice:false, synopsis:'전학과 함께 시작된 만남. 두 소녀가 나눈 한 시절의 감정을 섬세한 그림체로 그린 청춘 애니메이션.', platforms:[{name:'라프텔',type:'유료'},{name:'넷플릭스',type:'유료'}] },
+    { id:12, title:'부실장님과 나', category:'드라마', country:'국내', countryDetail:'한국', year:2023, creatorLabel:'연출', creatorName:'김도윤', leads:['오하람','진세은'], tags:['오피스','코미디'], juice:true, synopsis:'까칠한 부실장과 신입사원. 매일 부딪히던 두 사람 사이에 묘한 기류가 흐르기 시작하는 오피스 코미디.', platforms:[{name:'티빙',type:'유료'}] },
+    { id:13, title:'리본과 나이프', category:'만화', country:'해외', countryDetail:'일본', year:2018, creatorLabel:'작가', creatorName:'아오이 렌', leads:['레이','유즈하'], tags:['액션','드라마'], juice:false, synopsis:'뒷골목 해결사로 살아가는 두 여자. 서로를 지키기 위해 싸우며 신뢰를 쌓아가는 액션 드라마.', platforms:[{name:'리디북스',type:'유료'}] },
+    { id:14, title:'스물, 다시 봄', category:'영화', country:'국내', countryDetail:'한국', year:2022, creatorLabel:'감독', creatorName:'윤지수', leads:['한지우','오세인'], tags:['청춘','로맨스'], juice:false, synopsis:'대학 신입생 시절 서로를 스쳐간 두 사람이 10년 만에 다시 마주치며 시작되는 이야기.', platforms:[{name:'왓챠',type:'유료'}] },
+    { id:15, title:'파란 리본', category:'웹툰', country:'해외', countryDetail:'일본', year:2022, creatorLabel:'작가', creatorName:'유키노', leads:['미유','하즈키'], tags:['학원','판타지'], juice:false, synopsis:'마법 학교의 낙제생과 수석. 함께 치르는 시험을 통해 서로를 알아가는 학원 판타지.', platforms:[{name:'네이버웹툰',type:'무료'}] },
+    { id:16, title:'계약 연애의 방식', category:'웹소설', country:'국내', countryDetail:'한국', year:2023, creatorLabel:'작가', creatorName:'별밤지기', leads:['서지안','한이레'], tags:['로맨스'], juice:false, poster:false, synopsis:'가문의 압박을 피하려 계약 연애를 시작한 두 사람. 계약이 진심으로 바뀌어가는 과정을 그린 로맨스.', platforms:[{name:'카카오페이지',type:'유료'}] },
+    { id:17, title:'마지막 여름학기', category:'드라마', country:'해외', countryDetail:'태국', year:2022, creatorLabel:'연출', creatorName:'나타야 촘차이', leads:['핌','난'], tags:['청춘'], juice:false, synopsis:'교환학생으로 만난 두 사람의 한 학기. 헤어짐을 앞두고서야 선명해지는 마음을 그린 청춘 드라마.', platforms:[{name:'왓챠',type:'유료'}] },
+    { id:18, title:'우리만 아는 계절', category:'애니', country:'국내', countryDetail:'한국', year:2023, creatorLabel:'감독', creatorName:'배지훈', leads:['하나','바다'], tags:['힐링'], juice:false, synopsis:'작은 섬마을로 전학 온 소녀와 그 섬을 지키는 등대지기 딸. 계절이 바뀌며 가까워지는 두 사람.', platforms:[{name:'라프텔',type:'유료'}] }
+];
+
+const CHIP_BASE = "padding:8px 15px;border-radius:20px;font-size:12px;cursor:pointer;font-family:inherit;border:1px solid ";
+const CHIP_ON = CHIP_BASE + "transparent;background:linear-gradient(135deg,#8A6EEA,#6F4FD1);color:#fff;font-weight:700";
+const CHIP_OFF = CHIP_BASE + "rgba(255,255,255,0.12);background:rgba(255,255,255,0.04);color:rgba(245,243,247,0.7)";
+const NAV_ACTIVE = "display:flex;align-items:center;justify-content:space-between;padding:11px 14px;border-radius:10px;cursor:pointer;font-size:14px;font-weight:700;color:#fff;background:linear-gradient(135deg,#8A6EEA,#6F4FD1)";
+const NAV_INACTIVE = "display:flex;align-items:center;justify-content:space-between;padding:11px 14px;border-radius:10px;cursor:pointer;font-size:14px;font-weight:500;color:rgba(245,243,247,0.65)";
+const STATUS_PENDING = "font-size:10px;font-weight:700;color:#E5486B;background:rgba(229,72,107,0.14);border-radius:20px;padding:3px 9px";
+const STATUS_APPROVED = "font-size:10px;font-weight:700;color:#9B7EE8;background:rgba(155,126,232,0.14);border-radius:20px;padding:3px 9px";
+const STATUS_REJECTED = "font-size:10px;font-weight:600;color:rgba(245,243,247,0.4);background:rgba(255,255,255,0.06);border-radius:20px;padding:3px 9px";
+const STATUS_VISIBLE = "font-size:10px;font-weight:700;color:#9B7EE8;background:rgba(155,126,232,0.14);border-radius:20px;padding:3px 9px;white-space:nowrap";
+const STATUS_HIDDEN = "font-size:10px;font-weight:600;color:rgba(245,243,247,0.4);background:rgba(255,255,255,0.06);border-radius:20px;padding:3px 9px;white-space:nowrap";
+const DEMO_COMMENTS = [
+  { id:1001, itemId:1, text:'20년대 감성 연출이 진짜 예쁘다', status:'visible', createdAt: Date.now() - 1000*60*60*48 },
+  { id:1002, itemId:1, text:'결말 반전 소름', status:'visible', createdAt: Date.now() - 1000*60*60*24 },
+  { id:1003, itemId:5, text:'이 드라마 학생 때 봤어야 했는데ㅠㅠ', status:'visible', createdAt: Date.now() - 1000*60*60*5 },
+  { id:1004, itemId:9, text:'이세계 로판 국룰 전개인데 은근 중독성 있음 (결말 스포 있음)', status:'hidden', createdAt: Date.now() - 1000*60*60*10 },
+  { id:1005, itemId:12, text:'코미디 타이밍 미쳤다 ㅋㅋㅋ', status:'visible', createdAt: Date.now() - 1000*60*30 }
+];
+
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    const saved = this.loadStore();
+    const seed = { items: DEFAULT_ITEMS, categories: DEFAULT_CATEGORIES, submissions: [], comments: DEMO_COMMENTS };
+    const store = saved || seed;
+    if (!saved) { try { localStorage.setItem(STORE_KEY, JSON.stringify(seed)); } catch (e) {} }
+    else if (!store.comments || store.comments.length === 0) {
+      store.comments = DEMO_COMMENTS;
+      try { localStorage.setItem(STORE_KEY, JSON.stringify(store)); } catch (e) {}
+    }
+    this.state = {
+      screen: 'dashboard',
+      items: store.items, categories: store.categories, submissions: store.submissions, comments: store.comments,
+      contentSearch: '', contentFilter: '전체', contentJuiceOnly: false,
+      draft: null, draftError: '',
+      newCategoryName: '', categoryError: '', renameTarget: null, renameValue: '',
+      submissionFilter: '대기중',
+      commentFilter: '전체'
+    };
+  }
+
+  loadStore() {
+    try {
+      const raw = localStorage.getItem(STORE_KEY);
+      if (!raw) return null;
+      const parsed = JSON.parse(raw);
+      if (!Array.isArray(parsed.items) || !Array.isArray(parsed.categories)) return null;
+      if (!Array.isArray(parsed.submissions)) parsed.submissions = [];
+      if (!Array.isArray(parsed.comments)) parsed.comments = [];
+      return parsed;
+    } catch (e) { return null; }
+  }
+  persist = (partial) => {
+    this.setState(s => {
+      const next = { ...s, ...partial };
+      try { localStorage.setItem(STORE_KEY, JSON.stringify({ items:next.items, categories:next.categories, submissions:next.submissions, comments:next.comments })); } catch (e) {}
+      return partial;
+    });
+  };
+  componentDidMount() {
+    this._onStorage = (e) => {
+      if (e.key !== STORE_KEY || !e.newValue) return;
+      try {
+        const store = JSON.parse(e.newValue);
+        this.setState({ items:store.items, categories:store.categories, submissions:store.submissions, comments:store.comments });
+      } catch (err) {}
+    };
+    window.addEventListener('storage', this._onStorage);
+  }
+  componentWillUnmount() {
+    window.removeEventListener('storage', this._onStorage);
+  }
+
+  goDashboard = () => this.setState({ screen:'dashboard' });
+  goContent = () => this.setState({ screen:'content' });
+  goCategories = () => this.setState({ screen:'categories' });
+  goSubmissions = () => this.setState({ screen:'submissions' });
+  goComments = () => this.setState({ screen:'comments' });
+  stopPropagation = (e) => e.stopPropagation();
+
+  setContentSearch = (e) => this.setState({ contentSearch:e.target.value });
+  setContentFilter = (c) => this.setState({ contentFilter:c });
+  toggleContentJuiceOnly = () => this.setState(s => ({ contentJuiceOnly:!s.contentJuiceOnly }));
+  formatDateTime = (ts) => {
+    const d = new Date(ts);
+    const pad = (n) => String(n).padStart(2,'0');
+    return d.getFullYear()+'.'+pad(d.getMonth()+1)+'.'+pad(d.getDate())+' '+pad(d.getHours())+':'+pad(d.getMinutes());
+  };
+  goToContentFromComment = (itemId) => {
+    window.open('Dr GL.dc.html?detail=' + itemId, '_blank');
+  };
+
+  openAddContent = () => this.setState({
+    draft: { id:null, title:'', category:this.state.categories[0]||'', country:'국내', countryDetail:'한국', year:new Date().getFullYear(), creatorLabel:'감독', creatorName:'', leadsInput:'', tagsInput:'', juice:false, poster:true, synopsis:'', platforms:[{name:'',type:'유료',url:''}] },
+    draftError:''
+  });
+  openEditContent = (item) => this.setState({
+    draft: { id:item.id, title:item.title, category:item.category, country:item.country, countryDetail:item.countryDetail, year:item.year, creatorLabel:item.creatorLabel, creatorName:item.creatorName, leadsInput:(item.leads||[]).join(', '), tagsInput:(item.tags||[]).join(', '), juice:!!item.juice, poster:item.poster!==false, synopsis:item.synopsis||'', platforms:(item.platforms||[]).map(p=>({name:p.name, type:p.type, url:p.url||''})) },
+    draftError:''
+  });
+  closeContentModal = () => this.setState({ draft:null, draftError:'' });
+  setDraftTitle = (e) => this.setState(s => ({ draft:{ ...s.draft, title:e.target.value } }));
+  setDraftCategory = (e) => this.setState(s => ({ draft:{ ...s.draft, category:e.target.value } }));
+  setDraftYear = (e) => this.setState(s => ({ draft:{ ...s.draft, year:e.target.value } }));
+  setDraftCountryDetail = (e) => this.setState(s => ({ draft:{ ...s.draft, countryDetail:e.target.value } }));
+  setDraftCreatorName = (e) => this.setState(s => ({ draft:{ ...s.draft, creatorName:e.target.value } }));
+  setDraftLeadsInput = (e) => this.setState(s => ({ draft:{ ...s.draft, leadsInput:e.target.value } }));
+  setDraftTagsInput = (e) => this.setState(s => ({ draft:{ ...s.draft, tagsInput:e.target.value } }));
+  setDraftSynopsis = (e) => this.setState(s => ({ draft:{ ...s.draft, synopsis:e.target.value } }));
+  setDraftCountry = (c) => this.setState(s => ({ draft:{ ...s.draft, country:c } }));
+  setDraftCreatorLabel = (c) => this.setState(s => ({ draft:{ ...s.draft, creatorLabel:c } }));
+  toggleDraftJuice = () => this.setState(s => ({ draft:{ ...s.draft, juice:!s.draft.juice } }));
+  toggleDraftPoster = () => this.setState(s => ({ draft:{ ...s.draft, poster:!s.draft.poster } }));
+  updatePlatformName = (idx, val) => this.setState(s => ({ draft:{ ...s.draft, platforms:s.draft.platforms.map((p,i)=> i===idx?{...p,name:val}:p) } }));
+  updatePlatformUrl = (idx, val) => this.setState(s => ({ draft:{ ...s.draft, platforms:s.draft.platforms.map((p,i)=> i===idx?{...p,url:val}:p) } }));
+  togglePlatformType = (idx) => this.setState(s => ({ draft:{ ...s.draft, platforms:s.draft.platforms.map((p,i)=> i===idx?{...p,type:p.type==='유료'?'무료':'유료'}:p) } }));
+  removePlatformRow = (idx) => this.setState(s => ({ draft:{ ...s.draft, platforms:s.draft.platforms.filter((p,i)=>i!==idx) } }));
+  addPlatformRow = () => this.setState(s => ({ draft:{ ...s.draft, platforms:[...s.draft.platforms, {name:'',type:'유료'}] } }));
+
+  saveContent = () => {
+    const d = this.state.draft;
+    if (!d.title.trim() || !d.category) { this.setState({ draftError:'제목과 카테고리는 필수예요.' }); return; }
+    const leads = d.leadsInput.split(',').map(x=>x.trim()).filter(Boolean);
+    const tags = d.tagsInput.split(',').map(x=>x.trim()).filter(Boolean);
+    const platforms = d.platforms.filter(p=>p.name.trim()).map(p=>({ name:p.name.trim(), type:p.type, url:(p.url||'').trim() }));
+    const items = this.state.items;
+    let updatedItems;
+    if (d.id == null) {
+      const newId = items.reduce((m,i)=>Math.max(m,i.id),0)+1;
+      const newItem = { id:newId, title:d.title.trim(), category:d.category, country:d.country, countryDetail:d.countryDetail, year:Number(d.year)||new Date().getFullYear(), creatorLabel:d.creatorLabel, creatorName:d.creatorName, leads, tags, juice:d.juice, poster:d.poster, synopsis:d.synopsis, platforms };
+      updatedItems = [...items, newItem];
+    } else {
+      updatedItems = items.map(i => i.id===d.id ? { ...i, title:d.title.trim(), category:d.category, country:d.country, countryDetail:d.countryDetail, year:Number(d.year)||i.year, creatorLabel:d.creatorLabel, creatorName:d.creatorName, leads, tags, juice:d.juice, poster:d.poster, synopsis:d.synopsis, platforms } : i);
+    }
+    const patch = { items: updatedItems };
+    if (d.sourceSubmissionId != null) {
+      patch.submissions = this.state.submissions.map(s2 => s2.id===d.sourceSubmissionId ? { ...s2, status:'approved' } : s2);
+    }
+    this.persist(patch);
+    this.setState({ draft:null, draftError:'' });
+  };
+  deleteContentItem = (id) => {
+    if (window.confirm('이 콘텐츠를 삭제할까요? 되돌릴 수 없어요.')) {
+      this.persist({ items:this.state.items.filter(i=>i.id!==id) });
+    }
+  };
+
+  setNewCategoryName = (e) => this.setState({ newCategoryName:e.target.value });
+  addCategory = () => {
+    const name = this.state.newCategoryName.trim();
+    if (!name) return;
+    if (this.state.categories.includes(name)) { this.setState({ categoryError:'이미 있는 카테고리예요.' }); return; }
+    this.persist({ categories:[...this.state.categories, name] });
+    this.setState({ newCategoryName:'', categoryError:'' });
+  };
+  startRenameCategory = (name) => this.setState({ renameTarget:name, renameValue:name, categoryError:'' });
+  setRenameValue = (e) => this.setState({ renameValue:e.target.value });
+  cancelRenameCategory = () => this.setState({ renameTarget:null, renameValue:'' });
+  confirmRenameCategory = () => {
+    const oldName = this.state.renameTarget;
+    const newName = this.state.renameValue.trim();
+    if (!newName) return;
+    if (newName !== oldName && this.state.categories.includes(newName)) { this.setState({ categoryError:'이미 있는 카테고리예요.' }); return; }
+    const categories = this.state.categories.map(c => c===oldName ? newName : c);
+    const items = this.state.items.map(i => i.category===oldName ? { ...i, category:newName } : i);
+    this.persist({ categories, items });
+    this.setState({ renameTarget:null, renameValue:'', categoryError:'' });
+  };
+  deleteCategory = (name) => {
+    const count = this.state.items.filter(i=>i.category===name).length;
+    if (count > 0) { this.setState({ categoryError:'"'+name+'" 카테고리를 사용하는 콘텐츠가 '+count+'개 있어 삭제할 수 없어요.' }); return; }
+    if (window.confirm('"'+name+'" 카테고리를 삭제할까요?')) { this.persist({ categories:this.state.categories.filter(c=>c!==name) }); }
+  };
+
+  setSubmissionFilter = (f) => this.setState({ submissionFilter:f });
+  openReviewSubmission = (sub) => this.setState({
+    draft: {
+      id:null, sourceSubmissionId:sub.id, sourceUrl:sub.url, sourceContact:sub.contact,
+      title:sub.title, category:sub.category, country:sub.country, countryDetail: sub.country==='국내' ? '한국' : '',
+      year:new Date().getFullYear(), creatorLabel:'감독', creatorName:'', leadsInput:'', tagsInput:'',
+      juice:sub.juice, poster:false, synopsis:sub.note||'',
+      platforms: sub.url ? [{name:'제보된 링크', type:'유료', url:sub.url}] : [{name:'',type:'유료',url:''}]
+    },
+    draftError:''
+  });
+  rejectSubmission = (sub) => {
+    this.persist({ submissions:this.state.submissions.map(s2 => s2.id===sub.id ? { ...s2, status:'rejected' } : s2) });
+  };
+
+  setCommentFilter = (f) => this.setState({ commentFilter:f });
+  toggleCommentVisibility = (id) => {
+    this.persist({ comments:this.state.comments.map(c => c.id===id ? { ...c, status: c.status==='visible'?'hidden':'visible' } : c) });
+  };
+  deleteCommentItem = (id) => {
+    if (window.confirm('한줄평을 삭제할까요?')) { this.persist({ comments:this.state.comments.filter(c=>c.id!==id) }); }
+  };
+
+  renderVals() {
+    const s = this.state;
+
+    const navDefs = [
+      { key:'dashboard', label:'대시보드', onClick:this.goDashboard },
+      { key:'content', label:'콘텐츠 관리', onClick:this.goContent },
+      { key:'categories', label:'카테고리 관리', onClick:this.goCategories },
+      { key:'submissions', label:'제보 검토', onClick:this.goSubmissions, badge: s.submissions.filter(x=>x.status==='pending').length },
+      { key:'comments', label:'한줄평 검수', onClick:this.goComments }
+    ];
+    const navItems = navDefs.map(n => ({
+      label:n.label, onClick:n.onClick, style: s.screen===n.key ? NAV_ACTIVE : NAV_INACTIVE,
+      hasBadge: !!n.badge, badgeText: n.badge
+    }));
+
+    const pendingSubs = s.submissions.filter(x=>x.status==='pending');
+    const visibleComments = s.comments.filter(c=>c.status==='visible');
+    const itemTitle = (id) => { const it = s.items.find(i=>i.id===id); return it ? it.title : '(삭제된 콘텐츠)'; };
+    const stats = {
+      itemCount: s.items.length, pendingCount: pendingSubs.length, visibleCommentCount: visibleComments.length, categoryCount: s.categories.length,
+      hasPending: pendingSubs.length>0, noPending: pendingSubs.length===0, recentPending: pendingSubs.slice(-3).reverse(),
+      hasRecentComments: s.comments.length>0, noRecentComments: s.comments.length===0,
+      recentComments: s.comments.slice(-3).reverse().map(c=>({ itemTitle:itemTitle(c.itemId), text:c.text }))
+    };
+
+    const contentFilterChips = ['전체', ...s.categories].map(c => ({ label:c, onClick:()=>this.setContentFilter(c), style: s.contentFilter===c ? CHIP_ON : CHIP_OFF }));
+    const contentJuiceOnlyStyle = s.contentJuiceOnly
+      ? CHIP_BASE + "transparent;background:linear-gradient(135deg,#E5486B,#C93356);color:#fff;font-weight:700"
+      : CHIP_OFF;
+    const q = s.contentSearch.trim();
+    const filteredAdminItems = s.items
+      .filter(i => s.contentFilter==='전체' || i.category===s.contentFilter)
+      .filter(i => !q || i.title.includes(q))
+      .filter(i => !s.contentJuiceOnly || i.juice)
+      .map(i => ({ ...i, poster:i.poster!==false, noPoster:i.poster===false, onEdit:()=>this.openEditContent(i), onDelete:()=>this.deleteContentItem(i.id) }));
+
+    const categoryRows = s.categories.map(name => {
+      const isRenaming = s.renameTarget === name;
+      return {
+        name, count: s.items.filter(i=>i.category===name).length, isRenaming, isNotRenaming: !isRenaming,
+        renameValue: isRenaming ? s.renameValue : name,
+        onRenameChange: this.setRenameValue, onRenameStart:()=>this.startRenameCategory(name),
+        onRenameConfirm: this.confirmRenameCategory, onRenameCancel: this.cancelRenameCategory,
+        onDelete: ()=>this.deleteCategory(name)
+      };
+    });
+
+    const submissionFilterDefs = ['대기중','승인됨','반려됨','전체'];
+    const submissionFilterChips = submissionFilterDefs.map(f => ({ label:f, onClick:()=>this.setSubmissionFilter(f), style: s.submissionFilter===f ? CHIP_ON : CHIP_OFF }));
+    const statusMap = { pending:{text:'대기중',style:STATUS_PENDING}, approved:{text:'승인됨',style:STATUS_APPROVED}, rejected:{text:'반려됨',style:STATUS_REJECTED} };
+    const filterKeyMap = { '대기중':'pending', '승인됨':'approved', '반려됨':'rejected' };
+    const filteredSubmissions = s.submissions
+      .filter(sub => s.submissionFilter==='전체' || sub.status===filterKeyMap[s.submissionFilter])
+      .slice().reverse()
+      .map(sub => ({
+        ...sub, isPending: sub.status==='pending',
+        statusText: statusMap[sub.status].text, statusStyle: statusMap[sub.status].style,
+        noteText: sub.note || '코멘트 없음', contactText: sub.contact || '없음',
+        onReview: ()=>this.openReviewSubmission(sub), onReject: ()=>this.rejectSubmission(sub)
+      }));
+
+    const commentFilterDefs = ['전체','노출중','숨김'];
+    const commentFilterChips = commentFilterDefs.map(f => ({ label:f, onClick:()=>this.setCommentFilter(f), style: s.commentFilter===f ? CHIP_ON : CHIP_OFF }));
+    const commentFilterKeyMap = { '노출중':'visible', '숨김':'hidden' };
+    const filteredComments = s.comments
+      .filter(c => s.commentFilter==='전체' || c.status===commentFilterKeyMap[s.commentFilter])
+      .slice().reverse()
+      .map(c => ({
+        ...c, itemTitle: itemTitle(c.itemId), timeText: this.formatDateTime(c.createdAt),
+        statusText: c.status==='visible' ? '노출중' : '숨김', statusStyle: c.status==='visible' ? STATUS_VISIBLE : STATUS_HIDDEN,
+        toggleLabel: c.status==='visible' ? '숨기기' : '노출하기',
+        onToggle: ()=>this.toggleCommentVisibility(c.id), onDelete: ()=>this.deleteCommentItem(c.id),
+        onGoToContent: ()=>this.goToContentFromComment(c.itemId)
+      }));
+
+    const draft = s.draft || {};
+    const draftIsFromSubmission = draft.sourceSubmissionId != null;
+    const draftSaveLabel = draftIsFromSubmission ? '승인 및 발행' : '저장';
+    const draftSourceContactText = draft.sourceContact || '없음';
+    const draftCountryChips = ['국내','해외'].map(c => ({ label:c, onClick:()=>this.setDraftCountry(c), style: draft.country===c ? CHIP_ON : CHIP_OFF }));
+    const draftCreatorLabelChips = ['감독','연출','작가'].map(c => ({ label:c, onClick:()=>this.setDraftCreatorLabel(c), style: draft.creatorLabel===c ? CHIP_ON : CHIP_OFF }));
+    const draftJuiceStyle = draft.juice
+      ? CHIP_BASE + "transparent;background:linear-gradient(135deg,#E5486B,#C93356);color:#fff;font-weight:700"
+      : CHIP_OFF;
+    const draftPosterStyle = draft.poster ? CHIP_ON : CHIP_OFF;
+    const draftPlatformRows = (draft.platforms||[]).map((p, idx) => ({
+      name:p.name, type:p.type, url:p.url||'', onUrlChange:(e)=>this.updatePlatformUrl(idx, e.target.value),
+      typeStyle: (p.type==='무료' ? "padding:0 14px;height:40px;border-radius:8px;border:none;background:rgba(155,126,232,0.16);color:#9B7EE8;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap" : "padding:0 14px;height:40px;border-radius:8px;border:none;background:rgba(255,255,255,0.06);color:rgba(245,243,247,0.7);font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap"),
+      onNameChange: (e)=>this.updatePlatformName(idx, e.target.value),
+      onToggleType: ()=>this.togglePlatformType(idx),
+      onRemove: ()=>this.removePlatformRow(idx)
+    }));
+
+    return {
+      navItems, isDashboard: s.screen==='dashboard', isContent: s.screen==='content', isCategories: s.screen==='categories',
+      isSubmissions: s.screen==='submissions', isComments: s.screen==='comments',
+      goSubmissions: this.goSubmissions, goComments: this.goComments,
+      stats,
+      contentSearch: s.contentSearch, setContentSearch: this.setContentSearch, contentFilterChips,
+      contentJuiceOnlyStyle, toggleContentJuiceOnly: this.toggleContentJuiceOnly,
+      filteredAdminItems, noAdminItems: filteredAdminItems.length===0, openAddContent: this.openAddContent,
+      categories: s.categories, categoryRows, newCategoryName: s.newCategoryName, setNewCategoryName: this.setNewCategoryName, addCategory: this.addCategory,
+      hasCategoryError: !!s.categoryError, categoryError: s.categoryError,
+      submissionFilterChips, filteredSubmissions, noSubmissions: filteredSubmissions.length===0,
+      commentFilterChips, filteredComments, noComments: filteredComments.length===0,
+      contentModalOpen: !!s.draft, draft, draftHasPoster: !!draft.poster,
+      draftIsFromSubmission, draftSaveLabel, draftSourceContactText,
+      draftModalTitle: draftIsFromSubmission ? '제보 검토 · 발행' : (draft.id==null ? '콘텐츠 추가' : '콘텐츠 수정'),
+      draftCountryChips, draftCreatorLabelChips, draftJuiceStyle, draftPosterStyle, draftPlatformRows,
+      hasDraftError: !!s.draftError, draftError: s.draftError,
+      closeContentModal: this.closeContentModal, stopPropagation: this.stopPropagation, saveContent: this.saveContent,
+      setDraftTitle: this.setDraftTitle, setDraftCategory: this.setDraftCategory, setDraftYear: this.setDraftYear,
+      setDraftCountryDetail: this.setDraftCountryDetail, setDraftCreatorName: this.setDraftCreatorName,
+      setDraftLeadsInput: this.setDraftLeadsInput, setDraftTagsInput: this.setDraftTagsInput, setDraftSynopsis: this.setDraftSynopsis,
+      toggleDraftJuice: this.toggleDraftJuice, toggleDraftPoster: this.toggleDraftPoster, addPlatformRow: this.addPlatformRow
+    };
+  }
+}
+</script>
+</body>
+</html>

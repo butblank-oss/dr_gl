@@ -1,0 +1,198 @@
+@import "tailwindcss";
+
+/* Design tokens — 핸드오프 문서의 Design Tokens 섹션을 그대로 옮긴 값들 */
+@theme {
+  --font-sans: "Pretendard", ui-sans-serif, system-ui, -apple-system, "Apple SD Gothic Neo",
+    "Malgun Gothic", sans-serif;
+
+  /* 배경 층위 */
+  --color-ink: #0b0a0f;
+  --color-panel: #100f14;
+  --color-card: #141219;
+  --color-modal: #15131c;
+  --color-search: #17151d;
+  --color-tile: #1c1a24;
+
+  /* 텍스트 */
+  --color-fg: #f5f3f7;
+  --color-fg80: rgba(245, 243, 247, 0.8);
+  --color-fg75: rgba(245, 243, 247, 0.75);
+  --color-fg72: rgba(245, 243, 247, 0.72);
+  --color-fg70: rgba(245, 243, 247, 0.7);
+  --color-fg68: rgba(245, 243, 247, 0.68);
+  --color-fg65: rgba(245, 243, 247, 0.65);
+  --color-fg60: rgba(245, 243, 247, 0.6);
+  --color-fg55: rgba(245, 243, 247, 0.55);
+  --color-fg50: rgba(245, 243, 247, 0.5);
+  --color-fg45: rgba(245, 243, 247, 0.45);
+  --color-fg40: rgba(245, 243, 247, 0.4);
+  --color-fg35: rgba(245, 243, 247, 0.35);
+  --color-fg32: rgba(245, 243, 247, 0.32);
+  --color-fg30: rgba(245, 243, 247, 0.3);
+  --color-fg28: rgba(245, 243, 247, 0.28);
+  --color-fg22: rgba(245, 243, 247, 0.22);
+
+  /* 라인 · 표면 */
+  --color-line4: rgba(255, 255, 255, 0.04);
+  --color-line6: rgba(255, 255, 255, 0.06);
+  --color-line8: rgba(255, 255, 255, 0.08);
+  --color-line12: rgba(255, 255, 255, 0.12);
+  --color-line14: rgba(255, 255, 255, 0.14);
+  --color-line16: rgba(255, 255, 255, 0.16);
+  --color-line20: rgba(255, 255, 255, 0.2);
+  --color-surface3: rgba(255, 255, 255, 0.03);
+  --color-surface4: rgba(255, 255, 255, 0.04);
+  --color-surface5: rgba(255, 255, 255, 0.05);
+  --color-surface6: rgba(255, 255, 255, 0.06);
+  --color-surface10: rgba(255, 255, 255, 0.1);
+
+  /* accent */
+  --color-accent: #9b7ee8;
+  --color-accent-hover: #b49bf0;
+  --color-accent-soft: rgba(155, 126, 232, 0.14);
+  --color-accent-soft8: rgba(155, 126, 232, 0.08);
+  --color-accent-soft12: rgba(155, 126, 232, 0.12);
+  --color-accent-line: rgba(155, 126, 232, 0.2);
+  --color-danger: #e5486b;
+  --color-danger-soft: rgba(229, 72, 107, 0.14);
+  --color-danger-soft8: rgba(229, 72, 107, 0.08);
+  --color-danger-line: rgba(229, 72, 107, 0.3);
+
+  --radius-pill: 20px;
+}
+
+@layer base {
+  html {
+    background: var(--color-ink);
+  }
+  body {
+    margin: 0;
+    background: var(--color-ink);
+    color: var(--color-fg);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+  a {
+    color: var(--color-accent);
+    text-decoration: none;
+  }
+  a:hover {
+    color: var(--color-accent-hover);
+  }
+  ::-webkit-scrollbar {
+    height: 6px;
+    width: 6px;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 10px;
+  }
+  input::placeholder,
+  textarea::placeholder {
+    color: rgba(245, 243, 247, 0.35);
+  }
+  select {
+    color-scheme: dark;
+  }
+  button {
+    font-family: inherit;
+  }
+}
+
+@layer components {
+  /* 보라 그라디언트 CTA */
+  .btn-grad {
+    @apply inline-flex cursor-pointer items-center justify-center rounded-[10px] border-none font-bold text-white;
+    background: linear-gradient(135deg, #8a6eea, #6f4fd1);
+  }
+  .btn-grad:hover {
+    filter: brightness(1.12);
+  }
+  .btn-grad:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+    filter: none;
+  }
+
+  /* 보조(고스트) 버튼 */
+  .btn-ghost {
+    @apply inline-flex cursor-pointer items-center justify-center rounded-[10px] border border-line16 bg-surface5 font-semibold text-fg;
+  }
+  .btn-ghost:hover {
+    background: rgba(255, 255, 255, 0.09);
+  }
+
+  /* 위험 동작 버튼 */
+  .btn-danger {
+    @apply inline-flex cursor-pointer items-center justify-center rounded-lg border border-danger-line bg-danger-soft8 text-danger;
+  }
+  .btn-danger:hover {
+    background: rgba(229, 72, 107, 0.16);
+  }
+
+  /* 필터 칩 */
+  .chip {
+    @apply cursor-pointer rounded-pill border text-[13px] leading-none;
+    padding: 9px 16px;
+  }
+  .chip-on {
+    @apply border-transparent font-bold text-white;
+    background: linear-gradient(135deg, #8a6eea, #6f4fd1);
+  }
+  .chip-off {
+    @apply border-line12 bg-surface4 text-fg70;
+  }
+  .chip-off:hover {
+    background: rgba(255, 255, 255, 0.08);
+  }
+  .chip-juice-on {
+    @apply border-transparent font-bold text-white;
+    background: linear-gradient(135deg, #e5486b, #c93356);
+  }
+
+  /* 입력 필드 */
+  .field {
+    @apply w-full rounded-[10px] border border-line12 bg-card text-fg outline-none;
+  }
+  .field:focus {
+    border-color: rgba(155, 126, 232, 0.5);
+  }
+
+  /* 착즙 배지 */
+  .badge-juice {
+    @apply rounded-pill font-bold text-white;
+    background: linear-gradient(135deg, #e5486b, #c93356);
+  }
+
+  /* 카드 hover — 살짝 위로 + 그림자 강조 */
+  .card-hover {
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
+  }
+  .group:hover .card-hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.5);
+  }
+}
+
+/* 히어로/상세 배너 그라디언트 오버레이 */
+.banner-scrim {
+  background:
+    linear-gradient(90deg, rgba(11, 10, 15, 0.96) 28%, rgba(11, 10, 15, 0.3) 78%),
+    linear-gradient(0deg, rgba(11, 10, 15, 0.92), rgba(11, 10, 15, 0.05) 42%);
+}
+.card-scrim {
+  background: linear-gradient(180deg, rgba(11, 10, 15, 0) 55%, rgba(11, 10, 15, 0.75) 100%);
+}
+.poster-empty {
+  background: linear-gradient(135deg, #211c2c, #1c1a24);
+}
+.banner-empty {
+  background: linear-gradient(135deg, #181521, #0d0c12);
+}
+
+.line-clamp-2-box {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}

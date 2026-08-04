@@ -1,0 +1,153 @@
+// Dr. GL — GL 콘텐츠 큐레이션 플랫폼
+// 핸드오프 문서의 "데이터 스키마" 섹션을 그대로 옮긴 DB 모델.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+/// 콘텐츠 (Content item)
+model Content {
+  id            Int      @id @default(autoincrement())
+  title         String
+  /// 카테고리 관리에서 정의한 값 중 하나 (Category.name)
+  category      String
+  /// '국내' | '해외'
+  country       String   @default("국내")
+  /// 표시용 국가명 (예: "한국", "일본")
+  countryDetail String   @default("")
+  year          Int
+  /// '감독' | '연출' | '작가'
+  creatorLabel  String   @default("감독")
+  creatorName   String   @default("")
+  /// 출연·주인공 이름 목록
+  leads         String[] @default([])
+  /// 장르/특징 태그
+  tags          String[] @default([])
+  /// "착즙"(서브/약한 GL 코드) 여부
+  juice         Boolean  @default(false)
+  /// 포스터 이미지 사용 여부 (false면 "포스터 준비중" 텍스트 타일)
+  poster        Boolean  @default(true)
+  /// 실제 업로드된 카드 썸네일 URL
+  posterUrl     String?
+  /// 실제 업로드된 상세/히어로 배경 URL
+  backdropUrl   String?
+  synopsis      String   @default("")
+  /// {name, type:'무료'|'유료', url}[]
+  platforms     Json     @default("[]")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  comments     Comment[]
+  homeRowItems HomeRowItem[]
+
+  @@index([category])
+  @@index([country])
+  @@index([juice])
+}
+
+/// 카테고리 — 이름이 곧 Content.category 의 값. 이름 변경 시 연관 콘텐츠를 cascade 갱신한다.
+model Category {
+  id        Int      @id @default(autoincrement())
+  name      String   @unique
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+
+  @@index([sortOrder])
+}
+
+/// 제보
+model Submission {
+  id        Int      @id @default(autoincrement())
+  title     String
+  category  String
+  /// '국내' | '해외'
+  country   String   @default("국내")
+  juice     Boolean  @default(false)
+  url       String
+  note      String   @default("")
+  contact   String   @default("")
+  /// 'pending' | 'approved' | 'rejected'
+  status    String   @default("pending")
+  /// 승인·발행으로 만들어진 콘텐츠 id
+  contentId Int?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status])
+}
+
+/// 한줄평 — 로그인 불필요(익명). itemId로 콘텐츠와 연결.
+model Comment {
+  id        Int      @id @default(autoincrement())
+  itemId    Int
+  text      String
+  /// 'visible' | 'hidden'
+  status    String   @default("visible")
+  /// rate limit 용 작성자 IP 해시 (원본 IP는 저장하지 않음)
+  ipHash    String?
+  createdAt DateTime @default(now())
+
+  item Content @relation(fields: [itemId], references: [id], onDelete: Cascade)
+
+  @@index([itemId, status])
+  @@index([ipHash, createdAt])
+}
+
+/// 홈 가로 스크롤 행 — 어드민에서 큐레이션
+model HomeRow {
+  id        Int      @id @default(autoincrement())
+  title     String
+  sortOrder Int      @default(0)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  items HomeRowItem[]
+
+  @@index([sortOrder])
+}
+
+model HomeRowItem {
+  id        Int @id @default(autoincrement())
+  rowId     Int
+  contentId Int
+  sortOrder Int @default(0)
+
+  row     HomeRow @relation(fields: [rowId], references: [id], onDelete: Cascade)
+  content Content @relation(fields: [contentId], references: [id], onDelete: Cascade)
+
+  @@unique([rowId, contentId])
+  @@index([rowId, sortOrder])
+}
+
+/// 사이트 전역 설정 (예: featuredId = 히어로 배너 콘텐츠)
+model SiteSetting {
+  key       String   @id
+  value     String
+  updatedAt DateTime @updatedAt
+}
+
+/// 운영자 계정 — 어드민 인증 + 역할 기반 권한
+model AdminUser {
+  id           Int       @id @default(autoincrement())
+  email        String    @unique
+  name         String    @default("")
+  passwordHash String
+  /// 'ADMIN' | 'EDITOR'
+  role         String    @default("EDITOR")
+  isActive     Boolean   @default(true)
+  lastLoginAt  DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+}
+
+/// 게시판 오픈 알림 신청
+model NotifySignup {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  createdAt DateTime @default(now())
+}
