@@ -3,6 +3,6 @@ export const SITE = {
   name: "Dr. GL",
   operator: "닥터지엘",
   email: "drgl.help@gmail.com",
-  /** 약관·처리방침의 시행일. 내용을 고칠 때 함께 갱신한다. */
-  effectiveDate: "2026년 8월 4일",
+  // 약관·개인정보처리방침 본문과 시행일은 DB에서 관리한다.
+  // 어드민 → 약관·정책 관리에서 수정하면 버전이 쌓이고 사이트에 즉시 반영된다.
 } as const;

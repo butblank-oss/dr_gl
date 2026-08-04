@@ -1,72 +1,102 @@
-import { SITE } from "@/lib/site";
+import Link from "next/link";
+import { Markdown } from "@/components/site/Markdown";
+import type { LegalVersionDTO } from "@/lib/types";
 
-/** 약관·처리방침 공통 레이아웃 */
-export function LegalPage({
-  title,
-  intro,
-  children,
-}: {
+/** 시행일은 날짜만 쓰므로 UTC 기준으로 읽어 시간대에 따라 하루 밀리지 않게 한다. */
+export function formatEffectiveDate(iso: string): string {
+  const d = new Date(iso);
+  return `${d.getUTCFullYear()}년 ${d.getUTCMonth() + 1}월 ${d.getUTCDate()}일`;
+}
+
+type Props = {
   title: string;
-  intro?: string;
-  children: React.ReactNode;
-}) {
+  slug: string;
+  version: LegalVersionDTO;
+  /** 발행된 적 있는 모든 버전 (최신순) */
+  history: LegalVersionDTO[];
+  /** 지난 버전을 보고 있는 경우 안내 배너를 띄운다 */
+  isArchived?: boolean;
+};
+
+export function LegalDocumentView({ title, slug, version, history, isArchived = false }: Props) {
   return (
     <div className="page-shell max-w-[760px] py-10 md:py-14">
       <h1 className="text-[26px] font-extrabold md:text-[30px]">{title}</h1>
-      {intro ? <p className="mt-3 text-sm leading-relaxed text-fg55">{intro}</p> : null}
-      <div className="mt-3 text-xs text-fg40">시행일 · {SITE.effectiveDate}</div>
-      <div className="mt-8 flex flex-col gap-8">{children}</div>
+
+      <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-fg40">
+        <span>시행일 · {formatEffectiveDate(version.effectiveDate)}</span>
+        <span className="text-fg22">|</span>
+        <span>v{version.version}</span>
+        {version.changeNote ? (
+          <>
+            <span className="text-fg22">|</span>
+            <span>{version.changeNote}</span>
+          </>
+        ) : null}
+      </div>
+
+      {isArchived ? (
+        <div className="mt-5 rounded-[10px] border border-[rgba(229,72,107,0.3)] bg-danger-soft8 px-4 py-3 text-[13px] leading-relaxed text-fg72">
+          이 문서는 <strong className="font-semibold text-fg">지난 버전(v{version.version})</strong>입니다.
+          현재 적용되는 내용은{" "}
+          <Link href={`/${slug}`} className="font-semibold text-accent">
+            최신 {title}
+          </Link>
+          을 확인해주세요.
+        </div>
+      ) : null}
+
+      <div className="mt-8">
+        <Markdown body={version.body} />
+      </div>
+
+      {history.length > 1 ? (
+        <section className="mt-14 border-t border-line8 pt-8">
+          <h2 className="text-sm font-bold text-fg">개정 이력</h2>
+          <p className="mt-2 text-xs text-fg40">지난 버전도 열람하실 수 있습니다.</p>
+          <ul className="mt-4 flex list-none flex-col gap-0 pl-0">
+            {history.map((entry) => {
+              const current = entry.version === version.version;
+              return (
+                <li
+                  key={entry.id}
+                  className="flex flex-wrap items-center gap-x-3 gap-y-1 border-b border-line6 py-3 text-[13px]"
+                >
+                  <span className="w-[52px] flex-none font-semibold text-fg70">v{entry.version}</span>
+                  <span className="w-[120px] flex-none text-fg55">
+                    {formatEffectiveDate(entry.effectiveDate)}
+                  </span>
+                  <span className="min-w-0 flex-1 text-fg55">{entry.changeNote || "—"}</span>
+                  {entry.isPublished ? (
+                    <span className="rounded-pill bg-accent-soft px-2 py-[2px] text-[10px] font-bold text-accent">
+                      현행
+                    </span>
+                  ) : null}
+                  {current ? (
+                    <span className="text-xs text-fg30">보는 중</span>
+                  ) : (
+                    <Link
+                      href={entry.isPublished ? `/${slug}` : `/${slug}/${entry.version}`}
+                      className="text-xs text-accent"
+                    >
+                      보기 →
+                    </Link>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+      ) : null}
     </div>
   );
 }
 
-export function Article({ heading, children }: { heading: string; children: React.ReactNode }) {
+export function LegalMissing({ title }: { title: string }) {
   return (
-    <section className="flex flex-col gap-3">
-      <h2 className="text-base font-bold text-fg">{heading}</h2>
-      <div className="flex flex-col gap-2.5 text-[14px] leading-[1.8] text-fg72">{children}</div>
-    </section>
-  );
-}
-
-export function List({ items }: { items: React.ReactNode[] }) {
-  return (
-    <ul className="flex list-none flex-col gap-2 pl-0">
-      {items.map((item, index) => (
-        <li key={index} className="flex gap-2.5">
-          <span className="flex-none text-fg40">·</span>
-          <span>{item}</span>
-        </li>
-      ))}
-    </ul>
-  );
-}
-
-export function Table({ head, rows }: { head: string[]; rows: React.ReactNode[][] }) {
-  return (
-    <div className="overflow-x-auto rounded-xl border border-line8">
-      <table className="w-full min-w-[420px] border-collapse text-[13px]">
-        <thead>
-          <tr className="bg-panel">
-            {head.map((h) => (
-              <th key={h} className="border-b border-line8 px-3.5 py-2.5 text-left font-semibold text-fg70">
-                {h}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((row, i) => (
-            <tr key={i}>
-              {row.map((cell, j) => (
-                <td key={j} className="border-b border-line4 px-3.5 py-2.5 align-top leading-relaxed text-fg72">
-                  {cell}
-                </td>
-              ))}
-            </tr>
-          ))}
-        </tbody>
-      </table>
+    <div className="page-shell max-w-[760px] py-20 text-center">
+      <h1 className="text-[22px] font-extrabold">{title}</h1>
+      <p className="mt-4 text-sm text-fg55">아직 등록된 내용이 없어요. 잠시 후 다시 확인해주세요.</p>
     </div>
   );
 }

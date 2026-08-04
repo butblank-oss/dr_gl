@@ -1,7 +1,12 @@
 import "server-only";
 
 import { prisma } from "@/lib/prisma";
-import { serializeCategory, serializeComment, serializeContent } from "@/lib/serialize";
+import {
+  serializeCategory,
+  serializeComment,
+  serializeContent,
+  serializeLegalVersion,
+} from "@/lib/serialize";
 import type { CategoryDTO, CommentDTO, ContentDTO, HomeRowDTO } from "@/lib/types";
 
 export const FEATURED_SETTING_KEY = "featuredId";
@@ -163,5 +168,48 @@ export async function getAllHomeRows(): Promise<HomeRowDTO[]> {
     sortOrder: row.sortOrder,
     isActive: row.isActive,
     items: row.items.map((entry) => serializeContent(entry.content)),
+  }));
+}
+
+/* ---------- 약관·정책 문서 ---------- */
+
+/** 프론트에 노출할 발행중 버전과 개정 이력을 함께 가져온다. */
+export async function getLegalDocument(slug: string) {
+  const doc = await prisma.legalDocument.findUnique({
+    where: { slug },
+    include: { versions: { orderBy: { version: "desc" } } },
+  });
+  if (!doc) return null;
+
+  const published = doc.versions.find((v) => v.isPublished) ?? null;
+  return {
+    id: doc.id,
+    slug: doc.slug,
+    title: doc.title,
+    published: published ? serializeLegalVersion(published) : null,
+    // 이력은 발행된 적 있는 버전만 공개한다 (작성 중인 초안은 숨김)
+    history: doc.versions.filter((v) => v.publishedAt).map(serializeLegalVersion),
+  };
+}
+
+export async function getLegalVersion(slug: string, version: number) {
+  const row = await prisma.legalDocumentVersion.findFirst({
+    where: { version, document: { slug }, publishedAt: { not: null } },
+    include: { document: true },
+  });
+  if (!row) return null;
+  return { title: row.document.title, slug: row.document.slug, ...serializeLegalVersion(row) };
+}
+
+export async function getAllLegalDocuments() {
+  const docs = await prisma.legalDocument.findMany({
+    orderBy: { id: "asc" },
+    include: { versions: { orderBy: { version: "desc" } } },
+  });
+  return docs.map((doc) => ({
+    id: doc.id,
+    slug: doc.slug,
+    title: doc.title,
+    versions: doc.versions.map(serializeLegalVersion),
   }));
 }

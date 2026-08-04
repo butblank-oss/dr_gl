@@ -122,3 +122,27 @@ export const COMMENT_FILTER_TO_STATUS: Record<string, CommentStatus | undefined>
   노출중: "visible",
   숨김: "hidden",
 };
+
+/* ---------- 약관·정책 문서 ---------- */
+
+export type LegalVersionDTO = {
+  id: number;
+  version: number;
+  body: string;
+  effectiveDate: string;
+  changeNote: string;
+  isPublished: boolean;
+  publishedAt: string | null;
+  createdByName: string;
+  createdAt: string;
+};
+
+export type LegalDocumentDTO = {
+  id: number;
+  slug: string;
+  title: string;
+  versions: LegalVersionDTO[];
+};
+
+export const LEGAL_SLUGS = ["terms", "privacy"] as const;
+export type LegalSlug = (typeof LEGAL_SLUGS)[number];

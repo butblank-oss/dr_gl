@@ -1,6 +1,7 @@
 /* eslint-disable no-console */
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
+import { LEGAL_DOCUMENTS } from "./legal-seed";
 
 const prisma = new PrismaClient();
 
@@ -95,7 +96,42 @@ async function ensureAdminUser() {
   console.log(`· 운영자 계정 생성 → ${email}`);
 }
 
+/**
+ * 약관·개인정보처리방침의 최초 버전을 보장한다.
+ * 이미 문서가 있으면 손대지 않는다 — 어드민에서 고친 내용을 배포가 덮어쓰면 안 되기 때문.
+ */
+async function ensureLegalDocuments() {
+  for (const doc of LEGAL_DOCUMENTS) {
+    const existing = await prisma.legalDocument.findUnique({
+      where: { slug: doc.slug },
+      include: { versions: { take: 1 } },
+    });
+    if (existing?.versions.length) {
+      console.log(`· ${doc.title} 이미 있음 (건너뜀)`);
+      continue;
+    }
+    const document =
+      existing ??
+      (await prisma.legalDocument.create({ data: { slug: doc.slug, title: doc.title } }));
+    await prisma.legalDocumentVersion.create({
+      data: {
+        documentId: document.id,
+        version: 1,
+        body: doc.body,
+        effectiveDate: new Date("2026-08-04T00:00:00Z"),
+        changeNote: "최초 작성",
+        isPublished: true,
+        publishedAt: new Date(),
+        createdByName: "시스템",
+      },
+    });
+    console.log(`· ${doc.title} v1 생성`);
+  }
+}
+
 async function main() {
+  await ensureLegalDocuments();
+
   // 이미 운영 중인 DB에 배포할 때마다 시드가 덮어쓰지 않도록,
   // 콘텐츠가 하나라도 있으면 데모 데이터 시드는 건너뛴다.
   if ((await prisma.content.count()) > 0) {

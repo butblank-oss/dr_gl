@@ -125,3 +125,21 @@ export const passwordChangeSchema = z.object({
   currentPassword: z.string().min(1, "현재 비밀번호를 입력해주세요."),
   newPassword: passwordField,
 });
+
+/* ---------- 약관·정책 문서 ---------- */
+
+export const legalVersionCreateSchema = z.object({
+  body: z.string().trim().min(1, "본문을 입력해주세요."),
+  /** YYYY-MM-DD */
+  effectiveDate: z
+    .string()
+    .trim()
+    .refine((v) => /^\d{4}-\d{2}-\d{2}$/.test(v), "시행일을 YYYY-MM-DD 형식으로 입력해주세요."),
+  changeNote: z.string().trim().max(200).default(""),
+  /** 저장과 동시에 발행할지 */
+  publish: z.boolean().default(false),
+});
+
+export const legalVersionUpdateSchema = z.object({
+  isPublished: z.literal(true),
+});

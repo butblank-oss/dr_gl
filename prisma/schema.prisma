@@ -161,6 +161,44 @@ model MediaFile {
   createdAt   DateTime @default(now())
 }
 
+/// 약관·개인정보처리방침 등 정책 문서. 본문은 버전으로 쌓인다.
+model LegalDocument {
+  id        Int      @id @default(autoincrement())
+  /// 'terms' | 'privacy' — 프론트 주소와 같다
+  slug      String   @unique
+  title     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  versions LegalDocumentVersion[]
+}
+
+/// 정책 문서의 한 버전. 발행중인 버전은 문서당 하나뿐이다.
+model LegalDocumentVersion {
+  id            Int      @id @default(autoincrement())
+  documentId    Int
+  /// 1부터 증가
+  version       Int
+  /// 마크다운 본문
+  body          String
+  /// 시행일
+  effectiveDate DateTime
+  /// 이번 개정에서 무엇이 바뀌었는지
+  changeNote    String   @default("")
+  /// 지금 사이트에 노출중인 버전인지
+  isPublished   Boolean  @default(false)
+  publishedAt   DateTime?
+  /// 누가 작성했는지 (계정이 지워져도 남도록 이름을 함께 보관)
+  createdById   Int?
+  createdByName String   @default("")
+  createdAt     DateTime @default(now())
+
+  document LegalDocument @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  @@unique([documentId, version])
+  @@index([documentId, isPublished])
+}
+
 /// 게시판 오픈 알림 신청
 model NotifySignup {
   id        Int      @id @default(autoincrement())

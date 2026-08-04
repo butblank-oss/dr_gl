@@ -12,6 +12,7 @@ import type {
   CommentDTO,
   CommentStatus,
   ContentDTO,
+  LegalVersionDTO,
   Platform,
   SubmissionDTO,
   SubmissionStatus,
@@ -95,6 +96,30 @@ export function serializeAdminUser(row: AdminUserRow): AdminUserDTO {
     role: (row.role === "ADMIN" ? "ADMIN" : "EDITOR") as AdminRole,
     isActive: row.isActive,
     lastLoginAt: row.lastLoginAt ? row.lastLoginAt.toISOString() : null,
+    createdAt: row.createdAt.toISOString(),
+  };
+}
+
+export function serializeLegalVersion(row: {
+  id: number;
+  version: number;
+  body: string;
+  effectiveDate: Date;
+  changeNote: string;
+  isPublished: boolean;
+  publishedAt: Date | null;
+  createdByName: string;
+  createdAt: Date;
+}): LegalVersionDTO {
+  return {
+    id: row.id,
+    version: row.version,
+    body: row.body,
+    effectiveDate: row.effectiveDate.toISOString(),
+    changeNote: row.changeNote,
+    isPublished: row.isPublished,
+    publishedAt: row.publishedAt ? row.publishedAt.toISOString() : null,
+    createdByName: row.createdByName,
     createdAt: row.createdAt.toISOString(),
   };
 }

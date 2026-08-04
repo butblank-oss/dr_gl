@@ -15,6 +15,7 @@ const NAV = [
   { href: "/admin/categories", label: "카테고리 관리" },
   { href: "/admin/submissions", label: "제보 검토", badgeKey: "pending" as const },
   { href: "/admin/comments", label: "한줄평 검수" },
+  { href: "/admin/legal", label: "약관 · 정책" },
   // 계정 관리는 슈퍼관리자에게만 보인다.
   { href: "/admin/accounts", label: "계정 관리", adminOnly: true as const },
 ];
