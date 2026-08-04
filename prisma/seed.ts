@@ -80,7 +80,31 @@ const DEMO_COMMENTS = [
   { itemId: 12, text: "코미디 타이밍 미쳤다 ㅋㅋㅋ", status: "visible", offset: 0.5 * HOUR },
 ];
 
+/** 운영자 계정은 항상 보장한다(없으면 로그인 자체가 불가능하므로). */
+async function ensureAdminUser() {
+  const email = (process.env.SEED_ADMIN_EMAIL ?? "admin@drgl.local").toLowerCase();
+  const password = process.env.SEED_ADMIN_PASSWORD ?? "drgl-admin-1234";
+  const existing = await prisma.adminUser.findUnique({ where: { email } });
+  if (existing) {
+    console.log(`· 운영자 계정 이미 있음 (${email})`);
+    return;
+  }
+  await prisma.adminUser.create({
+    data: { email, name: "운영자", role: "ADMIN", passwordHash: await bcrypt.hash(password, 10) },
+  });
+  console.log(`· 운영자 계정 생성 → ${email}`);
+}
+
 async function main() {
+  // 이미 운영 중인 DB에 배포할 때마다 시드가 덮어쓰지 않도록,
+  // 콘텐츠가 하나라도 있으면 데모 데이터 시드는 건너뛴다.
+  if ((await prisma.content.count()) > 0) {
+    console.log("· 이미 콘텐츠가 있어 데모 시드는 건너뜁니다.");
+    await ensureAdminUser();
+    console.log("시드 완료");
+    return;
+  }
+
   console.log("· 카테고리 시드");
   for (const [index, name] of DEFAULT_CATEGORIES.entries()) {
     await prisma.category.upsert({
@@ -161,20 +185,7 @@ async function main() {
     }
   }
 
-  console.log("· 운영자 계정");
-  const email = (process.env.SEED_ADMIN_EMAIL ?? "admin@drgl.local").toLowerCase();
-  const password = process.env.SEED_ADMIN_PASSWORD ?? "drgl-admin-1234";
-  await prisma.adminUser.upsert({
-    where: { email },
-    create: {
-      email,
-      name: "운영자",
-      role: "ADMIN",
-      passwordHash: await bcrypt.hash(password, 10),
-    },
-    update: {},
-  });
-  console.log(`  → ${email} / ${password}`);
+  await ensureAdminUser();
 
   console.log("시드 완료");
 }
