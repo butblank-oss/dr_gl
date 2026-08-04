@@ -8,8 +8,8 @@ export default function SiteLayout({ children }: { children: React.ReactNode }) 
         <Header />
       </Suspense>
       <main className="flex-1">{children}</main>
-      <footer className="border-t border-line6 px-10 py-6 text-xs text-fg32">
-        © 2026 Dr. GL · GL 콘텐츠 큐레이션 플랫폼
+      <footer className="border-t border-line6">
+        <div className="page-shell py-6 text-xs text-fg32">© 2026 Dr. GL · GL 콘텐츠 큐레이션 플랫폼</div>
       </footer>
     </div>
   );

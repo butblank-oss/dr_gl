@@ -30,7 +30,7 @@ export default async function CategoryPage({ searchParams }: { searchParams: Sea
   const juiceParam = juiceOnly ? undefined : "true";
 
   return (
-    <div className="p-10">
+    <div className="page-shell py-10">
       <h1 className="mb-1.5 text-[28px] font-extrabold">카테고리 탐색</h1>
       <p className="mb-7 text-sm text-fg55">장르와 형식을 넘나들며, 원하는 콘텐츠를 찾아보세요.</p>
 

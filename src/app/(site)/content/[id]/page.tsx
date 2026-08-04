@@ -41,14 +41,15 @@ export default async function ContentDetailPage({ params }: { params: Params }) 
 
   return (
     <div>
-      <div className="px-10 pt-5">
+      <div className="page-shell pt-5">
         <BackButton />
       </div>
 
       <div className="relative mt-2 h-[440px] w-full overflow-hidden">
         <BannerBackdrop item={item} />
         <div className="banner-scrim pointer-events-none absolute inset-0" />
-        <div className="absolute bottom-10 left-10 flex max-w-[640px] flex-col gap-3.5">
+        <div className="page-shell absolute inset-x-0 bottom-10">
+        <div className="flex max-w-[640px] flex-col gap-3.5">
           <div className="flex flex-wrap items-center gap-2">
             <span className="rounded-pill border border-line16 bg-surface10 px-[11px] py-1 text-xs font-semibold text-fg">
               {item.category}
@@ -63,9 +64,10 @@ export default async function ContentDetailPage({ params }: { params: Params }) 
             {item.creatorLabel} {item.creatorName}
           </div>
         </div>
+        </div>
       </div>
 
-      <div className="mx-auto grid max-w-[1400px] grid-cols-1 gap-12 px-10 pb-15 pt-10 lg:grid-cols-[1fr_320px]">
+      <div className="page-shell grid grid-cols-1 gap-12 pb-15 pt-10 lg:grid-cols-[1fr_320px]">
         <div className="flex flex-col gap-7">
           <section>
             <h2 className="mb-2.5 text-base font-bold">줄거리</h2>

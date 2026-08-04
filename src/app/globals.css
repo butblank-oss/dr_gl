@@ -100,6 +100,15 @@
 }
 
 @layer components {
+  /*
+   * 페이지 공통 폭. 디자인 캔버스(1440px)와 같은 너비라 그 해상도에서는 시안과 픽셀이 같고,
+   * 더 넓은 화면에서는 가운데로 모인다. (원본은 홈·카테고리에 최대 너비가 없어
+   * 초광폭 모니터에서 콘텐츠가 왼쪽으로 쏠렸다)
+   */
+  .page-shell {
+    @apply mx-auto w-full max-w-[1440px] px-10;
+  }
+
   /* 보라 그라디언트 CTA */
   .btn-grad {
     @apply inline-flex cursor-pointer items-center justify-center rounded-[10px] border-none font-bold text-white;

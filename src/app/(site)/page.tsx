@@ -31,7 +31,9 @@ export default async function HomePage({
       <section className="relative h-[520px] w-full overflow-hidden">
         <BannerBackdrop item={hero} />
         <div className="banner-scrim pointer-events-none absolute inset-0" />
-        <div className="absolute bottom-14 left-10 flex max-w-[600px] flex-col gap-4">
+        {/* 배경은 화면 끝까지, 글자는 본문과 같은 왼쪽 기준선에 맞춘다 */}
+        <div className="page-shell absolute inset-x-0 bottom-14">
+        <div className="flex max-w-[600px] flex-col gap-4">
           <div className="flex items-center gap-2">
             <span className="rounded-pill border border-line16 bg-surface10 px-[11px] py-1 text-xs font-semibold text-fg">
               {hero.category}
@@ -52,9 +54,10 @@ export default async function HomePage({
             </Link>
           </div>
         </div>
+        </div>
       </section>
 
-      <div className="flex flex-col gap-9 px-10 pb-15 pt-10">
+      <div className="page-shell flex flex-col gap-9 pb-15 pt-10">
         {rows.map((row) => (
           <section key={row.id} className="flex flex-col gap-4">
             <h2 className="text-[19px] font-bold text-fg">{row.title}</h2>

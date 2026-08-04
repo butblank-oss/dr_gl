@@ -41,7 +41,8 @@ export function Header() {
   const isSubmit = pathname === "/submit";
 
   return (
-    <header className="sticky top-0 z-50 flex h-[72px] items-center justify-between gap-6 border-b border-line8 bg-[rgba(11,10,15,0.85)] px-10 backdrop-blur-[14px]">
+    <header className="sticky top-0 z-50 border-b border-line8 bg-[rgba(11,10,15,0.85)] backdrop-blur-[14px]">
+      <div className="page-shell flex h-[72px] items-center justify-between gap-6">
       <div className="flex items-center gap-12">
         <Link
           href="/"
@@ -89,6 +90,7 @@ export function Header() {
           aria-label="작품 검색"
           className="min-w-0 flex-1 border-none bg-transparent text-[13px] text-fg outline-none"
         />
+      </div>
       </div>
     </header>
   );

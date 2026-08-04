@@ -15,7 +15,7 @@ export default async function SearchPage({
   const results = query ? await searchContents(query) : [];
 
   return (
-    <div className="mx-auto max-w-[1200px] p-10">
+    <div className="page-shell py-10">
       {query ? (
         <>
           <div className="mb-5 text-[15px] text-fg60">
