@@ -1,17 +1,9 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { hasInAppHistory } from "@/components/site/NavTracker";
+import { useGoBack } from "@/components/site/useGoBack";
 
 export function BackButton() {
-  const router = useRouter();
-
-  const goBack = () => {
-    // 공유 링크로 이 페이지에 바로 들어온 경우엔 뒤로 가면 사이트 밖으로 나가버린다.
-    // 그럴 땐 홈으로 보낸다.
-    if (hasInAppHistory()) router.back();
-    else router.push("/");
-  };
+  const goBack = useGoBack();
 
   return (
     <button

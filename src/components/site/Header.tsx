@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { SearchIcon } from "@/components/icons";
+import { useGoBack } from "@/components/site/useGoBack";
 
 const ACTIVE = "text-fg font-bold";
 const INACTIVE = "text-fg55 font-medium";
@@ -19,7 +20,11 @@ export function Header() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
+  const goBack = useGoBack();
   const isSearch = pathname === "/search";
+  // 상세 화면에서는 스크롤 위치와 상관없이 항상 닿는 뒤로가기를 헤더에 둔다.
+  // (iOS 사파리의 스와이프 뒤로가기는 화면 맨 왼쪽 가장자리에서만 동작한다)
+  const isDetail = pathname.startsWith("/content/");
   const [query, setQuery] = useState(isSearch ? (searchParams.get("q") ?? "") : "");
   const debounce = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -83,7 +88,19 @@ export function Header() {
   return (
     <header className="sticky top-0 z-50 border-b border-line8 bg-[rgba(11,10,15,0.85)] backdrop-blur-[14px]">
       <div className="page-shell flex h-16 items-center justify-between gap-4 lg:h-[72px] lg:gap-6">
-        <div className="flex min-w-0 items-center gap-12">
+        <div className="flex min-w-0 items-center gap-4 lg:gap-12">
+          {isDetail ? (
+            <button
+              type="button"
+              onClick={goBack}
+              aria-label="뒤로가기"
+              className="-ml-1 flex h-9 w-9 flex-none cursor-pointer items-center justify-center rounded-full text-fg75 hover:bg-surface6 lg:hidden"
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+                <path d="M15 18l-6-6 6-6" />
+              </svg>
+            </button>
+          ) : null}
           <Link
             href="/"
             className="flex flex-none gap-px text-xl font-extrabold tracking-[-0.5px] text-fg hover:text-fg lg:text-[22px]"
