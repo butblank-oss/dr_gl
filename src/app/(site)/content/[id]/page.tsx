@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { TrackedExternalLink } from "@/components/analytics/TrackedLink";
 import { ExternalLinkIcon } from "@/components/icons";
+import { EVENTS, hostOf } from "@/lib/analytics";
 import { BackButton } from "@/components/site/BackButton";
 import { BannerBackdrop, PosterCard } from "@/components/site/Banner";
 import { CommentSection } from "@/components/site/CommentSection";
@@ -106,8 +108,13 @@ export default async function ContentDetailPage({ params }: { params: Params }) 
             <section>
               <h2 className="mb-3.5 text-base font-bold">이런 작품은 어때요?</h2>
               <div className="grid gap-[18px] [grid-template-columns:repeat(auto-fill,minmax(150px,1fr))]">
-                {related.map((entry) => (
-                  <ContentCard key={entry.id} item={entry} />
+                {related.map((entry, index) => (
+                  <ContentCard
+                    key={entry.id}
+                    item={entry}
+                    listName="이런 작품은 어때요"
+                    position={index + 1}
+                  />
                 ))}
               </div>
             </section>
@@ -117,8 +124,13 @@ export default async function ContentDetailPage({ params }: { params: Params }) 
             <section>
               <h2 className="mb-3.5 text-base font-bold">{byLead.sharedLeadName}의 다른 작품</h2>
               <div className="grid gap-[18px] [grid-template-columns:repeat(auto-fill,minmax(150px,1fr))]">
-                {byLead.items.map((entry) => (
-                  <ContentCard key={entry.id} item={entry} />
+                {byLead.items.map((entry, index) => (
+                  <ContentCard
+                    key={entry.id}
+                    item={entry}
+                    listName="배우의 다른 작품"
+                    position={index + 1}
+                  />
                 ))}
               </div>
             </section>
@@ -159,15 +171,23 @@ export default async function ContentDetailPage({ params }: { params: Params }) 
 
               // URL이 등록된 플랫폼만 새 탭으로 열린다. 없으면 클릭해도 아무 동작 없음(안전 가드).
               return platform.url ? (
-                <a
+                <TrackedExternalLink
                   key={`${platform.name}-${index}`}
                   href={platform.url}
                   target="_blank"
                   rel="noreferrer noopener"
                   className={`${className} cursor-pointer text-fg hover:text-fg`}
+                  event={EVENTS.outboundPlatform}
+                  params={{
+                    content_id: item.id,
+                    content_title: item.title,
+                    platform_name: platform.name,
+                    platform_type: platform.type,
+                    destination: hostOf(platform.url),
+                  }}
                 >
                   {inner}
-                </a>
+                </TrackedExternalLink>
               ) : (
                 <div key={`${platform.name}-${index}`} className={className}>
                   {inner}

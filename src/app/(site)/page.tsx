@@ -1,5 +1,6 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
+import { TrackedLink } from "@/components/analytics/TrackedLink";
+import { EVENTS } from "@/lib/analytics";
 import { BannerBackdrop, PosterCard } from "@/components/site/Banner";
 import { ContentCard } from "@/components/site/ContentCard";
 import { getFeaturedContent, getHomeRows } from "@/lib/queries";
@@ -50,12 +51,22 @@ export default async function HomePage({
           </h1>
           <p className="line-clamp-2-box text-[13px] leading-relaxed text-fg68 md:text-sm">{hero.synopsis}</p>
           <div className="mt-1 flex flex-wrap gap-2.5">
-            <Link href={`/content/${hero.id}`} className="btn-grad px-[22px] py-3 text-sm">
+            <TrackedLink
+              href={`/content/${hero.id}`}
+              className="btn-grad px-[22px] py-3 text-sm"
+              event={EVENTS.selectContent}
+              params={{ content_id: hero.id, content_title: hero.title, list_name: "히어로", cta: "상세보기" }}
+            >
               상세보기
-            </Link>
-            <Link href={`/content/${hero.id}#watch`} className="btn-ghost px-[22px] py-3 text-sm">
+            </TrackedLink>
+            <TrackedLink
+              href={`/content/${hero.id}#watch`}
+              className="btn-ghost px-[22px] py-3 text-sm"
+              event={EVENTS.selectContent}
+              params={{ content_id: hero.id, content_title: hero.title, list_name: "히어로", cta: "시청 가능한 곳" }}
+            >
               시청 가능한 곳
-            </Link>
+            </TrackedLink>
           </div>
         </div>
         </div>
@@ -67,9 +78,9 @@ export default async function HomePage({
           <section key={row.id} className="flex flex-col gap-4">
             <h2 className="text-[19px] font-bold text-fg">{row.title}</h2>
             <div className="h-scroll flex gap-[18px] pb-1.5">
-              {row.items.map((item) => (
+              {row.items.map((item, index) => (
                 <div key={item.id} className="w-[132px] flex-none md:w-[170px]">
-                  <ContentCard item={item} />
+                  <ContentCard item={item} listName={row.title} position={index + 1} />
                 </div>
               ))}
             </div>

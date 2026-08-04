@@ -19,10 +19,12 @@
 | 인증 | 이메일·비밀번호(bcrypt) + HttpOnly 쿠키 세션(JWT, `jose`) + 역할 기반 권한 |
 | 스토리지 | 로컬 디스크(기본) / S3 호환 버킷 (`STORAGE_DRIVER` 로 전환) |
 | 검증 | zod (모든 쓰기 API 입력) |
+| 측정 | Google Analytics 4 (`NEXT_PUBLIC_GA_ID` — 미설정 시 스크립트를 넣지 않음) |
 
 > **정적 사이트가 아닙니다.** 모든 페이지가 요청마다 DB를 읽어 서버에서 렌더되고(`force-dynamic`),
 > 제보·한줄평·콘텐츠 편집이 전부 API를 거쳐 DB에 기록됩니다. GitHub Pages 같은 정적 호스팅에는 올릴 수 없고,
 > 서버가 도는 환경(Vercel 등)이 필요해요. 배포 절차는 [DEPLOY.md](./DEPLOY.md) 를 보세요.
+> 방문 기록 측정(구글 애널리틱스) 연결은 [ANALYTICS.md](./ANALYTICS.md) 를 보세요.
 
 ## 빠르게 실행해보기
 

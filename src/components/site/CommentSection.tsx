@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { SpinnerIcon } from "@/components/icons";
+import { EVENTS, track } from "@/lib/analytics";
 import { formatDate } from "@/lib/format";
 import type { CommentDTO } from "@/lib/types";
 
@@ -43,6 +44,7 @@ export function CommentSection({ itemId, initialComments }: Props) {
       }
       setComments((prev) => [...prev, data.comment as CommentDTO]);
       setDraft("");
+      track(EVENTS.commentSubmit, { content_id: itemId, length: text.length });
     } catch {
       setError("네트워크 오류로 한줄평을 남기지 못했어요.");
     } finally {
@@ -93,7 +95,12 @@ export function CommentSection({ itemId, initialComments }: Props) {
           {hasMoreToggle ? (
             <button
               type="button"
-              onClick={() => setShowAll((v) => !v)}
+              onClick={() => {
+                if (!showAll) {
+                  track(EVENTS.commentExpand, { content_id: itemId, total: comments.length });
+                }
+                setShowAll((v) => !v);
+              }}
               className="btn-ghost mt-3 px-[18px] py-2.5 text-[13px] text-fg75"
             >
               {showAll ? "접기" : `더보기 (${comments.length - 5})`}

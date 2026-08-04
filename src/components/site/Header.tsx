@@ -1,10 +1,11 @@
 "use client";
 
-import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { TrackedLink } from "@/components/analytics/TrackedLink";
 import { SearchIcon } from "@/components/icons";
 import { useGoBack } from "@/components/site/useGoBack";
+import { EVENTS, track } from "@/lib/analytics";
 
 const ACTIVE = "text-fg font-bold";
 const INACTIVE = "text-fg55 font-medium";
@@ -35,8 +36,10 @@ export function Header() {
 
   useEffect(() => () => { if (debounce.current) clearTimeout(debounce.current); }, []);
 
+  // 검색어 자체(search 이벤트)는 결과 건수까지 같이 남길 수 있는 검색 화면에서 한 번만 기록한다.
   const goSearch = (value: string) => {
-    router.push(value.trim() ? `/search?q=${encodeURIComponent(value.trim())}` : "/search");
+    const term = value.trim();
+    router.push(term ? `/search?q=${encodeURIComponent(term)}` : "/search");
   };
 
   const onChange = (value: string) => {
@@ -71,7 +74,13 @@ export function Header() {
   );
 
   const navLinks = NAV.map((nav) => (
-    <Link key={nav.href} href={nav.href} className={navClass(pathname === nav.href)}>
+    <TrackedLink
+      key={nav.href}
+      href={nav.href}
+      className={navClass(pathname === nav.href)}
+      event={EVENTS.nav}
+      params={{ label: nav.label, to: nav.href, from: pathname }}
+    >
       {nav.badge ? (
         <span className="flex items-center gap-[7px]">
           {nav.label}
@@ -82,7 +91,7 @@ export function Header() {
       ) : (
         nav.label
       )}
-    </Link>
+    </TrackedLink>
   ));
 
   return (
@@ -92,7 +101,10 @@ export function Header() {
           {isDetail ? (
             <button
               type="button"
-              onClick={goBack}
+              onClick={() => {
+                track(EVENTS.nav, { label: "뒤로가기", from: pathname });
+                goBack();
+              }}
               aria-label="뒤로가기"
               className="-ml-1 flex h-9 w-9 flex-none cursor-pointer items-center justify-center rounded-full text-fg75 hover:bg-surface6 lg:hidden"
             >
@@ -101,20 +113,24 @@ export function Header() {
               </svg>
             </button>
           ) : null}
-          <Link
+          <TrackedLink
             href="/"
             className="flex flex-none gap-px text-xl font-extrabold tracking-[-0.5px] text-fg hover:text-fg lg:text-[22px]"
+            event={EVENTS.nav}
+            params={{ label: "로고", to: "/", from: pathname }}
           >
             Dr.<span className="text-accent">GL</span>
-          </Link>
+          </TrackedLink>
           {/* 데스크톱에서만 헤더 한 줄에 nav 를 같이 둔다 */}
           <nav className="hidden items-center gap-8 lg:flex">{navLinks}</nav>
         </div>
 
         <div className="flex min-w-0 flex-1 items-center justify-end gap-2 lg:flex-none lg:gap-6">
           <div className="min-w-0 flex-1 lg:w-[280px] lg:flex-none">{searchBox}</div>
-          <Link
+          <TrackedLink
             href="/submit"
+            event={EVENTS.nav}
+            params={{ label: "제보하기", to: "/submit", from: pathname, source: "헤더" }}
             className={
               isSubmit
                 ? "btn-grad h-10 flex-none whitespace-nowrap px-3 text-[13px] lg:px-4"
@@ -123,7 +139,7 @@ export function Header() {
           >
             <span className="lg:hidden">+ 제보</span>
             <span className="hidden lg:inline">+ 제보하기</span>
-          </Link>
+          </TrackedLink>
         </div>
       </div>
 

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { ChatIcon, SpinnerIcon } from "@/components/icons";
+import { EVENTS, track } from "@/lib/analytics";
 
 const PREVIEW_CATEGORIES = ["자유게시판", "작품 후기", "추천 요청", "착즙 정보 공유"];
 
@@ -27,6 +28,7 @@ export default function BoardPage() {
         return;
       }
       setNotified(true);
+      track(EVENTS.notifySignup);
     } catch {
       setError("네트워크 오류로 알림을 신청하지 못했어요.");
     } finally {

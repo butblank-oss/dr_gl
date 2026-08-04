@@ -1,5 +1,6 @@
-import Link from "next/link";
+import { TrackedLink } from "@/components/analytics/TrackedLink";
 import { ImageWithFallback } from "@/components/ImageWithFallback";
+import { EVENTS } from "@/lib/analytics";
 import { leadsText } from "@/lib/format";
 import type { ContentDTO } from "@/lib/types";
 
@@ -19,13 +20,35 @@ function PosterPlaceholder({ item, leads }: { item: ContentDTO; leads: string })
  * 영화·웹툰 포스터는 대부분 세로(2:3)라 카드도 같은 비율로 둔다.
  * 가로 4:3로 두면 포스터 위아래(제목·크레딧)가 잘려나간다.
  */
-export function ContentCard({ item }: { item: ContentDTO }) {
+export function ContentCard({
+  item,
+  listName,
+  position,
+}: {
+  item: ContentDTO;
+  /** 어느 목록에서 눌렀는지 (예: "이번 주 추천", "검색결과") */
+  listName?: string;
+  /** 목록 안에서 몇 번째였는지 (1부터) */
+  position?: number;
+}) {
   const leads = leadsText(item.leads);
   const image = item.poster ? item.posterUrl : null;
   const placeholder = <PosterPlaceholder item={item} leads={leads} />;
 
   return (
-    <Link href={`/content/${item.id}`} className="group flex w-full flex-col gap-2.5 text-fg">
+    <TrackedLink
+      href={`/content/${item.id}`}
+      className="group flex w-full flex-col gap-2.5 text-fg"
+      event={EVENTS.selectContent}
+      params={{
+        content_id: item.id,
+        content_title: item.title,
+        content_category: item.category,
+        juice: item.juice,
+        list_name: listName,
+        position,
+      }}
+    >
       <div className="card-hover relative aspect-2/3 w-full overflow-hidden rounded-[14px] bg-tile shadow-[0_1px_2px_rgba(0,0,0,0.4)]">
         {image ? (
           <ImageWithFallback
@@ -52,6 +75,6 @@ export function ContentCard({ item }: { item: ContentDTO }) {
         </div>
         <div className="truncate text-[11px] text-fg40">출연 {leads}</div>
       </div>
-    </Link>
+    </TrackedLink>
   );
 }

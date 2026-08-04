@@ -1,5 +1,7 @@
-import Link from "next/link";
+import { TrackedLink } from "@/components/analytics/TrackedLink";
+import { EVENTS } from "@/lib/analytics";
 import { ContentCard } from "@/components/site/ContentCard";
+import { SearchTracker } from "@/components/site/SearchTracker";
 import { searchContents } from "@/lib/queries";
 
 export const dynamic = "force-dynamic";
@@ -16,6 +18,7 @@ export default async function SearchPage({
 
   return (
     <div className="page-shell py-10">
+      <SearchTracker query={query} results={results.length} />
       {query ? (
         <>
           <div className="mb-5 text-[15px] text-fg60">
@@ -23,8 +26,8 @@ export default async function SearchPage({
           </div>
           {results.length > 0 ? (
             <div className="grid gap-[22px] [grid-template-columns:repeat(auto-fill,minmax(140px,1fr))] md:[grid-template-columns:repeat(auto-fill,minmax(170px,1fr))]">
-              {results.map((item) => (
-                <ContentCard key={item.id} item={item} />
+              {results.map((item, index) => (
+                <ContentCard key={item.id} item={item} listName="검색 결과" position={index + 1} />
               ))}
             </div>
           ) : (
@@ -38,13 +41,15 @@ export default async function SearchPage({
           <div className="text-lg font-bold">찾고 싶은 작품을 검색해보세요</div>
           <div className="flex max-w-[480px] flex-wrap justify-center gap-2">
             {SUGGESTED_TAGS.map((tag) => (
-              <Link
+              <TrackedLink
                 key={tag}
                 href={`/search?q=${encodeURIComponent(tag)}`}
                 className="rounded-pill border border-line12 bg-surface4 px-4 py-2 text-[13px] text-fg70"
+                event={EVENTS.searchSuggestion}
+                params={{ search_term: tag }}
               >
                 #{tag}
-              </Link>
+              </TrackedLink>
             ))}
           </div>
         </div>

@@ -1,4 +1,5 @@
-import Link from "next/link";
+import { TrackedExternalLink, TrackedLink } from "@/components/analytics/TrackedLink";
+import { EVENTS } from "@/lib/analytics";
 import { SITE } from "@/lib/site";
 
 export function Footer() {
@@ -6,16 +7,31 @@ export function Footer() {
     <footer className="mt-auto border-t border-line6">
       <div className="page-shell flex flex-col gap-4 py-8">
         <nav className="flex flex-wrap items-center gap-x-5 gap-y-2 text-[13px]">
-          <Link href="/terms" className="text-fg55 hover:text-fg">
+          <TrackedLink
+            href="/terms"
+            className="text-fg55 hover:text-fg"
+            event={EVENTS.nav}
+            params={{ label: "이용약관", to: "/terms", source: "푸터" }}
+          >
             이용약관
-          </Link>
+          </TrackedLink>
           {/* 개인정보처리방침은 다른 항목보다 눈에 띄게 표시한다 */}
-          <Link href="/privacy" className="font-bold text-fg hover:text-fg">
+          <TrackedLink
+            href="/privacy"
+            className="font-bold text-fg hover:text-fg"
+            event={EVENTS.nav}
+            params={{ label: "개인정보처리방침", to: "/privacy", source: "푸터" }}
+          >
             개인정보처리방침
-          </Link>
-          <a href={`mailto:${SITE.email}`} className="text-fg55 hover:text-fg">
+          </TrackedLink>
+          <TrackedExternalLink
+            href={`mailto:${SITE.email}`}
+            className="text-fg55 hover:text-fg"
+            event={EVENTS.nav}
+            params={{ label: "문의 메일", source: "푸터" }}
+          >
             문의 · 저작권 삭제 요청
-          </a>
+          </TrackedExternalLink>
         </nav>
 
         <p className="max-w-[720px] text-xs leading-relaxed text-fg40">

@@ -1,9 +1,10 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { TrackedButton, TrackedExternalLink, TrackedLink } from "@/components/analytics/TrackedLink";
 import { CheckIcon, SpinnerIcon } from "@/components/icons";
+import { EVENTS, track } from "@/lib/analytics";
 import { COUNTRIES } from "@/lib/types";
 
 type Props = { categories: string[] };
@@ -31,6 +32,11 @@ export function SubmitForm({ categories }: Props) {
   // 같은 주소라 아무 일도 일어나지 않던 문제가 사라진다.
   const submitted = searchParams.get("done") === "1";
 
+  // 제보 폼을 실제로 연 순간이 깔때기의 시작점이다. (완료 화면은 제외)
+  useEffect(() => {
+    if (!submitted) track(EVENTS.submitStart);
+  }, [submitted]);
+
   const reset = () => {
     setForm(emptyForm(firstCategory));
     setError("");
@@ -40,6 +46,7 @@ export function SubmitForm({ categories }: Props) {
   const submit = async () => {
     if (!form.title.trim() || !form.url.trim()) {
       setError("제목과 링크는 꼭 입력해주세요.");
+      track(EVENTS.submitError, { reason: "필수값 누락" });
       return;
     }
     setPending(true);
@@ -53,11 +60,20 @@ export function SubmitForm({ categories }: Props) {
       const data = await res.json();
       if (!res.ok) {
         setError(data.error ?? "제보를 등록하지 못했어요.");
+        track(EVENTS.submitError, { reason: "서버 거절", status: res.status });
         return;
       }
+      track(EVENTS.submitComplete, {
+        category: form.category,
+        country: form.country,
+        juice: form.juice,
+        has_platform: Boolean(form.platform.trim()),
+        has_contact: Boolean(form.contact.trim()),
+      });
       router.replace("/submit?done=1");
     } catch {
       setError("네트워크 오류로 제보를 등록하지 못했어요.");
+      track(EVENTS.submitError, { reason: "네트워크" });
     } finally {
       setPending(false);
     }
@@ -75,12 +91,23 @@ export function SubmitForm({ categories }: Props) {
           않을 수 있어요.
         </div>
         <div className="mt-1.5 flex gap-2.5">
-          <button type="button" onClick={reset} className="btn-ghost px-[22px] py-3 text-sm">
+          <TrackedButton
+            type="button"
+            onClick={reset}
+            className="btn-ghost px-[22px] py-3 text-sm"
+            event={EVENTS.nav}
+            params={{ label: "제보 하나 더 하기", source: "제보 완료" }}
+          >
             제보 하나 더 하기
-          </button>
-          <Link href="/" className="btn-grad px-[22px] py-3 text-sm">
+          </TrackedButton>
+          <TrackedLink
+            href="/"
+            className="btn-grad px-[22px] py-3 text-sm"
+            event={EVENTS.nav}
+            params={{ label: "홈으로", to: "/", source: "제보 완료" }}
+          >
             홈으로
-          </Link>
+          </TrackedLink>
         </div>
       </div>
     );
@@ -169,9 +196,15 @@ export function SubmitForm({ categories }: Props) {
         />
         <span className="text-xs leading-relaxed text-fg40">
           공식 링크가 없다면 구글 드라이브에 자료를 올리고 폴더 링크를 붙여넣어도 돼요.{" "}
-          <a href="https://drive.google.com" target="_blank" rel="noreferrer">
+          <TrackedExternalLink
+            href="https://drive.google.com"
+            target="_blank"
+            rel="noreferrer"
+            event={EVENTS.nav}
+            params={{ label: "구글 드라이브 열기", source: "제보 폼" }}
+          >
             구글 드라이브 열기 →
-          </a>
+          </TrackedExternalLink>
         </span>
       </label>
 

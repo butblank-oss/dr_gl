@@ -1,4 +1,5 @@
-import Link from "next/link";
+import { TrackedLink } from "@/components/analytics/TrackedLink";
+import { EVENTS } from "@/lib/analytics";
 import { ContentCard } from "@/components/site/ContentCard";
 import { getCategories, getFilteredContents } from "@/lib/queries";
 import { COUNTRY_FILTERS } from "@/lib/types";
@@ -36,39 +37,45 @@ export default async function CategoryPage({ searchParams }: { searchParams: Sea
 
       <div className="mb-3.5 flex flex-wrap gap-2">
         {["전체", ...categories.map((c) => c.name)].map((name) => (
-          <Link
+          <TrackedLink
             key={name}
             href={chipHref({ category: name, country, juice: juiceOnly ? "true" : undefined })}
             className={`chip ${category === name ? "chip-on" : "chip-off"}`}
+            event={EVENTS.filter}
+            params={{ filter_type: "category", filter_value: name }}
           >
             {name}
-          </Link>
+          </TrackedLink>
         ))}
       </div>
 
       <div className="mb-8 flex flex-wrap items-center gap-2">
         {COUNTRY_FILTERS.map((name) => (
-          <Link
+          <TrackedLink
             key={name}
             href={chipHref({ category, country: name, juice: juiceOnly ? "true" : undefined })}
             className={`chip ${country === name ? "chip-on" : "chip-off"}`}
+            event={EVENTS.filter}
+            params={{ filter_type: "country", filter_value: name }}
           >
             {name}
-          </Link>
+          </TrackedLink>
         ))}
         <div className="mx-1.5 h-5 w-px bg-line12" />
-        <Link
+        <TrackedLink
           href={chipHref({ category, country, juice: juiceParam })}
           className={`chip ${juiceOnly ? "chip-juice-on" : "chip-off"}`}
+          event={EVENTS.filter}
+          params={{ filter_type: "juice", filter_value: juiceOnly ? "off" : "on" }}
         >
           착즙만 보기
-        </Link>
+        </TrackedLink>
       </div>
 
       {items.length > 0 ? (
         <div className="grid gap-[22px] [grid-template-columns:repeat(auto-fill,minmax(140px,1fr))] md:[grid-template-columns:repeat(auto-fill,minmax(170px,1fr))]">
-          {items.map((item) => (
-            <ContentCard key={item.id} item={item} />
+          {items.map((item, index) => (
+            <ContentCard key={item.id} item={item} listName="카테고리 탐색" position={index + 1} />
           ))}
         </div>
       ) : (
