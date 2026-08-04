@@ -15,26 +15,45 @@
 
 ## 0단계 — 가입 전에 알아둘 것
 
-대부분 기본값 그대로 두면 되는데, **나중에 바꾸기 번거로운 게 두 가지** 있어요.
+대부분 기본값 그대로 두면 되는데, **Neon 프로젝트를 만든 뒤에는 못 바꾸는 게 두 가지** 있어요.
+먼저 읽고 시작하세요.
 
-### ① 리전(지역)은 Neon과 Vercel을 반드시 맞추세요 ← 가장 중요
+### ① 리전(지역)은 Neon과 Vercel을 반드시 **같은 대륙**으로
 
 페이지를 열 때마다 서버가 DB를 여러 번 조회해요. 서버와 DB가 다른 대륙에 있으면
 한 페이지 여는 데 왕복이 몇 번씩 태평양을 건너면서 눈에 띄게 느려집니다.
+**둘 중 하나만 바꾸는 게 제일 나쁜 조합이에요.**
 
-한국에서 쓰신다면 이 조합을 권합니다.
+**권장 (설정할 게 없는 쪽)**
 
 | | 고를 값 |
 |---|---|
-| Neon 리전 | **AWS ap-southeast-1 (Singapore)** |
-| Vercel 함수 리전 | **Singapore (sin1)** |
+| Neon 리전 | **AWS US East** (Ohio / N. Virginia 아무거나) |
+| Vercel 함수 리전 | **기본값 그대로** (Washington D.C. — 미국 동부) |
 
-- Neon은 **프로젝트를 만든 뒤에는 리전을 못 바꿔요.** 옮기려면 새로 만들고 데이터를 이사해야 합니다.
-- Vercel 함수 리전은 Import 후 **Settings → Functions → Function Region** 에서 바꿀 수 있어요 (무료 플랜도 한 곳은 지정 가능).
-- 만약 Vercel에서 리전 선택이 안 보이면, 반대로 **Neon을 US East (N. Virginia)** 로 만드세요.
-  Vercel 기본 함수 리전이 미국 동부라 그쪽으로 맞추는 게 맞습니다.
+Vercel 기본 함수 리전이 미국 동부라, Neon을 미국 동부로 만들면 Vercel에서 **아무것도 건드릴 필요가 없어요.**
+Ohio와 N. Virginia는 서로 10ms 남짓이라 어느 쪽이든 같습니다.
 
-### ② Vercel은 "Personal Account(Hobby)" 로 가입하세요
+**한국 방문자 체감 속도를 더 챙기고 싶다면 (설정 한 단계 추가)**
+
+Neon을 `AWS ap-southeast-1 (Singapore)` 로 만들고, Vercel Import 후
+**Settings → Functions → Function Region** 을 `Singapore (sin1)` 로 **반드시 같이** 바꾸세요.
+한쪽만 바꾸면 위 권장안보다 느려집니다.
+
+> Neon은 **프로젝트를 만든 뒤에는 리전을 못 바꿔요.** 옮기려면 새 프로젝트를 만들고 데이터를 이사해야 합니다.
+
+### ② Postgres 버전은 17을 고르세요
+
+드롭다운에 18이 기본으로 잡혀 있을 수 있는데, **17이 있으면 17로 내려주세요.**
+
+- 이 프로젝트는 18에서 새로 생긴 기능을 하나도 쓰지 않아요. 올려서 얻는 게 없습니다.
+- 반면 Prisma가 공식적으로 검증해 둔 최신 메이저는 17이라, 18은 마이그레이션 도구 쪽에서
+  예상 못 한 문제가 날 여지가 남아요.
+- Postgres 메이저 버전도 리전처럼 **나중에 프로젝트 안에서 못 바꿉니다.**
+
+(18로 만들어도 실제로는 잘 돌 가능성이 높지만, 굳이 확인 안 된 쪽을 고를 이유가 없어요.)
+
+### ③ Vercel은 "Personal Account(Hobby)" 로 가입하세요
 
 - 가입 도중 팀을 만들지 물어보면 **Personal Account** 를 고르세요. 팀으로 만들면 유료(Pro) 흐름으로 갑니다.
 - `butblank-oss` 는 개인 계정이라 Hobby 플랜에서 그대로 Import됩니다. 카드 등록 필요 없어요.
@@ -59,8 +78,9 @@
 1. https://neon.tech 접속 → **Sign up** → **Continue with GitHub**
 2. 프로젝트 생성 화면에서
    - Project name: `dr-gl`
-   - Postgres version: 기본값 그대로
-   - Region: **AWS ap-southeast-1 (Singapore)** — 0단계 참고, 나중에 못 바꿔요
+   - Postgres version: **17** (0단계 ② 참고 — 나중에 못 바꿔요)
+   - Region: **AWS US East (Ohio 또는 N. Virginia)** (0단계 ① 참고 — 나중에 못 바꿔요)
+   - Neon Auth: **꺼둔 채로** (이 프로젝트는 자체 어드민 인증을 씁니다)
    - **Create project** 클릭
 3. 생성되면 **Connection string** 이 보여요. 여기서 **두 개**를 각각 복사해 메모장에 붙여둡니다.
    - **Pooled connection** (주소에 `-pooler` 가 들어있는 것) → 이걸 `DATABASE_URL` 로 쓸 거예요
