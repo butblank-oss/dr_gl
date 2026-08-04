@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { COUNTRIES, CREATOR_LABELS, PLATFORM_TYPES } from "@/lib/types";
+import { ADMIN_ROLES, COUNTRIES, CREATOR_LABELS, PLATFORM_TYPES } from "@/lib/types";
 
 export const platformSchema = z.object({
   name: z.string().trim().min(1, "플랫폼 이름을 입력해주세요."),
@@ -92,3 +92,35 @@ export function splitCommaList(raw: string): string[] {
     .map((x) => x.trim())
     .filter(Boolean);
 }
+
+/* ---------- 운영자 계정 ---------- */
+
+const emailField = z
+  .string()
+  .trim()
+  .toLowerCase()
+  .refine((v) => /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v), "이메일 형식을 확인해주세요.");
+
+const passwordField = z
+  .string()
+  .min(8, "비밀번호는 8자 이상으로 정해주세요.")
+  .max(72, "비밀번호가 너무 길어요.");
+
+export const adminCreateSchema = z.object({
+  email: emailField,
+  name: z.string().trim().max(30).default(""),
+  password: passwordField,
+  role: z.enum(ADMIN_ROLES).default("EDITOR"),
+});
+
+export const adminUpdateSchema = z.object({
+  name: z.string().trim().max(30).optional(),
+  role: z.enum(ADMIN_ROLES).optional(),
+  isActive: z.boolean().optional(),
+  password: passwordField.optional(),
+});
+
+export const passwordChangeSchema = z.object({
+  currentPassword: z.string().min(1, "현재 비밀번호를 입력해주세요."),
+  newPassword: passwordField,
+});

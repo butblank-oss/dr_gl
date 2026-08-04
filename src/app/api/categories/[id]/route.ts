@@ -1,5 +1,5 @@
 import { fail, handle, ok, parseId } from "@/lib/api";
-import { requireAdmin, requireRole } from "@/lib/auth";
+import { requireAdmin } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { serializeCategory } from "@/lib/serialize";
 import { categoryUpdateSchema } from "@/lib/validation";
@@ -42,7 +42,7 @@ export async function PATCH(req: Request, { params }: Params) {
 
 export async function DELETE(_req: Request, { params }: Params) {
   return handle(async () => {
-    await requireRole("ADMIN");
+    await requireAdmin();
     const id = parseId((await params).id);
     const existing = await prisma.category.findUnique({ where: { id } });
     if (!existing) return fail("카테고리를 찾을 수 없어요.", 404);

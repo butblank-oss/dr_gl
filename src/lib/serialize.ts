@@ -1,10 +1,13 @@
 import type {
+  AdminUser as AdminUserRow,
   Category as CategoryRow,
   Comment as CommentRow,
   Content as ContentRow,
   Submission as SubmissionRow,
 } from "@prisma/client";
 import type {
+  AdminRole,
+  AdminUserDTO,
   CategoryDTO,
   CommentDTO,
   CommentStatus,
@@ -77,6 +80,19 @@ export function serializeComment(row: CommentRow): CommentDTO {
     itemId: row.itemId,
     text: row.text,
     status: row.status as CommentStatus,
+    createdAt: row.createdAt.toISOString(),
+  };
+}
+
+/** 비밀번호 해시는 절대 밖으로 내보내지 않는다. */
+export function serializeAdminUser(row: AdminUserRow): AdminUserDTO {
+  return {
+    id: row.id,
+    email: row.email,
+    name: row.name,
+    role: (row.role === "ADMIN" ? "ADMIN" : "EDITOR") as AdminRole,
+    isActive: row.isActive,
+    lastLoginAt: row.lastLoginAt ? row.lastLoginAt.toISOString() : null,
     createdAt: row.createdAt.toISOString(),
   };
 }

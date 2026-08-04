@@ -78,6 +78,21 @@ export type HomeRowDTO = {
   items: ContentDTO[];
 };
 
+export type AdminUserDTO = {
+  id: number;
+  email: string;
+  name: string;
+  role: AdminRole;
+  isActive: boolean;
+  lastLoginAt: string | null;
+  createdAt: string;
+};
+
+export const ADMIN_ROLE_LABELS: Record<AdminRole, string> = {
+  ADMIN: "슈퍼관리자",
+  EDITOR: "운영자",
+};
+
 export type SessionUser = {
   id: number;
   email: string;

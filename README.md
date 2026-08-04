@@ -76,6 +76,7 @@ npm run dev
 | `/admin/categories` | 추가(중복 방지) / 이름변경(연관 콘텐츠 cascade) / 삭제(사용 중이면 차단) + "착즙은 카테고리가 아니다" 안내 |
 | `/admin/submissions` | 필터 탭(대기중·승인됨·반려됨·전체) + "검토 · 발행"(콘텐츠 추가/수정과 동일한 폼을 제보 데이터로 프리필 + 제보 원본 참고 패널) / "반려" |
 | `/admin/comments` | 필터 탭(전체·노출중·숨김) + 작성 시각 + 사이트 상세로 가는 새 탭 링크 + 노출/숨김 토글 + 삭제 |
+| `/admin/accounts` | **슈퍼관리자 전용.** 운영자 계정 생성·역할 변경·비밀번호 재설정·비활성화·삭제 |
 
 ## 데이터 모델
 
@@ -89,7 +90,8 @@ npm run dev
   rate limit 용 `ipHash`(원본 IP는 저장하지 않음).
 - **HomeRow / HomeRowItem** — 홈 가로 스크롤 행 큐레이션.
 - **SiteSetting** — `featuredId`(히어로 배너 콘텐츠).
-- **AdminUser** — 운영자 계정(`role: ADMIN | EDITOR`).
+- **AdminUser** — 운영자 계정. `role: ADMIN`(슈퍼관리자, 계정 관리까지) / `EDITOR`(운영자, 계정 관리 외 전부).
+  비활성화하면 로그인은 물론 이미 열려 있던 세션도 다음 요청부터 막힌다.
 - **NotifySignup** — 게시판 오픈 알림 신청.
 
 ## API
@@ -101,20 +103,22 @@ npm run dev
 | `POST /api/auth/login` · `POST /api/auth/logout` · `GET /api/auth/me` | 공개 | 어드민 세션 |
 | `GET /api/content` | 공개 | 목록·필터·검색 |
 | `POST /api/content`, `PATCH /api/content/:id` | 운영자 | 콘텐츠 생성·수정 |
-| `DELETE /api/content/:id` | ADMIN | 콘텐츠 삭제 |
+| `DELETE /api/content/:id` | 운영자 | 콘텐츠 삭제 |
 | `GET /api/categories` | 공개 | 카테고리 + 사용 중인 콘텐츠 수 |
 | `POST /api/categories` · `PATCH /api/categories/:id` | 운영자 | 추가(중복 409) · 이름변경(cascade) |
-| `DELETE /api/categories/:id` | ADMIN | 사용 중이면 409 + 걸린 콘텐츠 수 반환 |
+| `DELETE /api/categories/:id` | 운영자 | 사용 중이면 409 + 걸린 콘텐츠 수 반환 |
 | `POST /api/submissions` | 공개 | 사이트 제보 폼 |
 | `GET /api/submissions` · `PATCH /api/submissions/:id` | 운영자 | 목록 · 상태 변경 |
 | `POST /api/submissions/:id/publish` | 운영자 | **콘텐츠 생성 + 제보 승인을 한 트랜잭션으로 처리** |
 | `GET /api/comments?itemId=` · `POST /api/comments` | 공개 | 노출중 한줄평 조회 · 익명 작성(rate limit) |
 | `PATCH /api/comments/:id` | 운영자 | 노출/숨김 토글 |
-| `DELETE /api/comments/:id` | ADMIN | 영구 삭제 |
+| `DELETE /api/comments/:id` | 운영자 | 영구 삭제 |
 | `POST /api/uploads` | 운영자 | 이미지 업로드(5MB, jpg/png/webp/gif/avif) |
 | `GET /api/home-rows` · `POST` · `PATCH /:id` · `DELETE /:id` | 운영자 | 홈 큐레이션 |
 | `PUT /api/settings/featured` | 운영자 | 히어로 배너 콘텐츠 지정 |
 | `POST /api/notify` | 공개 | 게시판 오픈 알림 신청 |
+| `GET/POST /api/admins`, `PATCH/DELETE /api/admins/:id` | **슈퍼관리자** | 운영자 계정 관리 |
+| `PATCH /api/admins/me/password` | 로그인한 본인 | 내 비밀번호 변경 |
 | `GET /media/*` | 공개 | 로컬 스토리지 이미지 서빙 |
 
 ## 프로토타입에서 교체한 것
@@ -124,7 +128,7 @@ npm run dev
 | `localStorage` 키 `drgl_store_v1` 공유 | Postgres + Prisma. 모든 페이지가 `force-dynamic` 이라 요청마다 최신 데이터를 읽음 |
 | 다른 탭 동기화용 `storage` 이벤트 | 서버가 단일 진실 공급원이라 기기·브라우저가 달라도 동일하게 반영 |
 | `<image-slot>` sidecar 업로드 | `POST /api/uploads` → 로컬 디스크 또는 S3 호환 버킷. 저장된 URL을 `Content.posterUrl` / `backdropUrl` 에 기록 |
-| 어드민 인증 없음 | 로그인 필수 + 역할 기반 권한(삭제류는 ADMIN 전용) + `/admin/*` 미들웨어 가드 |
+| 어드민 인증 없음 | 로그인 필수 + 역할 기반 권한(슈퍼관리자/운영자) + `/admin/*` 미들웨어 가드 + 어드민 안에서 계정 관리 |
 | 한줄평 무제한 작성 | IP 해시 기준 rate limit (기본 10분에 5건, `.env` 로 조정) |
 | 콘텐츠 생성과 제보 승인이 별개 state 갱신 | `POST /api/submissions/:id/publish` 한 트랜잭션. 중복 승인은 409 |
 | `window.confirm()` | 자체 확인 모달 + 결과 토스트 |

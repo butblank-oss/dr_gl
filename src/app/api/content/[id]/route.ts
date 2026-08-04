@@ -1,5 +1,5 @@
 import { fail, handle, ok, parseId } from "@/lib/api";
-import { requireAdmin, requireRole } from "@/lib/auth";
+import { requireAdmin } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { serializeContent } from "@/lib/serialize";
 import { contentInputSchema } from "@/lib/validation";
@@ -35,8 +35,7 @@ export async function PATCH(req: Request, { params }: Params) {
 
 export async function DELETE(_req: Request, { params }: Params) {
   return handle(async () => {
-    // 파괴적 동작은 ADMIN 역할만 수행할 수 있다.
-    await requireRole("ADMIN");
+    await requireAdmin();
     const id = parseId((await params).id);
     const existing = await prisma.content.findUnique({ where: { id } });
     if (!existing) return fail("콘텐츠를 찾을 수 없어요.", 404);

@@ -2,7 +2,10 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { useState } from "react";
+import { PasswordChange } from "@/components/admin/PasswordChange";
 import { api } from "@/lib/client-api";
+import { ADMIN_ROLE_LABELS } from "@/lib/types";
 import type { SessionUser } from "@/lib/types";
 
 const NAV = [
@@ -12,6 +15,8 @@ const NAV = [
   { href: "/admin/categories", label: "카테고리 관리" },
   { href: "/admin/submissions", label: "제보 검토", badgeKey: "pending" as const },
   { href: "/admin/comments", label: "한줄평 검수" },
+  // 계정 관리는 슈퍼관리자에게만 보인다.
+  { href: "/admin/accounts", label: "계정 관리", adminOnly: true as const },
 ];
 
 const ACTIVE =
@@ -22,6 +27,7 @@ const INACTIVE =
 export function AdminSidebar({ user, pendingCount }: { user: SessionUser; pendingCount: number }) {
   const pathname = usePathname();
   const router = useRouter();
+  const [passwordOpen, setPasswordOpen] = useState(false);
 
   const logout = async () => {
     await api("/api/auth/logout", { method: "POST" });
@@ -38,7 +44,7 @@ export function AdminSidebar({ user, pendingCount }: { user: SessionUser; pendin
         <span className="text-[11px] font-semibold text-fg40">Admin</span>
       </div>
 
-      {NAV.map((nav) => {
+      {NAV.filter((nav) => !("adminOnly" in nav) || user.role === "ADMIN").map((nav) => {
         const active = nav.href === "/admin" ? pathname === "/admin" : pathname.startsWith(nav.href);
         const showBadge = nav.badgeKey === "pending" && pendingCount > 0;
         return (
@@ -59,18 +65,27 @@ export function AdminSidebar({ user, pendingCount }: { user: SessionUser; pendin
         </div>
         <div className="flex flex-col gap-1 border-t border-line6 pt-3">
           <div className="truncate text-[11px] text-fg55">{user.email}</div>
-          <div className="text-[10px] text-fg35">
-            역할 · {user.role === "ADMIN" ? "관리자(ADMIN)" : "에디터(EDITOR)"}
+          <div className="text-[10px] text-fg35">역할 · {ADMIN_ROLE_LABELS[user.role]}</div>
+          <div className="mt-1 flex flex-wrap gap-1.5">
+            <button
+              type="button"
+              onClick={() => setPasswordOpen(true)}
+              className="w-fit cursor-pointer rounded-lg border border-line12 bg-surface4 px-2.5 py-1.5 text-[11px] text-fg70"
+            >
+              비밀번호 변경
+            </button>
+            <button
+              type="button"
+              onClick={logout}
+              className="w-fit cursor-pointer rounded-lg border border-line12 bg-surface4 px-2.5 py-1.5 text-[11px] text-fg70"
+            >
+              로그아웃
+            </button>
           </div>
-          <button
-            type="button"
-            onClick={logout}
-            className="mt-1 w-fit cursor-pointer rounded-lg border border-line12 bg-surface4 px-2.5 py-1.5 text-[11px] text-fg70"
-          >
-            로그아웃
-          </button>
         </div>
       </div>
+
+      {passwordOpen ? <PasswordChange onClose={() => setPasswordOpen(false)} /> : null}
     </aside>
   );
 }
