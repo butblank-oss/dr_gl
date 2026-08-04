@@ -114,9 +114,18 @@ Neon을 `AWS ap-southeast-1 (Singapore)` 로 만들고, Vercel Import 후
    | `DATABASE_URL` | 1단계에서 복사한 **Pooled** 연결 문자열 |
    | `DIRECT_URL` | 1단계에서 복사한 **Direct** 연결 문자열 |
    | `AUTH_SECRET` | 2단계에서 만든 무작위 문자열 |
-   | `SEED_ADMIN_EMAIL` | 어드민 로그인에 쓸 이메일 (예: `but.blank@gmail.com`) |
+   | `SEED_ADMIN_EMAIL` | 어드민 로그인에 쓸 이메일 (직접 정하세요) |
    | `SEED_ADMIN_PASSWORD` | 어드민 로그인에 쓸 비밀번호 (직접 정하세요) |
-   | `STORAGE_DRIVER` | `db` — 포스터 이미지를 DB에 저장 (Vercel은 디스크에 못 씀) |
+   | `STORAGE_DRIVER` | `db` — 이 세 글자를 그대로 (Vercel은 디스크에 못 씀) |
+
+   > ⚠️ **연결 문자열은 Neon의 `Copy snippet` 버튼으로 복사한 걸 그대로 붙여넣으세요.**
+   > 손으로 고치거나 일부만 바꾸면 거의 반드시 틀립니다. 붙여넣은 뒤 이것만 확인하세요.
+   > - `postgresql://neondb_owner:` 로 시작하는가
+   > - 주소 안에 `...` 이나 `<`, `>` 같은 자리표시자가 **남아 있지 않은가**
+   > - 끝이 `/neondb?sslmode=require` 인가
+   >
+   > 실제 주소는 `ep-무언가-무언가-무언가.c-4.us-east-2.aws.neon.tech` 처럼
+   > `ep-` 뒤에 고유한 이름이 붙은 형태예요.
 
 6. **Deploy** 클릭 → 2~3분 기다립니다.
 
@@ -167,7 +176,8 @@ Neon을 `AWS ap-southeast-1 (Singapore)` 로 만들고, Vercel Import 후
 
 | 증상 | 원인·해결 |
 |---|---|
-| 빌드 실패, 로그에 `Can't reach database server` | `DATABASE_URL` / `DIRECT_URL` 오타. Neon에서 다시 복사해 붙여넣기 |
+| 빌드 실패, 로그에 `Can't reach database server` | 연결 문자열이 잘못됨. **로그에 찍힌 호스트 주소를 먼저 보세요** — 거기에 `...` 이나 자리표시자가 남아 있으면 그게 원인입니다. Neon `Copy snippet` 으로 다시 복사해 `DATABASE_URL`·`DIRECT_URL` 둘 다 교체 후 Redeploy |
+| 빌드 실패, 로그에 `P1001` 인데 주소는 맞아 보임 | Neon 무료 플랜이 절전 중일 수 있어요. Neon 콘솔에서 DB를 한 번 깨운 뒤(아무 쿼리나 실행) Redeploy |
 | 빌드 실패, 로그에 `AUTH_SECRET` | `AUTH_SECRET` 을 안 넣었거나 너무 짧음 (16자 이상) |
 | 사이트는 뜨는데 홈이 비어 있음 | 시드가 안 돈 것. Vercel → Deployments → 최신 배포 → **Redeploy** |
 | `/admin` 에서 로그인이 안 됨 | `SEED_ADMIN_EMAIL` 대소문자 확인. 그래도 안 되면 위 "비밀번호를 바꾸려면" 참고 |
