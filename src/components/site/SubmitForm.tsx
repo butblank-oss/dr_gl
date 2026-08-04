@@ -58,7 +58,7 @@ export function SubmitForm({ categories }: Props) {
 
   if (submitted) {
     return (
-      <div className="flex flex-col items-center gap-[22px] px-10 pb-40 pt-[130px] text-center">
+      <div className="flex flex-col items-center gap-[22px] px-5 pb-24 pt-20 text-center md:px-10 md:pb-40 md:pt-[130px]">
         <div className="flex h-[76px] w-[76px] items-center justify-center rounded-full bg-accent-soft12">
           <CheckIcon className="text-accent" />
         </div>
@@ -80,7 +80,7 @@ export function SubmitForm({ categories }: Props) {
   }
 
   return (
-    <div className="mx-auto flex max-w-[640px] flex-col gap-[26px] px-10 pb-25 pt-14">
+    <div className="mx-auto flex max-w-[640px] flex-col gap-[26px] px-5 pb-25 pt-10 md:px-10 md:pt-14">
       <div>
         <div className="mb-2 text-[26px] font-extrabold">콘텐츠 제보하기</div>
         <div className="text-sm leading-relaxed text-fg55">

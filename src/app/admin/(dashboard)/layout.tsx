@@ -14,9 +14,11 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const pendingCount = await prisma.submission.count({ where: { status: "pending" } });
 
   return (
-    <div className="flex min-h-screen bg-ink text-fg">
+    <div className="flex min-h-screen flex-col bg-ink text-fg lg:flex-row">
       <AdminSidebar user={user} pendingCount={pendingCount} />
-      <div className="flex min-w-0 flex-1 flex-col gap-[26px] px-11 pb-20 pt-9">{children}</div>
+      <div className="flex min-w-0 flex-1 flex-col gap-5 px-5 pb-20 pt-6 md:gap-[26px] lg:px-11 lg:pt-9">
+        {children}
+      </div>
     </div>
   );
 }

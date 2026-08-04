@@ -22,7 +22,7 @@ export default async function SearchPage({
             <span className="font-bold text-fg">&apos;{query}&apos;</span> 검색 결과 {results.length}건
           </div>
           {results.length > 0 ? (
-            <div className="grid gap-[22px] [grid-template-columns:repeat(auto-fill,minmax(170px,1fr))]">
+            <div className="grid gap-[22px] [grid-template-columns:repeat(auto-fill,minmax(140px,1fr))] md:[grid-template-columns:repeat(auto-fill,minmax(170px,1fr))]">
               {results.map((item) => (
                 <ContentCard key={item.id} item={item} />
               ))}

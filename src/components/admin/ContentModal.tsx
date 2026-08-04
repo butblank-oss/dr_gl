@@ -193,12 +193,12 @@ export function ContentModal({ draft: initial, categories, onClose, onSaved }: P
 
   return (
     <div
-      className="fixed inset-0 z-100 flex items-center justify-center bg-[rgba(0,0,0,0.6)] p-10"
+      className="fixed inset-0 z-100 flex items-center justify-center bg-[rgba(0,0,0,0.6)] p-3 md:p-10"
       onClick={onClose}
       role="presentation"
     >
       <div
-        className="flex max-h-[88vh] w-full max-w-[620px] flex-col gap-[18px] overflow-y-auto rounded-[18px] border border-line10 bg-modal p-[30px]"
+        className="flex max-h-[92vh] w-full max-w-[620px] flex-col gap-[18px] overflow-y-auto rounded-[18px] border border-line10 bg-modal p-5 md:max-h-[88vh] md:p-[30px]"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="text-xl font-extrabold">{modalTitle}</div>
@@ -336,14 +336,15 @@ export function ContentModal({ draft: initial, categories, onClose, onSaved }: P
         {draft.poster ? (
           <>
             <ImageUploadField
-              label="카드 썸네일 (사이트에 바로 반영돼요)"
+              label="카드 썸네일 · 세로 포스터 (사이트에 바로 반영돼요)"
+              hint="영화 포스터처럼 세로 2:3 비율을 권장해요. 카드와 상세 화면이 이 비율에 맞춰져 있어요."
               kind="poster"
               value={draft.posterUrl}
               onChange={(url) => patch({ posterUrl: url })}
             />
             <ImageUploadField
               label="상세·히어로 배경 이미지 (선택)"
-              hint="비워두면 카드 썸네일을 배경으로 사용해요."
+              hint="가로로 넓은 스틸컷을 넣는 자리예요. 비워두면 세로 포스터를 흐리게 깔아서 자연스럽게 처리해요."
               kind="backdrop"
               value={draft.backdropUrl}
               onChange={(url) => patch({ backdropUrl: url })}
@@ -365,18 +366,18 @@ export function ContentModal({ draft: initial, categories, onClose, onSaved }: P
         <div className="flex flex-col gap-2">
           <span className="text-xs font-semibold text-fg70">시청·감상 가능한 곳</span>
           {draft.platforms.map((platform, index) => (
-            <div key={index} className="flex items-center gap-2">
+            <div key={index} className="flex flex-wrap items-center gap-2">
               <input
                 value={platform.name}
                 onChange={(e) => updatePlatform(index, { name: e.target.value })}
                 placeholder="플랫폼 이름 (예: 왓챠)"
-                className="field h-10 w-[150px] flex-none px-3 text-[13px]"
+                className="field h-10 w-full flex-none px-3 text-[13px] sm:w-[150px]"
               />
               <input
                 value={platform.url}
                 onChange={(e) => updatePlatform(index, { url: e.target.value })}
                 placeholder="https:// 실제 링크"
-                className="field h-10 flex-1 px-3 text-[13px]"
+                className="field h-10 min-w-0 flex-1 px-3 text-[13px]"
               />
               <button
                 type="button"

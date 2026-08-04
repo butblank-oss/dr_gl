@@ -106,7 +106,7 @@
    * 초광폭 모니터에서 콘텐츠가 왼쪽으로 쏠렸다)
    */
   .page-shell {
-    @apply mx-auto w-full max-w-[1440px] px-10;
+    @apply mx-auto w-full max-w-[1440px] px-5 md:px-10;
   }
 
   /* 보라 그라디언트 CTA */

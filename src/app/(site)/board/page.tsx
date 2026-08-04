@@ -35,7 +35,7 @@ export default function BoardPage() {
   };
 
   return (
-    <div className="flex flex-col items-center gap-[26px] px-10 pb-40 pt-[130px] text-center">
+    <div className="flex flex-col items-center gap-[26px] px-5 pb-24 pt-20 text-center md:px-10 md:pb-40 md:pt-[130px]">
       <div className="flex h-[76px] w-[76px] items-center justify-center rounded-full bg-accent-soft12">
         <ChatIcon className="text-accent" />
       </div>

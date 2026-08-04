@@ -14,7 +14,11 @@ function PosterPlaceholder({ item, leads }: { item: ContentDTO; leads: string })
   );
 }
 
-/** 사이트 전역에서 쓰는 콘텐츠 카드 (디자인의 ContentCard 컴포넌트) */
+/**
+ * 사이트 전역에서 쓰는 콘텐츠 카드.
+ * 영화·웹툰 포스터는 대부분 세로(2:3)라 카드도 같은 비율로 둔다.
+ * 가로 4:3로 두면 포스터 위아래(제목·크레딧)가 잘려나간다.
+ */
 export function ContentCard({ item }: { item: ContentDTO }) {
   const leads = leadsText(item.leads);
   const image = item.poster ? item.posterUrl : null;
@@ -22,7 +26,7 @@ export function ContentCard({ item }: { item: ContentDTO }) {
 
   return (
     <Link href={`/content/${item.id}`} className="group flex w-full flex-col gap-2.5 text-fg">
-      <div className="card-hover relative w-full overflow-hidden rounded-[14px] bg-tile shadow-[0_1px_2px_rgba(0,0,0,0.4)] aspect-4/3">
+      <div className="card-hover relative aspect-2/3 w-full overflow-hidden rounded-[14px] bg-tile shadow-[0_1px_2px_rgba(0,0,0,0.4)]">
         {image ? (
           <ImageWithFallback
             src={image}

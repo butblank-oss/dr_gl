@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { BannerBackdrop } from "@/components/site/Banner";
+import { BannerBackdrop, PosterCard } from "@/components/site/Banner";
 import { ContentCard } from "@/components/site/ContentCard";
 import { getFeaturedContent, getHomeRows } from "@/lib/queries";
 
@@ -28,13 +28,15 @@ export default async function HomePage({
 
   return (
     <div>
-      <section className="relative h-[520px] w-full overflow-hidden">
+      <section className="relative h-[420px] w-full overflow-hidden md:h-[520px]">
         <BannerBackdrop item={hero} />
         <div className="banner-scrim pointer-events-none absolute inset-0" />
         {/* 배경은 화면 끝까지, 글자는 본문과 같은 왼쪽 기준선에 맞춘다 */}
-        <div className="page-shell absolute inset-x-0 bottom-14">
-        <div className="flex max-w-[600px] flex-col gap-4">
-          <div className="flex items-center gap-2">
+        <div className="page-shell absolute inset-x-0 bottom-8 md:bottom-14">
+        <div className="flex items-end gap-5 md:gap-7">
+        <PosterCard item={hero} hideOnMobile />
+        <div className="flex max-w-[600px] flex-col gap-3 md:gap-4">
+          <div className="flex flex-wrap items-center gap-2">
             <span className="rounded-pill border border-line16 bg-surface10 px-[11px] py-1 text-xs font-semibold text-fg">
               {hero.category}
             </span>
@@ -43,9 +45,11 @@ export default async function HomePage({
               {hero.countryDetail} · {hero.year}
             </span>
           </div>
-          <h1 className="text-[44px] font-extrabold leading-[1.15] tracking-[-1px]">{hero.title}</h1>
-          <p className="line-clamp-2-box text-sm leading-relaxed text-fg68">{hero.synopsis}</p>
-          <div className="mt-1 flex gap-2.5">
+          <h1 className="text-[30px] font-extrabold leading-[1.15] tracking-[-1px] md:text-[44px]">
+            {hero.title}
+          </h1>
+          <p className="line-clamp-2-box text-[13px] leading-relaxed text-fg68 md:text-sm">{hero.synopsis}</p>
+          <div className="mt-1 flex flex-wrap gap-2.5">
             <Link href={`/content/${hero.id}`} className="btn-grad px-[22px] py-3 text-sm">
               상세보기
             </Link>
@@ -53,6 +57,7 @@ export default async function HomePage({
               시청 가능한 곳
             </Link>
           </div>
+        </div>
         </div>
         </div>
       </section>
@@ -63,7 +68,7 @@ export default async function HomePage({
             <h2 className="text-[19px] font-bold text-fg">{row.title}</h2>
             <div className="flex gap-[18px] overflow-x-auto pb-1.5">
               {row.items.map((item) => (
-                <div key={item.id} className="w-[170px] flex-none">
+                <div key={item.id} className="w-[132px] flex-none md:w-[170px]">
                   <ContentCard item={item} />
                 </div>
               ))}

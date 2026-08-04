@@ -30,8 +30,8 @@ export function AdminSidebar({ user, pendingCount }: { user: SessionUser; pendin
   };
 
   return (
-    <aside className="flex w-[232px] flex-none flex-col gap-0.5 border-r border-line8 bg-panel px-3.5 py-6">
-      <div className="flex items-baseline gap-[7px] px-2.5 pb-[26px] pt-1.5">
+    <aside className="flex w-full flex-none flex-col gap-0.5 border-b border-line8 bg-panel px-3.5 py-4 lg:h-screen lg:w-[232px] lg:sticky lg:top-0 lg:border-b-0 lg:border-r lg:py-6">
+      <div className="flex items-baseline gap-[7px] px-2.5 pb-3 pt-1.5 lg:pb-[26px]">
         <span className="text-lg font-extrabold tracking-[-0.5px]">
           Dr.<span className="text-accent">GL</span>
         </span>
@@ -53,7 +53,7 @@ export function AdminSidebar({ user, pendingCount }: { user: SessionUser; pendin
         );
       })}
 
-      <div className="mt-auto flex flex-col gap-3 px-2.5 pb-1 pt-3.5">
+      <div className="mt-4 flex flex-col gap-3 px-2.5 pb-1 lg:mt-auto lg:pt-3.5">
         <div className="text-[11px] leading-relaxed text-fg30">
           사이트와 동일한 데이터베이스를 사용해요. 여기서 저장하면 사이트에 즉시 반영돼요.
         </div>

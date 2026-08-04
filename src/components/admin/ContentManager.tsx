@@ -13,7 +13,10 @@ import { ImageWithFallback } from "@/components/ImageWithFallback";
 import { ApiError, api } from "@/lib/client-api";
 import type { ContentDTO } from "@/lib/types";
 
-const GRID = "grid grid-cols-[48px_minmax(0,1fr)_90px_110px_64px_120px] items-center gap-3 px-[18px]";
+const GRID =
+  "grid grid-cols-[40px_minmax(0,1fr)_110px] items-center gap-3 px-3 md:grid-cols-[48px_minmax(0,1fr)_90px_110px_64px_120px] md:px-[18px]";
+// 카테고리·국가연도·착즙 열은 좁은 화면에서 숨긴다
+const HIDE_SM = "hidden md:block";
 
 const THUMB_EMPTY = (
   <div className="absolute inset-0 flex items-center justify-center text-[10px] text-fg30">포스터</div>
@@ -104,9 +107,9 @@ export function ContentManager({
         <div className={`${GRID} border-b border-line6 py-2.5 text-[11px] font-semibold text-fg40`}>
           <div />
           <div>제목</div>
-          <div>카테고리</div>
-          <div>국가·연도</div>
-          <div>착즙</div>
+          <div className={HIDE_SM}>카테고리</div>
+          <div className={HIDE_SM}>국가·연도</div>
+          <div className={HIDE_SM}>착즙</div>
           <div>관리</div>
         </div>
 
@@ -129,11 +132,11 @@ export function ContentManager({
               )}
             </div>
             <div className="truncate text-[13px] font-semibold">{item.title}</div>
-            <div className="text-xs text-fg55">{item.category}</div>
-            <div className="text-xs text-fg55">
+            <div className={`text-xs text-fg55 ${HIDE_SM}`}>{item.category}</div>
+            <div className={`text-xs text-fg55 ${HIDE_SM}`}>
               {item.countryDetail} · {item.year}
             </div>
-            <div>
+            <div className={HIDE_SM}>
               {item.juice ? <span className="badge-juice px-2 py-[3px] text-[10px]">착즙</span> : null}
             </div>
             <div className="flex gap-1.5">

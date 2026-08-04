@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ExternalLinkIcon } from "@/components/icons";
 import { BackButton } from "@/components/site/BackButton";
-import { BannerBackdrop } from "@/components/site/Banner";
+import { BannerBackdrop, PosterCard } from "@/components/site/Banner";
 import { CommentSection } from "@/components/site/CommentSection";
 import { ContentCard } from "@/components/site/ContentCard";
 import {
@@ -45,11 +45,13 @@ export default async function ContentDetailPage({ params }: { params: Params }) 
         <BackButton />
       </div>
 
-      <div className="relative mt-2 h-[440px] w-full overflow-hidden">
+      <div className="relative mt-2 h-[360px] w-full overflow-hidden md:h-[440px]">
         <BannerBackdrop item={item} />
         <div className="banner-scrim pointer-events-none absolute inset-0" />
-        <div className="page-shell absolute inset-x-0 bottom-10">
-        <div className="flex max-w-[640px] flex-col gap-3.5">
+        <div className="page-shell absolute inset-x-0 bottom-8 md:bottom-10">
+        <div className="flex items-end gap-5 md:gap-7">
+        <PosterCard item={item} />
+        <div className="flex max-w-[640px] flex-col gap-3 md:gap-3.5">
           <div className="flex flex-wrap items-center gap-2">
             <span className="rounded-pill border border-line16 bg-surface10 px-[11px] py-1 text-xs font-semibold text-fg">
               {item.category}
@@ -59,10 +61,11 @@ export default async function ContentDetailPage({ params }: { params: Params }) 
               {item.countryDetail} · {item.year}
             </span>
           </div>
-          <h1 className="text-[38px] font-extrabold tracking-[-0.5px]">{item.title}</h1>
+          <h1 className="text-[26px] font-extrabold tracking-[-0.5px] md:text-[38px]">{item.title}</h1>
           <div className="text-[13px] text-fg60">
             {item.creatorLabel} {item.creatorName}
           </div>
+        </div>
         </div>
         </div>
       </div>

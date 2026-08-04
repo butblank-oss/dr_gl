@@ -66,7 +66,7 @@ export default async function CategoryPage({ searchParams }: { searchParams: Sea
       </div>
 
       {items.length > 0 ? (
-        <div className="grid gap-[22px] [grid-template-columns:repeat(auto-fill,minmax(170px,1fr))]">
+        <div className="grid gap-[22px] [grid-template-columns:repeat(auto-fill,minmax(140px,1fr))] md:[grid-template-columns:repeat(auto-fill,minmax(170px,1fr))]">
           {items.map((item) => (
             <ContentCard key={item.id} item={item} />
           ))}
