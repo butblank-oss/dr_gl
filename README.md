@@ -20,18 +20,32 @@
 | 스토리지 | 로컬 디스크(기본) / S3 호환 버킷 (`STORAGE_DRIVER` 로 전환) |
 | 검증 | zod (모든 쓰기 API 입력) |
 
-## 시작하기
+## 빠르게 실행해보기
+
+Node 20+ 와 Docker 만 있으면 됩니다.
 
 ```bash
-cp .env.example .env      # DATABASE_URL, AUTH_SECRET 등을 채워주세요
+cp .env.example .env      # 기본값 그대로 두면 아래 docker compose 의 DB에 붙습니다
+docker compose up -d      # Postgres 16 기동 (5432)
 npm install
-npx prisma migrate deploy # 또는 개발 중이면: npx prisma migrate dev
-npm run db:seed           # 시드 콘텐츠 18개 + 카테고리 7개 + 홈 큐레이션 + 운영자 계정
+npm run setup             # 마이그레이션 + 시드(콘텐츠 18개, 카테고리 7개, 홈 큐레이션, 운영자 계정)
 npm run dev
 ```
 
 - 사이트: http://localhost:3000
-- 어드민: http://localhost:3000/admin (시드로 만든 계정 — `.env` 의 `SEED_ADMIN_EMAIL` / `SEED_ADMIN_PASSWORD`)
+- 어드민: http://localhost:3000/admin
+- 시드 운영자 계정: `admin@drgl.local` / `drgl-admin-1234` (`.env` 의 `SEED_ADMIN_EMAIL` / `SEED_ADMIN_PASSWORD` 로 변경)
+
+이미 쓰고 있는 Postgres가 있다면 `docker compose` 대신 `.env` 의 `DATABASE_URL` 만 바꾸면 됩니다.
+운영 배포 시에는 `AUTH_SECRET` 을 반드시 긴 랜덤 문자열로 교체하세요 (`openssl rand -hex 32`).
+
+### 둘러볼 순서 추천
+
+1. 홈에서 히어로 배너와 가로 스크롤 행 → 카드 클릭해 상세로
+2. 상세에서 한줄평 남겨보기, "{배우명}의 다른 작품" 확인 (예: `/content/4` ↔ `/content/12` 는 배우 "진세은"을 공유)
+3. 헤더 "+ 제보하기" 로 아무 작품이나 제보
+4. `/admin` 로그인 → "제보 검토" 에 방금 제보가 떠 있음 → **검토 · 발행** → 저장
+5. 사이트로 돌아와 검색하면 방금 발행한 콘텐츠가 바로 보임
 
 ## 화면
 

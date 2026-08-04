@@ -1,0 +1,24 @@
+# 로컬에서 Postgres만 띄우는 용도.
+#   docker compose up -d
+#   npm install && npm run setup && npm run dev
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: drgl-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: drgl
+    ports:
+      - "5432:5432"
+    volumes:
+      - drgl-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d drgl"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  drgl-pgdata:
