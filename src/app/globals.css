@@ -109,6 +109,20 @@
     @apply mx-auto w-full max-w-[1440px] px-5 md:px-10;
   }
 
+  /*
+   * 가로로 스크롤되는 줄(홈의 콘텐츠 행, 모바일 헤더 nav).
+   * overscroll-behavior-x: contain 이 없으면 스크롤이 끝에 닿는 순간 그 여파가 페이지로 전달돼
+   * 브라우저의 뒤로/앞으로 제스처가 엉뚱하게 발동한다(트랙패드·모바일 스와이프에서 특히).
+   */
+  .h-scroll {
+    @apply overflow-x-auto;
+    overscroll-behavior-x: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+  .h-scroll::-webkit-scrollbar {
+    height: 6px;
+  }
+
   /* 보라 그라디언트 CTA */
   .btn-grad {
     @apply inline-flex cursor-pointer items-center justify-center rounded-[10px] border-none font-bold text-white;

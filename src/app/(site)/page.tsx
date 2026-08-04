@@ -66,7 +66,7 @@ export default async function HomePage({
         {rows.map((row) => (
           <section key={row.id} className="flex flex-col gap-4">
             <h2 className="text-[19px] font-bold text-fg">{row.title}</h2>
-            <div className="flex gap-[18px] overflow-x-auto pb-1.5">
+            <div className="h-scroll flex gap-[18px] pb-1.5">
               {row.items.map((item) => (
                 <div key={item.id} className="w-[132px] flex-none md:w-[170px]">
                   <ContentCard item={item} />

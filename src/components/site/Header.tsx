@@ -111,7 +111,7 @@ export function Header() {
       </div>
 
       {/* 모바일에서는 nav 를 두 번째 줄로 내리고, 넘치면 가로로 스크롤한다 */}
-      <nav className="page-shell flex items-center gap-6 overflow-x-auto pb-3 lg:hidden [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      <nav className="page-shell h-scroll flex items-center gap-6 pb-3 lg:hidden [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {navLinks}
       </nav>
     </header>
