@@ -103,12 +103,19 @@ export function makeSubmissionDraft(submission: SubmissionDTO, categories: strin
     leadsInput: "",
     tagsInput: "",
     juice: submission.juice,
-    poster: false,
+    // 발행 전에 썸네일을 넣을 수 있도록 업로드 칸을 처음부터 열어둔다.
+    poster: true,
     posterUrl: null,
     backdropUrl: null,
     synopsis: submission.note ?? "",
     platforms: submission.url
-      ? [{ name: "제보된 링크", type: "유료", url: submission.url }]
+      ? [
+          {
+            name: submission.platform?.trim() || "제보된 링크",
+            type: "유료" as PlatformType,
+            url: submission.url,
+          },
+        ]
       : [emptyPlatform()],
   };
 }
@@ -163,8 +170,8 @@ export function ContentModal({ draft: initial, categories, onClose, onSaved }: P
       tags: splitList(draft.tagsInput),
       juice: draft.juice,
       poster: draft.poster,
-      posterUrl: draft.poster ? draft.posterUrl : null,
-      backdropUrl: draft.poster ? draft.backdropUrl : null,
+      posterUrl: draft.posterUrl,
+      backdropUrl: draft.backdropUrl,
       synopsis: draft.synopsis,
       platforms: draft.platforms
         .filter((p) => p.name.trim())
@@ -333,26 +340,23 @@ export function ContentModal({ draft: initial, categories, onClose, onSaved }: P
           </button>
         </div>
 
-        {draft.poster ? (
-          <>
-            <ImageUploadField
-              label="카드 썸네일 · 세로 포스터 (사이트에 바로 반영돼요)"
-              hint="영화 포스터처럼 세로 2:3 비율을 권장해요. 카드와 상세 화면이 이 비율에 맞춰져 있어요."
-              kind="poster"
-              value={draft.posterUrl}
-              onChange={(url) => patch({ posterUrl: url })}
-            />
-            <ImageUploadField
-              label="상세·히어로 배경 이미지 (선택)"
-              hint="가로로 넓은 스틸컷을 넣는 자리예요. 비워두면 세로 포스터를 흐리게 깔아서 자연스럽게 처리해요."
-              kind="backdrop"
-              value={draft.backdropUrl}
-              onChange={(url) => patch({ backdropUrl: url })}
-              width={214}
-              height={120}
-            />
-          </>
-        ) : null}
+        {/* 업로드 칸은 토글과 무관하게 항상 보인다. 이미지를 올리면 자동으로 "포스터 사용"이 켜진다. */}
+        <ImageUploadField
+          label="카드 썸네일 · 세로 포스터 (사이트에 바로 반영돼요)"
+          hint="영화 포스터처럼 세로 2:3 비율을 권장해요. 카드와 상세 화면이 이 비율에 맞춰져 있어요."
+          kind="poster"
+          value={draft.posterUrl}
+          onChange={(url) => patch({ posterUrl: url, poster: url ? true : draft.poster })}
+        />
+        <ImageUploadField
+          label="상세·히어로 배경 이미지 (선택)"
+          hint="가로로 넓은 스틸컷을 넣는 자리예요. 비워두면 세로 포스터를 흐리게 깔아서 자연스럽게 처리해요."
+          kind="backdrop"
+          value={draft.backdropUrl}
+          onChange={(url) => patch({ backdropUrl: url, poster: url ? true : draft.poster })}
+          width={214}
+          height={120}
+        />
 
         <label className="flex flex-col gap-[7px]">
           <span className="text-xs font-semibold text-fg70">줄거리</span>

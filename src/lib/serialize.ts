@@ -51,6 +51,7 @@ export function serializeContent(row: ContentRow): ContentDTO {
     backdropUrl: row.backdropUrl,
     synopsis: row.synopsis,
     platforms: toPlatforms(row.platforms),
+    createdAt: row.createdAt.toISOString(),
   };
 }
 
@@ -65,6 +66,7 @@ export function serializeSubmission(row: SubmissionRow): SubmissionDTO {
     category: row.category,
     country: row.country,
     juice: row.juice,
+    platform: row.platform,
     url: row.url,
     note: row.note,
     contact: row.contact,

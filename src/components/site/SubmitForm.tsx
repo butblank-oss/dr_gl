@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { CheckIcon, SpinnerIcon } from "@/components/icons";
 import { COUNTRIES } from "@/lib/types";
@@ -12,22 +13,28 @@ const emptyForm = (firstCategory: string) => ({
   category: firstCategory,
   country: "국내" as (typeof COUNTRIES)[number],
   juice: false,
+  platform: "",
   url: "",
   note: "",
   contact: "",
 });
 
 export function SubmitForm({ categories }: Props) {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const firstCategory = categories[0] ?? "";
   const [form, setForm] = useState(emptyForm(firstCategory));
   const [error, setError] = useState("");
   const [pending, setPending] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
+
+  // 완료 상태를 URL(?done=1)에 둔다. 그래야 완료 화면에서 헤더의 "+ 제보하기"를 눌렀을 때
+  // 같은 주소라 아무 일도 일어나지 않던 문제가 사라진다.
+  const submitted = searchParams.get("done") === "1";
 
   const reset = () => {
     setForm(emptyForm(firstCategory));
     setError("");
-    setSubmitted(false);
+    router.replace("/submit");
   };
 
   const submit = async () => {
@@ -48,7 +55,7 @@ export function SubmitForm({ categories }: Props) {
         setError(data.error ?? "제보를 등록하지 못했어요.");
         return;
       }
-      setSubmitted(true);
+      router.replace("/submit?done=1");
     } catch {
       setError("네트워크 오류로 제보를 등록하지 못했어요.");
     } finally {
@@ -139,6 +146,18 @@ export function SubmitForm({ categories }: Props) {
           착즙 작품이에요 (서브 · 약한 GL 코드)
         </button>
       </div>
+
+      <label className="flex flex-col gap-2">
+        <span className="text-[13px] font-semibold text-fg75">
+          어디서 볼 수 있나요? <span className="font-normal text-fg40">(플랫폼 이름)</span>
+        </span>
+        <input
+          value={form.platform}
+          onChange={(e) => setForm((f) => ({ ...f, platform: e.target.value }))}
+          placeholder="예: 왓챠, 네이버웹툰, 카카오페이지"
+          className="field h-11 px-3.5 text-sm"
+        />
+      </label>
 
       <label className="flex flex-col gap-2">
         <span className="text-[13px] font-semibold text-fg75">시청/감상 링크</span>

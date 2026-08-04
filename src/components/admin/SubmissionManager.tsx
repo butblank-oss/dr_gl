@@ -9,8 +9,21 @@ import {
 } from "@/components/admin/ContentModal";
 import { Toast, useToast } from "@/components/admin/Toast";
 import { ApiError, api } from "@/lib/client-api";
+import { formatDateTime } from "@/lib/format";
 import { SUBMISSION_FILTER_LABELS, SUBMISSION_STATUS_TEXT } from "@/lib/types";
 import type { SubmissionDTO } from "@/lib/types";
+
+/** 제보 내용을 항목별로 빠짐없이 보여준다. 값이 없으면 없다고 명시한다. */
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="flex gap-2 text-xs leading-relaxed">
+      <span className="w-[68px] flex-none text-fg40">{label}</span>
+      <span className="min-w-0 flex-1 text-fg72">{children}</span>
+    </div>
+  );
+}
+
+const Empty = ({ text = "없음" }: { text?: string }) => <span className="text-fg35">{text}</span>;
 
 const STATUS_STYLE: Record<string, string> = {
   pending: "rounded-pill bg-danger-soft px-[9px] py-[3px] text-[10px] font-bold text-danger",
@@ -78,15 +91,10 @@ export function SubmissionManager({
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div className="flex flex-wrap items-center gap-2">
                 <span className="text-sm font-bold">{submission.title}</span>
-                <span className="rounded-pill bg-surface6 px-[9px] py-[3px] text-[11px] font-semibold text-fg55">
-                  {submission.category} · {submission.country}
-                </span>
-                {submission.juice ? (
-                  <span className="badge-juice px-2 py-[3px] text-[10px]">착즙</span>
-                ) : null}
                 <span className={STATUS_STYLE[submission.status]}>
                   {SUBMISSION_STATUS_TEXT[submission.status]}
                 </span>
+                <span className="text-[11px] text-fg30">{formatDateTime(submission.createdAt)}</span>
               </div>
               {submission.status === "pending" ? (
                 <div className="flex gap-1.5">
@@ -108,13 +116,58 @@ export function SubmissionManager({
               ) : null}
             </div>
 
-            <div className="text-[13px] text-fg55">{submission.note || "코멘트 없음"}</div>
-
-            <div className="flex flex-wrap gap-4 text-xs text-fg40">
-              <a href={submission.url} target="_blank" rel="noreferrer noopener" className="break-all">
-                {submission.url}
-              </a>
-              <span>연락처: {submission.contact || "없음"}</span>
+            {/* 제보자가 입력한 값을 하나도 빠뜨리지 않고 보여준다 */}
+            <div className="grid grid-cols-1 gap-x-8 gap-y-1.5 rounded-[10px] border border-line6 bg-surface3 px-3.5 py-3 lg:grid-cols-2">
+              <Field label="형식">
+                {submission.category ? (
+                  <span className="rounded-pill bg-surface6 px-2 py-[2px] font-semibold text-fg70">
+                    {submission.category}
+                  </span>
+                ) : (
+                  <Empty text="선택 안 함" />
+                )}
+              </Field>
+              <Field label="국가">{submission.country || <Empty />}</Field>
+              <Field label="착즙">
+                {submission.juice ? (
+                  <span className="badge-juice px-2 py-[2px] text-[10px]">착즙 작품</span>
+                ) : (
+                  <span className="text-fg55">아니오</span>
+                )}
+              </Field>
+              <Field label="플랫폼">{submission.platform || <Empty text="입력 안 함" />}</Field>
+              <Field label="링크">
+                {submission.url ? (
+                  <a
+                    href={submission.url}
+                    target="_blank"
+                    rel="noreferrer noopener"
+                    className="break-all text-accent"
+                  >
+                    {submission.url}
+                  </a>
+                ) : (
+                  <Empty />
+                )}
+              </Field>
+              <Field label="연락처">{submission.contact || <Empty />}</Field>
+              <div className="lg:col-span-2">
+                <Field label="코멘트">{submission.note || <Empty text="코멘트 없음" />}</Field>
+              </div>
+              {submission.contentId ? (
+                <div className="lg:col-span-2">
+                  <Field label="발행 결과">
+                    <a
+                      href={`/content/${submission.contentId}`}
+                      target="_blank"
+                      rel="noreferrer noopener"
+                      className="text-accent"
+                    >
+                      콘텐츠 #{submission.contentId} · 사이트에서 보기 ↗
+                    </a>
+                  </Field>
+                </div>
+              ) : null}
             </div>
           </div>
         ))}

@@ -13,8 +13,12 @@ type Props = {
 };
 
 /** 홈 화면 큐레이션 — 히어로 배너 1개 + 가로 스크롤 행 구성 */
+type DragState = { rowId: number; index: number } | null;
+
 export function HomeRowManager({ initialRows, allContents, featuredId }: Props) {
   const [rows, setRows] = useState(initialRows);
+  const [drag, setDrag] = useState<DragState>(null);
+  const [dragOver, setDragOver] = useState<DragState>(null);
   const [featured, setFeatured] = useState(featuredId ?? allContents[0]?.id ?? null);
   const [newTitle, setNewTitle] = useState("");
   const [error, setError] = useState("");
@@ -163,57 +167,73 @@ export function HomeRowManager({ initialRows, allContents, featuredId }: Props) 
               </div>
             </div>
 
-            <div className="flex flex-wrap gap-2">
-              {row.items.map((item, itemIndex) => (
-                <div
-                  key={item.id}
-                  className="flex items-center gap-2 rounded-pill border border-line12 bg-surface4 py-1.5 pl-3 pr-2 text-xs text-fg70"
-                >
-                  <span>{item.title}</span>
-                  <button
-                    type="button"
-                    aria-label="앞으로 이동"
-                    disabled={itemIndex === 0}
-                    onClick={() => {
-                      const ids = row.items.map((i) => i.id);
-                      [ids[itemIndex - 1]!, ids[itemIndex]!] = [ids[itemIndex]!, ids[itemIndex - 1]!];
-                      setRowContents(row, ids, "행 구성을 저장했어요.");
+            <div className="flex flex-wrap items-center gap-2">
+              {row.items.map((item, itemIndex) => {
+                const isDragging = drag?.rowId === row.id && drag.index === itemIndex;
+                const isOver = dragOver?.rowId === row.id && dragOver.index === itemIndex && !isDragging;
+                return (
+                  <div
+                    key={item.id}
+                    draggable
+                    onDragStart={(e) => {
+                      setDrag({ rowId: row.id, index: itemIndex });
+                      e.dataTransfer.effectAllowed = "move";
+                      // 파이어폭스는 데이터가 있어야 드래그가 시작된다
+                      e.dataTransfer.setData("text/plain", String(item.id));
                     }}
-                    className="cursor-pointer text-fg40 disabled:opacity-30"
-                  >
-                    ‹
-                  </button>
-                  <button
-                    type="button"
-                    aria-label="뒤로 이동"
-                    disabled={itemIndex === row.items.length - 1}
-                    onClick={() => {
-                      const ids = row.items.map((i) => i.id);
-                      [ids[itemIndex]!, ids[itemIndex + 1]!] = [ids[itemIndex + 1]!, ids[itemIndex]!];
-                      setRowContents(row, ids, "행 구성을 저장했어요.");
+                    onDragEnd={() => {
+                      setDrag(null);
+                      setDragOver(null);
                     }}
-                    className="cursor-pointer text-fg40 disabled:opacity-30"
+                    onDragOver={(e) => {
+                      if (!drag || drag.rowId !== row.id) return;
+                      e.preventDefault();
+                      e.dataTransfer.dropEffect = "move";
+                      setDragOver({ rowId: row.id, index: itemIndex });
+                    }}
+                    onDrop={(e) => {
+                      e.preventDefault();
+                      if (!drag || drag.rowId !== row.id || drag.index === itemIndex) return;
+                      const ids = row.items.map((i) => i.id);
+                      const [moved] = ids.splice(drag.index, 1);
+                      ids.splice(itemIndex, 0, moved!);
+                      setDrag(null);
+                      setDragOver(null);
+                      setRowContents(row, ids, "순서를 바꿨어요.");
+                    }}
+                    title="드래그해서 순서를 바꿀 수 있어요"
+                    className={`flex cursor-grab items-center gap-2 rounded-pill border py-1.5 pl-2.5 pr-2 text-xs transition-colors active:cursor-grabbing ${
+                      isDragging
+                        ? "border-accent bg-accent-soft text-accent opacity-60"
+                        : isOver
+                          ? "border-accent bg-accent-soft8 text-fg"
+                          : "border-line12 bg-surface4 text-fg70"
+                    }`}
                   >
-                    ›
-                  </button>
-                  <button
-                    type="button"
-                    aria-label="행에서 제거"
-                    onClick={() =>
-                      setRowContents(
-                        row,
-                        row.items.filter((i) => i.id !== item.id).map((i) => i.id),
-                        "행 구성을 저장했어요.",
-                      )
-                    }
-                    className="cursor-pointer text-danger"
-                  >
-                    ×
-                  </button>
-                </div>
-              ))}
+                    <span className="select-none text-fg30">⠿</span>
+                    <span className="select-none">{item.title}</span>
+                    <button
+                      type="button"
+                      aria-label="행에서 제거"
+                      onClick={() =>
+                        setRowContents(
+                          row,
+                          row.items.filter((i) => i.id !== item.id).map((i) => i.id),
+                          "행 구성을 저장했어요.",
+                        )
+                      }
+                      className="cursor-pointer px-0.5 text-danger"
+                    >
+                      ×
+                    </button>
+                  </div>
+                );
+              })}
               {row.items.length === 0 ? (
                 <span className="text-xs text-fg35">아직 담긴 콘텐츠가 없어요. 행이 비어 있으면 홈에서 숨겨져요.</span>
+              ) : null}
+              {row.items.length > 1 ? (
+                <span className="ml-1 text-[11px] text-fg30">← 드래그해서 순서 변경</span>
               ) : null}
             </div>
 

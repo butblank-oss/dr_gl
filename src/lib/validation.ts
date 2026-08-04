@@ -38,6 +38,7 @@ export const submissionInputSchema = z.object({
   category: z.string().trim().min(1, "형식을 선택해주세요."),
   country: z.enum(COUNTRIES).default("국내"),
   juice: z.boolean().default(false),
+  platform: z.string().trim().max(40).default(""),
   url: z
     .string()
     .trim()

@@ -11,16 +11,28 @@ import {
 import { Toast, useToast } from "@/components/admin/Toast";
 import { ImageWithFallback } from "@/components/ImageWithFallback";
 import { ApiError, api } from "@/lib/client-api";
+import { formatDate } from "@/lib/format";
 import type { ContentDTO } from "@/lib/types";
 
 const GRID =
-  "grid grid-cols-[40px_minmax(0,1fr)_110px] items-center gap-3 px-3 md:grid-cols-[48px_minmax(0,1fr)_90px_110px_64px_120px] md:px-[18px]";
-// 카테고리·국가연도·착즙 열은 좁은 화면에서 숨긴다
+  "grid grid-cols-[40px_minmax(0,1fr)_110px] items-center gap-3 px-3 md:grid-cols-[48px_minmax(0,1fr)_96px_120px_64px_92px_120px] md:px-[18px]";
+// 좁은 화면에서는 부가 열을 숨긴다
 const HIDE_SM = "hidden md:block";
 
 const THUMB_EMPTY = (
   <div className="absolute inset-0 flex items-center justify-center text-[10px] text-fg30">포스터</div>
 );
+
+type SortKey = "createdAt" | "title" | "category" | "year" | "juice";
+type SortDir = "asc" | "desc";
+
+const COLUMNS: { key: SortKey; label: string; className?: string }[] = [
+  { key: "title", label: "제목" },
+  { key: "category", label: "카테고리", className: HIDE_SM },
+  { key: "year", label: "국가·연도", className: HIDE_SM },
+  { key: "juice", label: "착즙", className: HIDE_SM },
+  { key: "createdAt", label: "등록일", className: HIDE_SM },
+];
 
 export function ContentManager({
   initialItems,
@@ -33,6 +45,8 @@ export function ContentManager({
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("전체");
   const [juiceOnly, setJuiceOnly] = useState(false);
+  const [sortKey, setSortKey] = useState<SortKey>("createdAt");
+  const [sortDir, setSortDir] = useState<SortDir>("desc");
   const [draft, setDraft] = useState<ContentDraft | null>(null);
   const [deleting, setDeleting] = useState<ContentDTO | null>(null);
   const { toast, show } = useToast();
@@ -42,13 +56,54 @@ export function ContentManager({
     setItems(data.items);
   };
 
+  /** 같은 열을 다시 누르면 오름/내림이 뒤집힌다. */
+  const toggleSort = (key: SortKey) => {
+    if (key === sortKey) {
+      setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+    } else {
+      setSortKey(key);
+      // 최신순이 기본으로 유용한 열만 내림차순으로 시작한다.
+      setSortDir(key === "createdAt" || key === "year" || key === "juice" ? "desc" : "asc");
+    }
+  };
+
   const filtered = useMemo(() => {
-    const q = search.trim();
-    return items
+    const q = search.trim().toLowerCase();
+    const matched = items
       .filter((item) => filter === "전체" || item.category === filter)
-      .filter((item) => !q || item.title.includes(q))
+      .filter((item) => {
+        if (!q) return true;
+        // 제목뿐 아니라 제작자·출연·태그까지 훑어서 운영 중에 찾기 쉽게 한다.
+        const haystack = [
+          item.title,
+          item.creatorName,
+          item.category,
+          item.countryDetail,
+          ...item.leads,
+          ...item.tags,
+        ]
+          .join(" ")
+          .toLowerCase();
+        return haystack.includes(q);
+      })
       .filter((item) => !juiceOnly || item.juice);
-  }, [items, search, filter, juiceOnly]);
+
+    const dir = sortDir === "asc" ? 1 : -1;
+    return [...matched].sort((a, b) => {
+      switch (sortKey) {
+        case "title":
+          return a.title.localeCompare(b.title, "ko") * dir;
+        case "category":
+          return (a.category.localeCompare(b.category, "ko") || a.title.localeCompare(b.title, "ko")) * dir;
+        case "year":
+          return ((a.year - b.year) || a.title.localeCompare(b.title, "ko")) * dir;
+        case "juice":
+          return ((Number(a.juice) - Number(b.juice)) || a.title.localeCompare(b.title, "ko")) * dir;
+        default:
+          return (a.createdAt < b.createdAt ? -1 : a.createdAt > b.createdAt ? 1 : a.id - b.id) * dir;
+      }
+    });
+  }, [items, search, filter, juiceOnly, sortKey, sortDir]);
 
   const confirmDelete = async () => {
     if (!deleting) return;
@@ -76,12 +131,17 @@ export function ContentManager({
         </button>
       </div>
 
-      <input
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        placeholder="제목으로 검색"
-        className="field h-[38px] w-[220px] rounded-[9px] px-3.5 text-[13px]"
-      />
+      <div className="flex flex-wrap items-center gap-2">
+        <input
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="제목 · 제작자 · 출연 · 태그로 검색"
+          className="field h-[38px] w-full rounded-[9px] px-3.5 text-[13px] sm:w-[280px]"
+        />
+        <span className="text-xs text-fg40">
+          {filtered.length}개 / 전체 {items.length}개
+        </span>
+      </div>
 
       <div className="flex flex-wrap items-center gap-2">
         {["전체", ...categories].map((name) => (
@@ -106,10 +166,22 @@ export function ContentManager({
       <div className="overflow-hidden rounded-[14px] border border-line8 bg-panel">
         <div className={`${GRID} border-b border-line6 py-2.5 text-[11px] font-semibold text-fg40`}>
           <div />
-          <div>제목</div>
-          <div className={HIDE_SM}>카테고리</div>
-          <div className={HIDE_SM}>국가·연도</div>
-          <div className={HIDE_SM}>착즙</div>
+          {COLUMNS.map((col) => (
+            <button
+              key={col.key}
+              type="button"
+              onClick={() => toggleSort(col.key)}
+              title={`${col.label} 기준으로 정렬`}
+              className={`flex cursor-pointer items-center gap-1 text-left hover:text-fg70 ${col.className ?? ""} ${
+                sortKey === col.key ? "text-accent" : ""
+              }`}
+            >
+              {col.label}
+              <span className={sortKey === col.key ? "" : "opacity-25"}>
+                {sortKey === col.key ? (sortDir === "asc" ? "↑" : "↓") : "↕"}
+              </span>
+            </button>
+          ))}
           <div>관리</div>
         </div>
 
@@ -139,6 +211,7 @@ export function ContentManager({
             <div className={HIDE_SM}>
               {item.juice ? <span className="badge-juice px-2 py-[3px] text-[10px]">착즙</span> : null}
             </div>
+            <div className={`text-xs text-fg40 ${HIDE_SM}`}>{formatDate(item.createdAt)}</div>
             <div className="flex gap-1.5">
               <button
                 type="button"

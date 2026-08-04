@@ -37,6 +37,7 @@ export type ContentDTO = {
   backdropUrl: string | null;
   synopsis: string;
   platforms: Platform[];
+  createdAt: string;
 };
 
 export type CategoryDTO = {
@@ -52,6 +53,7 @@ export type SubmissionDTO = {
   category: string;
   country: string;
   juice: boolean;
+  platform: string;
   url: string;
   note: string;
   contact: string;

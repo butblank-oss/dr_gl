@@ -72,6 +72,8 @@ model Submission {
   /// '국내' | '해외'
   country   String   @default("국내")
   juice     Boolean  @default(false)
+  /// 제보자가 적은 플랫폼 이름 (예: 왓챠, 네이버웹툰)
+  platform  String   @default("")
   url       String
   note      String   @default("")
   contact   String   @default("")
