@@ -46,7 +46,7 @@
 3. 저장소 목록에서 **`butblank-oss/dr_gl`** 옆의 **Import** 클릭
    - 목록에 없으면 **Adjust GitHub App Permissions** 를 눌러 이 저장소에 접근 권한을 주세요.
 4. **Framework Preset** 이 `Next.js` 로 자동 인식되는지만 확인하고, 나머지 빌드 설정은 건드리지 마세요.
-5. **Environment Variables** 를 펼쳐서 아래 5개를 하나씩 추가합니다. (Name / Value 를 넣고 **Add** 반복)
+5. **Environment Variables** 를 펼쳐서 아래 6개를 하나씩 추가합니다. (Name / Value 를 넣고 **Add** 반복)
 
    | Name | Value |
    |---|---|
@@ -55,6 +55,7 @@
    | `AUTH_SECRET` | 2단계에서 만든 무작위 문자열 |
    | `SEED_ADMIN_EMAIL` | 어드민 로그인에 쓸 이메일 (예: `but.blank@gmail.com`) |
    | `SEED_ADMIN_PASSWORD` | 어드민 로그인에 쓸 비밀번호 (직접 정하세요) |
+   | `STORAGE_DRIVER` | `db` — 포스터 이미지를 DB에 저장 (Vercel은 디스크에 못 씀) |
 
 6. **Deploy** 클릭 → 2~3분 기다립니다.
 
@@ -71,7 +72,7 @@
 
 1. 그 주소로 들어가면 **사이트**입니다. 홈에 히어로 배너와 가로 스크롤 행이 보이면 성공.
 2. 주소 뒤에 `/admin` 을 붙이면 **어드민 로그인**이에요.
-   - 5단계에서 넣은 `SEED_ADMIN_EMAIL` / `SEED_ADMIN_PASSWORD` 로 로그인
+   - 3단계에서 넣은 `SEED_ADMIN_EMAIL` / `SEED_ADMIN_PASSWORD` 로 로그인
 3. 잘 도는지 한 바퀴 확인하는 순서
    - 사이트 헤더의 **+ 제보하기** 로 아무 작품이나 제보
    - 어드민 → **제보 검토** 에 방금 제보가 떠 있음
