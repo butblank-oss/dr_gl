@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { SITE, SITE_DESCRIPTION, SITE_KEYWORDS, SITE_URL } from "@/lib/site";
+import { SITE, SITE_DESCRIPTION, SITE_KEYWORDS, SITE_URL, SITE_VERIFICATION } from "@/lib/site";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -42,9 +42,9 @@ export const metadata: Metadata = {
   // 검색엔진 소유 확인용. 환경변수를 넣으면 메타 태그가 자동으로 붙는다.
   // 국내 서비스라 네이버(서치어드바이저)도 함께 지원한다.
   verification: {
-    google: process.env.GOOGLE_SITE_VERIFICATION || undefined,
-    other: process.env.NAVER_SITE_VERIFICATION
-      ? { "naver-site-verification": process.env.NAVER_SITE_VERIFICATION }
+    google: SITE_VERIFICATION.google || undefined,
+    other: SITE_VERIFICATION.naver
+      ? { "naver-site-verification": SITE_VERIFICATION.naver }
       : undefined,
   },
 };

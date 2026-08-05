@@ -43,6 +43,18 @@ export const SITE_KEYWORDS = [
   "where to watch",
 ];
 
+/**
+ * 검색엔진 소유 확인 값.
+ *
+ * 이 값들은 페이지 소스에 그대로 실려 나가는 공개 문자열이라 코드에 둬도 된다.
+ * (남이 알아도 이 사이트의 소유권을 가져갈 수는 없다)
+ * 나중에 도메인을 바꾸거나 재발급받으면 환경변수로 덮어쓰면 된다.
+ */
+export const SITE_VERIFICATION = {
+  google: process.env.GOOGLE_SITE_VERIFICATION || "",
+  naver: process.env.NAVER_SITE_VERIFICATION || "2ae32928aafdd0ec817f76e3946a3dccbce20eaa",
+} as const;
+
 /** 절대 주소로 바꾼다. 이미 http 로 시작하면 그대로 둔다. */
 export function absoluteUrl(path: string): string {
   if (!path) return SITE_URL;
