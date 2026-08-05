@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { AnalyticsSetupGuide } from "@/components/admin/AnalyticsSetupGuide";
+import { GaConnectForm } from "@/components/admin/GaConnectForm";
 import { requireAdmin } from "@/lib/auth";
-import { customDimension, isGaConfigured, runReport, toRows } from "@/lib/ga-data";
+import { customDimension, getGaStatus, runReport, toRows } from "@/lib/ga-data";
 import type { ReportRow } from "@/lib/ga-data";
 
 export const dynamic = "force-dynamic";
@@ -93,9 +94,32 @@ async function safeRows(promise: Promise<ReturnType<typeof toRows>>): Promise<Re
 }
 
 export default async function AdminAnalyticsPage({ searchParams }: { searchParams: SearchParams }) {
-  await requireAdmin();
+  const me = await requireAdmin();
+  const status = await getGaStatus();
 
-  if (!isGaConfigured()) return <AnalyticsSetupGuide />;
+  // 아직 아무것도 넣지 않았으면 설정 방법부터 안내한다.
+  if (!status.ready && !status.problem) {
+    return (
+      <>
+        <AnalyticsSetupGuide />
+        <GaConnectForm
+          ready={false}
+          propertyId={status.propertyId}
+          clientEmail={status.clientEmail}
+          canEdit={me.role === "ADMIN"}
+        />
+      </>
+    );
+  }
+
+  const connectForm = (
+    <GaConnectForm
+      ready={status.ready}
+      propertyId={status.propertyId}
+      clientEmail={status.clientEmail}
+      canEdit={me.role === "ADMIN"}
+    />
+  );
 
   const requested = Number((await searchParams).days);
   const days = RANGES.some((r) => r.days === requested) ? requested : 28;
@@ -206,11 +230,22 @@ export default async function AdminAnalyticsPage({ searchParams }: { searchParam
         </div>
       </div>
 
-      {setupError ? (
-        <div className="rounded-[14px] border border-danger-line bg-danger-soft8 px-5 py-4 text-[13px] leading-relaxed text-fg70">
-          <strong className="text-danger">연결 확인이 필요해요.</strong> {setupError}
+      {setupError || status.problem ? (
+        <div className="flex flex-col gap-1.5 rounded-[14px] border border-danger-line bg-danger-soft8 px-5 py-4 text-[13px] leading-relaxed text-fg70">
+          <div>
+            <strong className="text-danger">연결 확인이 필요해요.</strong> {status.problem || setupError}
+          </div>
+          {status.hint ? <div className="text-[11px] text-fg45">{status.hint}</div> : null}
+          {status.fromEnv ? (
+            <div className="text-[11px] text-fg45">
+              지금 값은 배포 환경변수에서 읽고 있어요. 아래 &quot;연결 설정&quot;에 붙여넣으면 그 값이 우선 적용되고
+              재배포도 필요 없습니다.
+            </div>
+          ) : null}
         </div>
       ) : null}
+
+      {connectForm}
 
       {!setupError && noData ? (
         <div className="rounded-[14px] border border-line8 bg-panel px-5 py-4 text-[13px] leading-relaxed text-fg55">
