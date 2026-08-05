@@ -1,10 +1,13 @@
 import Link from "next/link";
 import { AnalyticsSetupGuide, GaDimensionGuide } from "@/components/admin/AnalyticsSetupGuide";
 import { GaConnectForm } from "@/components/admin/GaConnectForm";
+import { ReportCard } from "@/components/admin/ReportCard";
 import { requireAdmin } from "@/lib/auth";
 import { customDimension, getGaStatus, runReports } from "@/lib/ga-data";
 import type { ReportRow } from "@/lib/ga-data";
 import { prisma } from "@/lib/prisma";
+import { latestReport } from "@/lib/report";
+import { REPORT_KINDS, type ReportKind, type ReportSections } from "@/lib/report-shared";
 
 export const dynamic = "force-dynamic";
 
@@ -45,7 +48,16 @@ const TAB_REPORTS: Record<TabKey, string[]> = {
   settings: [],
 };
 
-type SearchParams = Promise<{ days?: string; tab?: string }>;
+type SearchParams = Promise<{ days?: string; tab?: string; report?: string }>;
+
+/** 탭 ↔ 리포트 문단 대응. 설정 탭에는 리포트를 붙이지 않는다. */
+const TAB_SECTION: Partial<Record<TabKey, keyof ReportSections>> = {
+  summary: "summary",
+  content: "content",
+  conversion: "conversion",
+  audience: "audience",
+  behavior: "behavior",
+};
 
 const WEEKDAYS = ["일", "월", "화", "수", "목", "금", "토"];
 
@@ -520,6 +532,16 @@ export default async function AdminAnalyticsPage({ searchParams }: { searchParam
   }
   const detailViews = [...contentViews.values()].reduce((sum, value) => sum + value, 0);
 
+  // 이 탭에 해당하는 자동 리포트를 읽어 위에 붙인다.
+  const reportKind: ReportKind = REPORT_KINDS.includes(params.report as ReportKind)
+    ? (params.report as ReportKind)
+    : "daily";
+  const sectionKey = TAB_SECTION[tab];
+  const report = sectionKey ? await latestReport(reportKind) : null;
+  const reportLines = report
+    ? ((report.sections as ReportSections)[sectionKey!] ?? [])
+    : [];
+
   const frame = (children: React.ReactNode) => (
     <>
       {header}
@@ -528,6 +550,17 @@ export default async function AdminAnalyticsPage({ searchParams }: { searchParam
         <div className="rounded-[14px] border border-danger-line bg-danger-soft8 px-5 py-4 text-[13px] leading-relaxed text-fg70">
           <strong className="text-danger">불러오지 못했어요.</strong> {loadError}
         </div>
+      ) : null}
+      {sectionKey ? (
+        <ReportCard
+          kind={reportKind}
+          lines={reportLines}
+          periodStart={report?.periodStart ?? null}
+          periodEnd={report?.periodEnd ?? null}
+          createdAt={report?.createdAt.toISOString() ?? null}
+          canRefresh={me.role === "ADMIN"}
+          baseHref={`/admin/analytics?tab=${tab}&days=${days}`}
+        />
       ) : null}
       {children}
     </>

@@ -208,3 +208,21 @@ model NotifySignup {
   email     String   @unique
   createdAt DateTime @default(now())
 }
+
+/// 자동 생성되는 방문 분석 리포트 (일별·주별·월별)
+model AnalyticsReport {
+  id          Int      @id @default(autoincrement())
+  /// 'daily' | 'weekly' | 'monthly'
+  kind        String
+  /// 집계 대상 기간 (사이트 기준 시간대)
+  periodStart String
+  periodEnd   String
+  /// 탭별 해석 문장 { summary: string[], content: string[], ... }
+  sections    Json
+  /// 핵심 수치와 전 기간 대비 변화
+  metrics     Json
+  createdAt   DateTime @default(now())
+
+  @@unique([kind, periodStart])
+  @@index([kind, createdAt])
+}

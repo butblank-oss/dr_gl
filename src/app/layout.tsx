@@ -39,10 +39,14 @@ export const metadata: Metadata = {
       "max-video-preview": -1,
     },
   },
-  // 서치 콘솔 소유 확인용. 환경변수를 넣으면 메타 태그가 자동으로 붙는다.
-  verification: process.env.GOOGLE_SITE_VERIFICATION
-    ? { google: process.env.GOOGLE_SITE_VERIFICATION }
-    : undefined,
+  // 검색엔진 소유 확인용. 환경변수를 넣으면 메타 태그가 자동으로 붙는다.
+  // 국내 서비스라 네이버(서치어드바이저)도 함께 지원한다.
+  verification: {
+    google: process.env.GOOGLE_SITE_VERIFICATION || undefined,
+    other: process.env.NAVER_SITE_VERIFICATION
+      ? { "naver-site-verification": process.env.NAVER_SITE_VERIFICATION }
+      : undefined,
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
