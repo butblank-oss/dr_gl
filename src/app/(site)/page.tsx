@@ -56,10 +56,13 @@ export default async function HomePage({
           {/*
             버튼은 둘까지. 셋을 늘어놓으니 무엇을 눌러야 할지가 오히려 흐려졌다.
             상세보기와 시청 가능한 곳은 어차피 같은 페이지라, 사람들이 실제로 찾는 말 하나로 합친다.
+
+            #watch 앵커는 일부러 뺐다. 감상처가 이미 상세 화면 맨 위에 있어서,
+            앵커를 걸면 제목도 포스터도 건너뛴 채 페이지 중간에서 시작해 고장난 것처럼 보인다.
           */}
           <div className="mt-1 flex flex-wrap gap-2.5">
             <TrackedLink
-              href={`/content/${hero.id}#watch`}
+              href={`/content/${hero.id}`}
               className="btn-grad px-[22px] py-3 text-sm"
               event={EVENTS.selectContent}
               params={{ content_id: hero.id, content_title: hero.title, list_name: "히어로", cta: "시청 가능한 곳" }}
