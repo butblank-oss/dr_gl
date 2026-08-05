@@ -2,8 +2,14 @@ import type { MetadataRoute } from "next";
 import { prisma } from "@/lib/prisma";
 import { SITE_URL } from "@/lib/site";
 
-// 콘텐츠가 늘거나 바뀌면 sitemap도 따라 바뀌어야 하므로 매 요청마다 새로 만든다.
-export const dynamic = "force-dynamic";
+/**
+ * 1시간마다 다시 만든다.
+ *
+ * 매 요청마다 DB를 읽으면, 무료 티어 DB가 절전에서 깨어나는 순간에 검색엔진이
+ * 가져갈 경우 "가져올 수 없음"으로 실패 처리될 수 있다. 새 콘텐츠가 1시간 늦게
+ * 반영되는 건 색인 주기(며칠)에 비하면 의미가 없다.
+ */
+export const revalidate = 3600;
 
 /**
  * /sitemap.xml
