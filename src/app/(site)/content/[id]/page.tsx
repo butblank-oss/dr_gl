@@ -107,8 +107,59 @@ export default async function ContentDetailPage({ params }: { params: Params }) 
         </div>
       </div>
 
-      <div className="page-shell grid grid-cols-1 gap-12 pb-15 pt-10 lg:grid-cols-[1fr_320px]">
-        <div className="flex flex-col gap-7">
+      {/*
+        감상처가 DOM에서 먼저 온다 — 모바일에선 한 칸이라 줄거리 바로 위에 붙고,
+        데스크톱에선 아래 col/row 지정으로 오른쪽 칸에 그대로 들어간다.
+        (뒤에 두면 모바일에서 페이지 맨 아래, 푸터 직전까지 밀려났다)
+      */}
+      <div className="page-shell grid grid-cols-1 gap-6 pb-15 pt-10 lg:grid-cols-[1fr_320px] lg:gap-12">
+        <aside
+          id="watch"
+          className="flex h-fit flex-col gap-3.5 rounded-2xl border border-line8 bg-card p-[22px] lg:sticky lg:top-[88px] lg:col-start-2 lg:row-start-1"
+        >
+          <div className="text-[15px] font-bold">시청·감상 가능한 곳</div>
+          <div className="flex flex-col gap-2.5">
+            {item.platforms.length === 0 ? (
+              <div className="text-[13px] text-fg35">등록된 시청처가 아직 없어요.</div>
+            ) : null}
+            {item.platforms.map((platform, index) => {
+              const inner = (
+                <>
+                  <span className="text-[13px] font-semibold text-fg">{platform.name}</span>
+                  {platform.url ? <ExternalLinkIcon className="text-fg40" /> : null}
+                </>
+              );
+              const className =
+                "flex items-center justify-between rounded-[10px] border border-line6 bg-surface3 px-3.5 py-3 hover:bg-surface6";
+
+              // URL이 등록된 플랫폼만 새 탭으로 열린다. 없으면 클릭해도 아무 동작 없음(안전 가드).
+              return platform.url ? (
+                <TrackedExternalLink
+                  key={`${platform.name}-${index}`}
+                  href={platform.url}
+                  target="_blank"
+                  rel="noreferrer noopener"
+                  className={`${className} cursor-pointer text-fg hover:text-fg`}
+                  event={EVENTS.outboundPlatform}
+                  params={{
+                    content_id: item.id,
+                    content_title: item.title,
+                    platform_name: platform.name,
+                    destination: hostOf(platform.url),
+                  }}
+                >
+                  {inner}
+                </TrackedExternalLink>
+              ) : (
+                <div key={`${platform.name}-${index}`} className={className}>
+                  {inner}
+                </div>
+              );
+            })}
+          </div>
+        </aside>
+
+        <div className="flex flex-col gap-7 lg:col-start-1 lg:row-start-1">
           <section>
             <h2 className="mb-2.5 text-base font-bold">줄거리</h2>
             <p className="text-[15px] leading-[1.75] text-fg72">{item.synopsis}</p>
@@ -183,52 +234,6 @@ export default async function ContentDetailPage({ params }: { params: Params }) 
             </section>
           ) : null}
         </div>
-
-        <aside
-          id="watch"
-          className="flex h-fit flex-col gap-3.5 rounded-2xl border border-line8 bg-card p-[22px] lg:sticky lg:top-[88px]"
-        >
-          <div className="text-[15px] font-bold">시청·감상 가능한 곳</div>
-          <div className="flex flex-col gap-2.5">
-            {item.platforms.length === 0 ? (
-              <div className="text-[13px] text-fg35">등록된 시청처가 아직 없어요.</div>
-            ) : null}
-            {item.platforms.map((platform, index) => {
-              const inner = (
-                <>
-                  <span className="text-[13px] font-semibold text-fg">{platform.name}</span>
-                  {platform.url ? <ExternalLinkIcon className="text-fg40" /> : null}
-                </>
-              );
-              const className =
-                "flex items-center justify-between rounded-[10px] border border-line6 bg-surface3 px-3.5 py-3 hover:bg-surface6";
-
-              // URL이 등록된 플랫폼만 새 탭으로 열린다. 없으면 클릭해도 아무 동작 없음(안전 가드).
-              return platform.url ? (
-                <TrackedExternalLink
-                  key={`${platform.name}-${index}`}
-                  href={platform.url}
-                  target="_blank"
-                  rel="noreferrer noopener"
-                  className={`${className} cursor-pointer text-fg hover:text-fg`}
-                  event={EVENTS.outboundPlatform}
-                  params={{
-                    content_id: item.id,
-                    content_title: item.title,
-                    platform_name: platform.name,
-                    destination: hostOf(platform.url),
-                  }}
-                >
-                  {inner}
-                </TrackedExternalLink>
-              ) : (
-                <div key={`${platform.name}-${index}`} className={className}>
-                  {inner}
-                </div>
-              );
-            })}
-          </div>
-        </aside>
       </div>
     </div>
   );
