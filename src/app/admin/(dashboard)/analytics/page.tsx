@@ -74,6 +74,7 @@ const EVENT_LABELS: Record<string, string> = {
   comment_submit: "한줄평 작성",
   comment_expand: "한줄평 더보기",
   board_notify_signup: "게시판 알림 신청",
+  share: "공유 버튼 클릭",
   session_start: "방문 시작",
   first_visit: "첫 방문",
   user_engagement: "참여(구글 기본)",
@@ -448,6 +449,26 @@ export default async function AdminAnalyticsPage({ searchParams }: { searchParam
       orderBys: top("eventCount"),
       limit: 10,
     },
+    // 22 공유된 작품
+    {
+      dateRanges,
+      dimensions: [customDimension("content_title")],
+      metrics: [{ name: "eventCount" }],
+      dimensionFilter: eventFilter("share"),
+      orderBys: top("eventCount"),
+      limit: 10,
+    },
+    // 23 공유 링크로 들어온 방문 (공유 버튼이 붙인 표시로 구분)
+    {
+      dateRanges,
+      dimensions: [{ name: "sessionCampaignName" }],
+      metrics: [{ name: "sessions" }],
+      dimensionFilter: {
+        filter: { fieldName: "sessionSource", stringFilter: { value: "drgl_share" } },
+      },
+      orderBys: top("sessions"),
+      limit: 10,
+    },
   ]).catch((error: unknown) => {
     loadError = error instanceof Error ? error.message : "GA 데이터를 불러오지 못했어요.";
     return [] as ReportRow[][];
@@ -476,6 +497,8 @@ export default async function AdminAnalyticsPage({ searchParams }: { searchParam
     juiceClicks = [],
     categoryClicks = [],
     submitCategories = [],
+    sharedContents = [],
+    shareVisits = [],
   ] = reports;
 
   const [users = 0, sessions = 0, views = 0, engagement = 0, newUsers = 0, engagementRate = 0] =
@@ -705,6 +728,43 @@ export default async function AdminAnalyticsPage({ searchParams }: { searchParam
             columns={["형식", "제보"]}
             rows={simpleRows(submitCategories)}
             empty="맞춤 측정기준 submit_category 를 등록한 뒤부터 쌓입니다."
+          />
+        </div>
+      </Section>
+
+      {/* ── 얼마나 퍼지나 ─────────────────────────────────── */}
+      <Section
+        title="얼마나 퍼지나"
+        hint="공유 버튼으로 내보낸 횟수와, 그 링크로 실제 들어온 방문. 주소창에서 직접 복사해 보낸 것은 브라우저 영역이라 잡히지 않아요."
+      >
+        <div className="grid grid-cols-2 gap-4 xl:grid-cols-4">
+          <StatCard label="공유 버튼 클릭" value={`${fmt(eventCount("share"))}회`} />
+          <StatCard
+            label="공유 링크로 들어온 방문"
+            value={fmt(shareVisits.reduce((sum, row) => sum + (row.values[0] ?? 0), 0))}
+            hint="한 번 공유가 몇 명을 데려왔는지"
+          />
+        </div>
+        <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
+          <Table
+            title="많이 공유된 작품"
+            columns={["작품", "공유"]}
+            rows={simpleRows(sharedContents)}
+            empty="아직 공유 버튼을 누른 기록이 없어요."
+          />
+          <Table
+            title="공유 링크로 들어온 방문"
+            hint="어떤 작품 링크가 실제로 사람을 데려왔는지"
+            columns={["공유된 곳", "방문"]}
+            rows={named(shareVisits).map((row) => ({
+              label: (() => {
+                const id = /^content_(\d+)$/.exec(row.keys[0])?.[1];
+                return id ? (pageTitles.get(Number(id)) ?? `작품 #${id}`) : row.keys[0];
+              })(),
+              value: fmt(row.values[0]),
+              ratio: row.values[0],
+            }))}
+            empty="아직 공유 링크로 들어온 방문이 없어요."
           />
         </div>
       </Section>

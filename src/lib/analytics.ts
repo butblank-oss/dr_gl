@@ -41,6 +41,8 @@ export const EVENTS = {
   commentExpand: "comment_expand",
   /** 게시판 오픈 알림 신청 */
   notifySignup: "board_notify_signup",
+  /** 공유 버튼으로 링크를 내보냄 */
+  share: "share",
   /** 페이지를 떠날 때 머문 시간 */
   pageEngagement: "page_engagement",
   /** 스크롤 깊이 (25/50/75/100) */

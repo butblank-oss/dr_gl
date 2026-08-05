@@ -6,6 +6,7 @@ import { EVENTS, hostOf } from "@/lib/analytics";
 import { BackButton } from "@/components/site/BackButton";
 import { BannerBackdrop, PosterCard } from "@/components/site/Banner";
 import { CommentSection } from "@/components/site/CommentSection";
+import { ShareButton } from "@/components/site/ShareButton";
 import { ContentCard } from "@/components/site/ContentCard";
 import { ContentJsonLd } from "@/components/site/JsonLd";
 import {
@@ -71,8 +72,15 @@ export default async function ContentDetailPage({ params }: { params: Params }) 
   return (
     <div>
       <ContentJsonLd item={item} />
-      <div className="page-shell pt-5">
+      <div className="page-shell flex items-center justify-between gap-3 pt-5">
         <BackButton />
+        <ShareButton
+          path={`/content/${item.id}`}
+          title={item.title}
+          contentId={item.id}
+          campaign={`content_${item.id}`}
+          className="cursor-pointer rounded-[9px] border border-line12 bg-surface4 px-4 py-[9px] text-[13px] text-fg75"
+        />
       </div>
 
       <div className="relative mt-2 h-[360px] w-full overflow-hidden md:h-[440px]">
