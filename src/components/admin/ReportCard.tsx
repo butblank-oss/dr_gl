@@ -99,9 +99,14 @@ export function ReportCard({
             </li>
           ))}
         </ul>
+      ) : period ? (
+        // 리포트는 있는데 이 탭에서 짚을 게 없었던 경우 — "리포트가 없다"와 구분한다.
+        <div className="text-[13px] leading-relaxed text-fg50">
+          이 기간에는 이 항목에서 특별히 짚을 내용이 없었어요. 방문이 쌓이면 자동으로 채워집니다.
+        </div>
       ) : (
         <div className="text-[13px] leading-relaxed text-fg50">
-          아직 이 기간의 리포트가 없어요. 매일 오전 10시에 자동으로 만들어지고,
+          아직 만들어진 리포트가 없어요. 매일 오전 10시에 자동으로 만들어지고,
           {canRefresh ? " 위의 “지금 다시 만들기”로 바로 받아볼 수도 있어요." : " 슈퍼관리자가 즉시 생성할 수도 있어요."}
         </div>
       )}

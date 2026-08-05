@@ -416,6 +416,22 @@ export async function generateReport(kind: ReportKind, now = new Date()) {
         : `끝까지 읽은 비율이 ${pct(ratio)}예요. 아래쪽 내용도 잘 소비되고 있습니다.`,
     );
   }
+  // 데이터가 적어 짚을 게 없더라도 각 항목이 비어 있지 않게 한 줄은 남긴다.
+  if (sections.content.length === 0) {
+    sections.content.push(
+      users > 0
+        ? "이 기간에는 작품 상세를 연 기록이 거의 없었어요. 홈에서 카드가 잘 보이는지 확인해보세요."
+        : "방문이 없어 콘텐츠 반응을 볼 수 없었어요.",
+    );
+  }
+  if (sections.conversion.length === 0) {
+    sections.conversion.push(
+      "이 기간에는 시청처 클릭·검색·공유 기록이 없었어요. 아직 방문이 적어서일 가능성이 큽니다.",
+    );
+  }
+  if (sections.audience.length === 0) {
+    sections.audience.push("방문자 정보를 집계할 만큼의 기록이 아직 없어요.");
+  }
   if (sections.behavior.length === 0) {
     sections.behavior.push("이 기간에는 한줄평·제보 같은 참여 기록이 없었어요.");
   }

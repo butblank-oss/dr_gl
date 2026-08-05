@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { AnalyticsSetupGuide, GaDimensionGuide } from "@/components/admin/AnalyticsSetupGuide";
+import { DateRangePicker } from "@/components/admin/DateRangePicker";
 import { GaConnectForm } from "@/components/admin/GaConnectForm";
 import { ReportCard } from "@/components/admin/ReportCard";
 import { requireAdmin } from "@/lib/auth";
@@ -48,7 +49,24 @@ const TAB_REPORTS: Record<TabKey, string[]> = {
   settings: [],
 };
 
-type SearchParams = Promise<{ days?: string; tab?: string; report?: string }>;
+type SearchParams = Promise<{
+  days?: string;
+  tab?: string;
+  report?: string;
+  from?: string;
+  to?: string;
+}>;
+
+const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
+
+/** 오늘 (사이트 기준 시간대) */
+function todayInSeoul(): string {
+  return new Date(Date.now() + 9 * 60 * 60 * 1000).toISOString().slice(0, 10);
+}
+
+function daysAgoInSeoul(days: number): string {
+  return new Date(Date.now() + 9 * 60 * 60 * 1000 - days * 86400000).toISOString().slice(0, 10);
+}
 
 /** 탭 ↔ 리포트 문단 대응. 설정 탭에는 리포트를 붙이지 않는다. */
 const TAB_SECTION: Partial<Record<TabKey, keyof ReportSections>> = {
@@ -236,7 +254,22 @@ export default async function AdminAnalyticsPage({ searchParams }: { searchParam
   const requested = Number(params.days);
   const days = RANGES.some((r) => r.days === requested) ? requested : 28;
   const tab: TabKey = (TABS.find((t) => t.key === params.tab)?.key ?? "summary") as TabKey;
-  const dateRanges = [{ startDate: `${days}daysAgo`, endDate: "today" }];
+
+  // 직접 고른 기간이 올바르면 그것을 쓰고, 아니면 빠른 선택(최근 N일)을 쓴다.
+  const customFrom = params.from && DATE_PATTERN.test(params.from) ? params.from : "";
+  const customTo = params.to && DATE_PATTERN.test(params.to) ? params.to : "";
+  const custom = Boolean(customFrom && customTo && customFrom <= customTo);
+
+  const dateRanges = custom
+    ? [{ startDate: customFrom, endDate: customTo }]
+    : [{ startDate: `${days}daysAgo`, endDate: "today" }];
+  const rangeLabel = custom ? `${customFrom} ~ ${customTo}` : `최근 ${days}일`;
+  // 기간을 고른 날 수 — "N일" 표기가 필요한 안내에 쓴다.
+  const rangeDays = custom
+    ? Math.round((Date.parse(customTo) - Date.parse(customFrom)) / 86400000) + 1
+    : days;
+  /** 탭을 옮겨도 보고 있던 기간이 유지되도록 붙이는 값 */
+  const rangeQuery = custom ? `from=${customFrom}&to=${customTo}` : `days=${days}`;
 
   const connectForm = (
     <GaConnectForm
@@ -248,19 +281,32 @@ export default async function AdminAnalyticsPage({ searchParams }: { searchParam
   );
 
   const header = (
-    <div className="flex flex-wrap items-center justify-between gap-3">
-      <h1 className="text-2xl font-extrabold">방문 분석</h1>
-      <div className="flex gap-2">
-        {RANGES.map((range) => (
-          <Link
-            key={range.days}
-            href={`/admin/analytics?tab=${tab}&days=${range.days}`}
-            className={`chip !px-[13px] !py-2 !text-xs ${days === range.days ? "chip-on" : "chip-off"}`}
-          >
-            {range.label}
-          </Link>
-        ))}
+    <div className="flex flex-col gap-3">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-baseline gap-2.5">
+          <h1 className="text-2xl font-extrabold">방문 분석</h1>
+          <span className="text-xs text-fg45">{rangeLabel}</span>
+        </div>
+        <div className="flex gap-2">
+          {RANGES.map((range) => (
+            <Link
+              key={range.days}
+              href={`/admin/analytics?tab=${tab}&days=${range.days}`}
+              className={`chip !px-[13px] !py-2 !text-xs ${
+                !custom && days === range.days ? "chip-on" : "chip-off"
+              }`}
+            >
+              {range.label}
+            </Link>
+          ))}
+        </div>
       </div>
+      <DateRangePicker
+        baseHref={`/admin/analytics?tab=${tab}`}
+        from={custom ? customFrom : daysAgoInSeoul(days)}
+        to={custom ? customTo : todayInSeoul()}
+        active={custom}
+      />
     </div>
   );
 
@@ -289,7 +335,7 @@ export default async function AdminAnalyticsPage({ searchParams }: { searchParam
       {TABS.map((entry) => (
         <Link
           key={entry.key}
-          href={`/admin/analytics?tab=${entry.key}&days=${days}`}
+          href={`/admin/analytics?tab=${entry.key}&${rangeQuery}`}
           className={
             entry.key === tab
               ? "-mb-px whitespace-nowrap border-b-2 border-accent px-4 py-2.5 text-[13px] font-bold text-fg"
@@ -559,7 +605,7 @@ export default async function AdminAnalyticsPage({ searchParams }: { searchParam
           periodEnd={report?.periodEnd ?? null}
           createdAt={report?.createdAt.toISOString() ?? null}
           canRefresh={me.role === "ADMIN"}
-          baseHref={`/admin/analytics?tab=${tab}&days=${days}`}
+          baseHref={`/admin/analytics?tab=${tab}&${rangeQuery}`}
         />
       ) : null}
       {children}
