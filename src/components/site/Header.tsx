@@ -79,7 +79,7 @@ export function Header() {
       href={nav.href}
       className={navClass(pathname === nav.href)}
       event={EVENTS.nav}
-      params={{ label: nav.label, to: nav.href, from: pathname }}
+      params={{ label: nav.label, nav_to: nav.href, nav_from: pathname }}
     >
       {nav.badge ? (
         <span className="flex items-center gap-[7px]">
@@ -102,7 +102,7 @@ export function Header() {
             <button
               type="button"
               onClick={() => {
-                track(EVENTS.nav, { label: "뒤로가기", from: pathname });
+                track(EVENTS.nav, { label: "뒤로가기", nav_from: pathname });
                 goBack();
               }}
               aria-label="뒤로가기"
@@ -117,7 +117,7 @@ export function Header() {
             href="/"
             className="flex flex-none gap-px text-xl font-extrabold tracking-[-0.5px] text-fg hover:text-fg lg:text-[22px]"
             event={EVENTS.nav}
-            params={{ label: "로고", to: "/", from: pathname }}
+            params={{ label: "로고", nav_to: "/", nav_from: pathname }}
           >
             Dr.<span className="text-accent">GL</span>
           </TrackedLink>
@@ -130,7 +130,7 @@ export function Header() {
           <TrackedLink
             href="/submit"
             event={EVENTS.nav}
-            params={{ label: "제보하기", to: "/submit", from: pathname, source: "헤더" }}
+            params={{ label: "제보하기", nav_to: "/submit", nav_from: pathname, nav_source: "헤더" }}
             className={
               isSubmit
                 ? "btn-grad h-10 flex-none whitespace-nowrap px-3 text-[13px] lg:px-4"

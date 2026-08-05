@@ -12,7 +12,7 @@ export function BackButton() {
     <button
       type="button"
       onClick={() => {
-        track(EVENTS.nav, { label: "돌아가기", from: pathname });
+        track(EVENTS.nav, { label: "돌아가기", nav_from: pathname });
         goBack();
       }}
       className="cursor-pointer rounded-[9px] border border-line12 bg-surface4 px-4 py-[9px] text-[13px] text-fg75"

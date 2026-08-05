@@ -94,12 +94,12 @@ export function SubmitForm({ categories }: Props) {
       const data = await res.json();
       if (!res.ok) {
         setError(data.error ?? "제보를 등록하지 못했어요.");
-        track(EVENTS.submitError, { reason: "서버 거절", status: res.status });
+        track(EVENTS.submitError, { reason: "서버 거절", http_status: res.status });
         return;
       }
       track(EVENTS.submitComplete, {
-        category: form.category,
-        country: form.country,
+        submit_category: form.category,
+        submit_country: form.country,
         juice: form.juice,
         has_platform: Boolean(form.platform.trim()),
         has_contact: Boolean(form.contact.trim()),
@@ -130,7 +130,7 @@ export function SubmitForm({ categories }: Props) {
             onClick={reset}
             className="btn-ghost px-[22px] py-3 text-sm"
             event={EVENTS.nav}
-            params={{ label: "제보 하나 더 하기", source: "제보 완료" }}
+            params={{ label: "제보 하나 더 하기", nav_source: "제보 완료" }}
           >
             제보 하나 더 하기
           </TrackedButton>
@@ -138,7 +138,7 @@ export function SubmitForm({ categories }: Props) {
             href="/"
             className="btn-grad px-[22px] py-3 text-sm"
             event={EVENTS.nav}
-            params={{ label: "홈으로", to: "/", source: "제보 완료" }}
+            params={{ label: "홈으로", nav_to: "/", nav_source: "제보 완료" }}
           >
             홈으로
           </TrackedLink>
@@ -260,7 +260,7 @@ export function SubmitForm({ categories }: Props) {
             target="_blank"
             rel="noreferrer"
             event={EVENTS.nav}
-            params={{ label: "구글 드라이브 열기", source: "제보 폼" }}
+            params={{ label: "구글 드라이브 열기", nav_source: "제보 폼" }}
           >
             구글 드라이브 열기 →
           </TrackedExternalLink>

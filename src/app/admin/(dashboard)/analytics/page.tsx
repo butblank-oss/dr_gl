@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { AnalyticsSetupGuide } from "@/components/admin/AnalyticsSetupGuide";
+import { AnalyticsSetupGuide, GaDimensionGuide } from "@/components/admin/AnalyticsSetupGuide";
 import { GaConnectForm } from "@/components/admin/GaConnectForm";
 import { requireAdmin } from "@/lib/auth";
 import { customDimension, getGaStatus, runReports } from "@/lib/ga-data";
@@ -380,6 +380,74 @@ export default async function AdminAnalyticsPage({ searchParams }: { searchParam
       orderBys: top("eventCount"),
       limit: 10,
     },
+    // 15 결과가 없던 검색어
+    {
+      dateRanges,
+      dimensions: [customDimension("search_term")],
+      metrics: [{ name: "eventCount" }],
+      dimensionFilter: {
+        andGroup: {
+          expressions: [
+            eventFilter("search"),
+            { filter: { fieldName: "customEvent:results", stringFilter: { value: "0" } } },
+          ],
+        },
+      },
+      orderBys: top("eventCount"),
+      limit: 15,
+    },
+    // 16 필터 사용
+    {
+      dateRanges,
+      dimensions: [customDimension("filter_type"), customDimension("filter_value")],
+      metrics: [{ name: "eventCount" }],
+      dimensionFilter: eventFilter("filter_change"),
+      orderBys: top("eventCount"),
+      limit: 15,
+    },
+    // 17 눌린 버튼
+    {
+      dateRanges,
+      dimensions: [customDimension("label")],
+      metrics: [{ name: "eventCount" }],
+      dimensionFilter: eventFilter("nav_click"),
+      orderBys: top("eventCount"),
+      limit: 12,
+    },
+    // 18 스크롤 깊이
+    {
+      dateRanges,
+      dimensions: [customDimension("percent")],
+      metrics: [{ name: "eventCount" }],
+      dimensionFilter: eventFilter("scroll_depth"),
+      limit: 5,
+    },
+    // 19 착즙 작품이 얼마나 눌리나
+    {
+      dateRanges,
+      dimensions: [customDimension("juice")],
+      metrics: [{ name: "eventCount" }],
+      dimensionFilter: eventFilter("select_content"),
+      limit: 3,
+    },
+    // 20 어떤 형식이 눌리나
+    {
+      dateRanges,
+      dimensions: [customDimension("content_category")],
+      metrics: [{ name: "eventCount" }],
+      dimensionFilter: eventFilter("select_content"),
+      orderBys: top("eventCount"),
+      limit: 10,
+    },
+    // 21 제보 완료의 형식 분포
+    {
+      dateRanges,
+      dimensions: [customDimension("submit_category")],
+      metrics: [{ name: "eventCount" }],
+      dimensionFilter: eventFilter("submission_complete"),
+      orderBys: top("eventCount"),
+      limit: 10,
+    },
   ]).catch((error: unknown) => {
     loadError = error instanceof Error ? error.message : "GA 데이터를 불러오지 못했어요.";
     return [] as ReportRow[][];
@@ -401,6 +469,13 @@ export default async function AdminAnalyticsPage({ searchParams }: { searchParam
     hours = [],
     landings = [],
     destinations = [],
+    zeroSearches = [],
+    filters = [],
+    buttons = [],
+    scrolls = [],
+    juiceClicks = [],
+    categoryClicks = [],
+    submitCategories = [],
   ] = reports;
 
   const [users = 0, sessions = 0, views = 0, engagement = 0, newUsers = 0, engagementRate = 0] =
@@ -564,10 +639,72 @@ export default async function AdminAnalyticsPage({ searchParams }: { searchParam
           />
           <Table
             title="검색어"
-            hint="찾는데 없는 작품이면 채워야 할 목록이에요"
             columns={["검색어", "횟수"]}
             rows={simpleRows(searches)}
             empty="맞춤 측정기준 search_term 을 등록한 뒤부터 쌓입니다."
+          />
+          <Table
+            title="결과가 없던 검색어"
+            hint="찾았는데 없던 작품 — 다음에 채워야 할 목록이에요"
+            columns={["검색어", "횟수"]}
+            rows={simpleRows(zeroSearches)}
+            empty="결과 없는 검색이 없었어요. (측정기준 results 등록 필요)"
+          />
+        </div>
+      </Section>
+
+      {/* ── 무엇을 눌러 찾나 ───────────────────────────────── */}
+      <Section title="무엇을 눌러 찾나" hint="탐색 습관을 보면 어떤 입구를 키워야 할지 보여요">
+        <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
+          <Table
+            title="많이 쓰는 필터"
+            columns={["필터", "조작"]}
+            rows={named(filters).map((row) => ({
+              label: `${{ category: "형식", country: "국가", juice: "착즙" }[row.keys[0]] ?? row.keys[0]} · ${row.keys[1]}`,
+              value: fmt(row.values[0]),
+              ratio: row.values[0],
+            }))}
+            empty="맞춤 측정기준 filter_type · filter_value 를 등록한 뒤부터 쌓입니다."
+          />
+          <Table
+            title="많이 눌린 버튼"
+            hint="헤더·푸터·뒤로가기 등 이동 버튼"
+            columns={["버튼", "클릭"]}
+            rows={simpleRows(buttons)}
+            empty="맞춤 측정기준 label 을 등록한 뒤부터 쌓입니다."
+          />
+          <Table
+            title="어떤 형식이 눌리나"
+            hint="카드 클릭 기준. 형식별 작품 수와 견줘보세요"
+            columns={["형식", "클릭"]}
+            rows={simpleRows(categoryClicks)}
+            empty="맞춤 측정기준 content_category 를 등록한 뒤부터 쌓입니다."
+          />
+          <Table
+            title="착즙 작품 반응"
+            columns={["구분", "클릭"]}
+            rows={named(juiceClicks).map((row) => ({
+              label: row.keys[0] === "true" ? "착즙 작품" : "일반 작품",
+              value: fmt(row.values[0]),
+              ratio: row.values[0],
+            }))}
+            empty="맞춤 측정기준 juice 를 등록한 뒤부터 쌓입니다."
+          />
+          <Table
+            title="어디까지 읽나 (스크롤)"
+            hint="100%가 적으면 화면이 너무 길거나 아래가 안 읽히는 것"
+            columns={["도달 지점", "횟수"]}
+            rows={[...scrolls]
+              .sort((a, b) => Number(a.keys[0]) - Number(b.keys[0]))
+              .map((row) => ({ label: `${row.keys[0]}%`, value: fmt(row.values[0]), ratio: row.values[0] }))}
+            empty="맞춤 측정기준 percent 를 등록한 뒤부터 쌓입니다."
+          />
+          <Table
+            title="제보된 형식"
+            hint="이용자가 어떤 형식을 더 원하는지"
+            columns={["형식", "제보"]}
+            rows={simpleRows(submitCategories)}
+            empty="맞춤 측정기준 submit_category 를 등록한 뒤부터 쌓입니다."
           />
         </div>
       </Section>
@@ -652,7 +789,10 @@ export default async function AdminAnalyticsPage({ searchParams }: { searchParam
         />
       </Section>
 
-      <Section title="연결 설정">{connectForm}</Section>
+      <Section title="설정">
+        <GaDimensionGuide />
+        {connectForm}
+      </Section>
     </>
   );
 }

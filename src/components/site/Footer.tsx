@@ -11,7 +11,7 @@ export function Footer() {
             href="/terms"
             className="text-fg55 hover:text-fg"
             event={EVENTS.nav}
-            params={{ label: "이용약관", to: "/terms", source: "푸터" }}
+            params={{ label: "이용약관", nav_to: "/terms", nav_source: "푸터" }}
           >
             이용약관
           </TrackedLink>
@@ -20,7 +20,7 @@ export function Footer() {
             href="/privacy"
             className="font-bold text-fg hover:text-fg"
             event={EVENTS.nav}
-            params={{ label: "개인정보처리방침", to: "/privacy", source: "푸터" }}
+            params={{ label: "개인정보처리방침", nav_to: "/privacy", nav_source: "푸터" }}
           >
             개인정보처리방침
           </TrackedLink>
@@ -28,7 +28,7 @@ export function Footer() {
             href={`mailto:${SITE.email}`}
             className="text-fg55 hover:text-fg"
             event={EVENTS.nav}
-            params={{ label: "문의 메일", source: "푸터" }}
+            params={{ label: "문의 메일", nav_source: "푸터" }}
           >
             문의 · 저작권 삭제 요청
           </TrackedExternalLink>

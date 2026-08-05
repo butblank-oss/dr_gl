@@ -17,15 +17,33 @@ const STEPS = [
   },
 ];
 
-const DIMENSIONS = [
-  ["search_term", "검색어"],
-  ["list_name", "어느 목록에서 눌렀는지"],
-  ["platform_name", "어느 플랫폼으로 나갔는지"],
-  ["content_title", "작품 이름"],
-  ["content_category", "작품 형식"],
-  ["label", "버튼 이름"],
-  ["destination", "나간 도메인"],
+export const GA_DIMENSIONS: { key: string; label: string; group: string }[] = [
+  { key: "content_title", label: "작품 이름 — 작품별 클릭·시청처 전환", group: "핵심" },
+  { key: "platform_name", label: "플랫폼 이름 — 어디로 보러 나갔는지", group: "핵심" },
+  { key: "search_term", label: "검색어", group: "핵심" },
+  { key: "list_name", label: "목록 이름 — 홈의 어느 줄에서 눌렸는지", group: "핵심" },
+  { key: "results", label: "검색 결과 수 — 결과 0건 검색어를 뽑는 데 씀", group: "핵심" },
+  { key: "destination", label: "나간 도메인", group: "핵심" },
+
+  { key: "content_category", label: "작품 형식 — 어떤 형식이 눌리는지", group: "추가 분석" },
+  { key: "juice", label: "착즙 여부 — 착즙 작품 반응", group: "추가 분석" },
+  { key: "label", label: "버튼 이름 — 많이 눌린 버튼", group: "추가 분석" },
+  { key: "filter_type", label: "필터 종류 (형식·국가·착즙)", group: "추가 분석" },
+  { key: "filter_value", label: "고른 필터 값", group: "추가 분석" },
+  { key: "percent", label: "스크롤 도달 지점 (25·50·75·100)", group: "추가 분석" },
+  { key: "submit_category", label: "제보된 작품 형식", group: "추가 분석" },
+
+  { key: "position", label: "목록에서 몇 번째 카드였는지", group: "더 파고들 때" },
+  { key: "platform_type", label: "유료 · 무료", group: "더 파고들 때" },
+  { key: "nav_to", label: "어디로 이동했는지", group: "더 파고들 때" },
+  { key: "nav_from", label: "어디에서 눌렀는지", group: "더 파고들 때" },
+  { key: "nav_source", label: "헤더 · 푸터 · 제보 폼 등 위치", group: "더 파고들 때" },
+  { key: "cta", label: "히어로의 어떤 버튼인지", group: "더 파고들 때" },
+  { key: "submit_country", label: "제보된 작품 국가", group: "더 파고들 때" },
+  { key: "reason", label: "제보 실패 사유", group: "더 파고들 때" },
 ];
+
+const GROUPS = ["핵심", "추가 분석", "더 파고들 때"] as const;
 
 /** GA 연동 전에 보여주는 안내. 설정이 끝나면 이 화면 대신 지표가 나온다. */
 export function AnalyticsSetupGuide() {
@@ -49,26 +67,48 @@ export function AnalyticsSetupGuide() {
         ))}
       </div>
 
-      <section className="flex flex-col gap-3 rounded-[14px] border border-line8 bg-panel px-5 py-[18px]">
-        <div>
-          <div className="text-sm font-bold">GA에 맞춤 측정기준 등록 (같이 해두세요)</div>
-          <div className="mt-1 text-[11px] leading-relaxed text-fg40">
-            애널리틱스 → 관리 → 데이터 표시 → 맞춤 정의 → 맞춤 측정기준 만들기. 범위는 모두
-            &quot;이벤트&quot;로 두고, 이벤트 매개변수 이름을 아래와 똑같이 적으세요.
-            <strong className="text-fg70"> 등록한 이후에 쌓인 데이터부터</strong> 표에 나옵니다.
-          </div>
-        </div>
-        <table className="w-full border-collapse text-[13px]">
-          <tbody>
-            {DIMENSIONS.map(([key, label]) => (
-              <tr key={key} className="border-t border-[rgba(255,255,255,0.05)]">
-                <td className="w-[260px] py-2.5 pr-3 font-mono text-xs text-accent">{key}</td>
-                <td className="py-2.5 text-fg55">{label}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </section>
+      <GaDimensionGuide />
     </div>
+  );
+}
+
+/** GA에 등록해야 할 맞춤 측정기준 목록. 연결 전후 모두에서 보여준다. */
+export function GaDimensionGuide() {
+  return (
+    <details className="rounded-[14px] border border-line8 bg-panel px-5 py-[18px]" open>
+      <summary className="cursor-pointer text-sm font-bold">GA에 등록할 맞춤 측정기준</summary>
+      <div className="mt-3 flex flex-col gap-3">
+        <div className="text-[11px] leading-relaxed text-fg40">
+          애널리틱스 → 관리 → 데이터 표시 → 맞춤 정의 → 맞춤 측정기준 만들기. 범위는 모두
+          &quot;이벤트&quot;로 두고, 이벤트 매개변수 이름을 아래와 똑같이 적으세요.
+          <strong className="text-fg70"> 등록한 이후에 쌓인 데이터부터</strong> 표에 나옵니다.
+        </div>
+        {GROUPS.map((group) => (
+          <div key={group} className="flex flex-col gap-1">
+            <div className="mt-2 text-[11px] font-bold text-fg60">
+              {group}
+              {group === "핵심" ? (
+                <span className="ml-2 font-normal text-fg35">이것부터 넣으면 표가 채워져요</span>
+              ) : null}
+            </div>
+            <table className="w-full border-collapse text-[13px]">
+              <tbody>
+                {GA_DIMENSIONS.filter((dimension) => dimension.group === group).map((dimension) => (
+                  <tr key={dimension.key} className="border-t border-[rgba(255,255,255,0.05)]">
+                    <td className="w-[220px] py-2 pr-3 font-mono text-xs text-accent">{dimension.key}</td>
+                    <td className="py-2 text-fg55">{dimension.label}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ))}
+        <div className="text-[11px] leading-relaxed text-fg40">
+          측정기준 이름은 아무렇게나 적어도 되고, <strong className="text-fg60">이벤트 매개변수</strong>만
+          위와 정확히 같으면 됩니다. GA4는 이벤트 범위 측정기준을 50개까지 만들 수 있어서 전부 넣어도
+          여유가 있어요.
+        </div>
+      </div>
+    </details>
   );
 }
