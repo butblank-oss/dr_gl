@@ -18,9 +18,10 @@ const STEPS = [
 ];
 
 const DIMENSIONS = [
-  ["content_title", "작품 이름"],
+  ["search_term", "검색어"],
   ["list_name", "어느 목록에서 눌렀는지"],
   ["platform_name", "어느 플랫폼으로 나갔는지"],
+  ["content_title", "작품 이름"],
   ["content_category", "작품 형식"],
   ["label", "버튼 이름"],
   ["destination", "나간 도메인"],
@@ -29,8 +30,7 @@ const DIMENSIONS = [
 /** GA 연동 전에 보여주는 안내. 설정이 끝나면 이 화면 대신 지표가 나온다. */
 export function AnalyticsSetupGuide() {
   return (
-    <>
-      <h1 className="text-2xl font-extrabold">방문 분석</h1>
+    <div className="flex flex-col gap-4">
       <div className="rounded-[14px] border border-accent-line bg-accent-soft8 px-5 py-4 text-[13px] leading-relaxed text-fg70">
         아직 구글 애널리틱스와 연결되지 않았어요. 아래 4단계를 마치면 이 화면에 방문자·인기 작품·시청처
         전환이 바로 표시됩니다. 사이트의 이벤트 수집은 이미 동작 중이라, 지금 연결해도 그동안 쌓인
@@ -69,6 +69,6 @@ export function AnalyticsSetupGuide() {
           </tbody>
         </table>
       </section>
-    </>
+    </div>
   );
 }
