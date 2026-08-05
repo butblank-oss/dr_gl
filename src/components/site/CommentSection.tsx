@@ -57,7 +57,8 @@ export function CommentSection({ itemId, initialComments }: Props) {
 
   return (
     <div>
-      <div className="mb-2.5 text-base font-bold">한줄평</div>
+      {/* 줄거리·출연·태그와 같은 층위의 절이라 제목 태그도 맞춘다. */}
+      <h2 className="mb-2.5 text-base font-bold">한줄평</h2>
       <div className="mb-3.5 flex gap-2">
         <input
           value={draft}

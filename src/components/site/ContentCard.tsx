@@ -70,7 +70,8 @@ export function ContentCard({
       </div>
       <div className="flex flex-col gap-[3px]">
         <div className="truncate text-sm font-semibold leading-tight text-fg">{item.title}</div>
-        <div className="text-xs text-fg50">
+        {/* 좁은 카드에서 이 줄만 두 줄로 흘러 카드 높이가 서로 어긋나던 자리 */}
+        <div className="truncate text-xs text-fg50">
           {item.year} · {item.creatorName}
         </div>
         <div className="truncate text-[11px] text-fg40">출연 {leads}</div>

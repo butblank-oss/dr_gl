@@ -139,17 +139,28 @@ export default async function ContentDetailPage({ params }: { params: Params }) 
             </div>
           </section>
 
+          {/*
+            한줄평이 추천 줄보다 위에 온다. 지금 보고 있는 작품에 대한 이야기가 먼저고,
+            다른 작품으로 넘어가는 길은 그 뒤에 두는 편이 순서에 맞다.
+          */}
+          <CommentSection itemId={item.id} initialComments={comments} />
+
+          {/*
+            추천 줄은 홈과 같은 가로 스크롤. 그리드로 깔면 모바일에서 카드가 화면 절반씩 차지해
+            본문보다 커져 버린다. 카드도 홈보다 한 단계 작게 잡는다 — 여긴 곁다리니까.
+          */}
           {related.length > 0 ? (
             <section>
               <h2 className="mb-3.5 text-base font-bold">이런 작품은 어때요?</h2>
-              <div className="grid gap-[18px] [grid-template-columns:repeat(auto-fill,minmax(150px,1fr))]">
+              <div className="h-scroll flex gap-3.5 pb-1.5">
                 {related.map((entry, index) => (
-                  <ContentCard
-                    key={entry.id}
-                    item={entry}
-                    listName="이런 작품은 어때요"
-                    position={index + 1}
-                  />
+                  <div key={entry.id} className="w-[112px] flex-none md:w-[144px]">
+                    <ContentCard
+                      item={entry}
+                      listName="이런 작품은 어때요"
+                      position={index + 1}
+                    />
+                  </div>
                 ))}
               </div>
             </section>
@@ -158,20 +169,19 @@ export default async function ContentDetailPage({ params }: { params: Params }) 
           {byLead.items.length > 0 ? (
             <section>
               <h2 className="mb-3.5 text-base font-bold">{byLead.sharedLeadName}의 다른 작품</h2>
-              <div className="grid gap-[18px] [grid-template-columns:repeat(auto-fill,minmax(150px,1fr))]">
+              <div className="h-scroll flex gap-3.5 pb-1.5">
                 {byLead.items.map((entry, index) => (
-                  <ContentCard
-                    key={entry.id}
-                    item={entry}
-                    listName="배우의 다른 작품"
-                    position={index + 1}
-                  />
+                  <div key={entry.id} className="w-[112px] flex-none md:w-[144px]">
+                    <ContentCard
+                      item={entry}
+                      listName="배우의 다른 작품"
+                      position={index + 1}
+                    />
+                  </div>
                 ))}
               </div>
             </section>
           ) : null}
-
-          <CommentSection itemId={item.id} initialComments={comments} />
         </div>
 
         <aside
