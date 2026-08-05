@@ -13,7 +13,11 @@ export const metadata: Metadata = {
   description: SITE_DESCRIPTION,
   keywords: SITE_KEYWORDS,
   applicationName: SITE.name,
-  alternates: { canonical: "/" },
+  alternates: {
+    canonical: "/",
+    // 새 작품이 올라온 걸 검색엔진이 빨리 알아채도록 RSS 를 알려준다
+    types: { "application/rss+xml": [{ url: "/rss.xml", title: `${SITE.name} 새 작품` }] },
+  },
   openGraph: {
     type: "website",
     siteName: SITE.name,
