@@ -18,9 +18,16 @@ const STEPS = [
 ];
 
 const ENVS = [
-  { key: "GA_PROPERTY_ID", value: "예: 501234567 (숫자만)" },
-  { key: "GA_SERVICE_ACCOUNT_EMAIL", value: "JSON 의 client_email 값" },
-  { key: "GA_SERVICE_ACCOUNT_KEY", value: "JSON 의 private_key 값 (-----BEGIN PRIVATE KEY----- 부터 통째로)" },
+  { key: "GA_PROPERTY_ID", value: "예: 501234567 (숫자만). 측정 ID(G-...)가 아니라 속성 ID예요." },
+  {
+    key: "GA_SERVICE_ACCOUNT_KEY",
+    value:
+      "다운로드한 JSON 파일을 텍스트편집기로 열어 { 부터 } 까지 전부 복사해 붙여넣으세요. 이메일까지 알아서 읽습니다.",
+  },
+  {
+    key: "GA_SERVICE_ACCOUNT_EMAIL",
+    value: "(선택) 위에 JSON 전체를 넣었다면 필요 없어요. private_key 만 넣었을 때만 채우세요.",
+  },
 ];
 
 const DIMENSIONS = [
@@ -68,8 +75,9 @@ export function AnalyticsSetupGuide() {
           </tbody>
         </table>
         <div className="text-[11px] leading-relaxed text-fg40">
-          비공개 키는 여러 줄이라 그대로 붙여넣으면 됩니다. 줄바꿈이 깨져 한 줄로 들어가도
-          (\n 형태) 알아서 되돌려 읽어요. 저장 후 반드시 재배포해야 적용됩니다.
+          JSON 파일 내용을 통째로 넣는 방법이 가장 확실합니다. 값에서 일부만 잘라내다 보면
+          키가 중간에 끊기기 쉬워요. 줄바꿈이 \n 형태로 들어가도 알아서 되돌려 읽습니다.
+          저장 후 반드시 재배포해야 적용됩니다.
         </div>
       </section>
 

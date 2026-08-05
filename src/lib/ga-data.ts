@@ -18,12 +18,59 @@ const TOKEN_URL = "https://oauth2.googleapis.com/token";
 const SCOPE = "https://www.googleapis.com/auth/analytics.readonly";
 
 export const GA_PROPERTY_ID = process.env.GA_PROPERTY_ID?.replace(/\D/g, "") ?? "";
-const CLIENT_EMAIL = process.env.GA_SERVICE_ACCOUNT_EMAIL ?? "";
-// 환경변수 한 줄에 넣으려고 줄바꿈을 \n 으로 바꿔 붙여넣는 경우가 많아 되돌려준다.
-const PRIVATE_KEY = (process.env.GA_SERVICE_ACCOUNT_KEY ?? "").replace(/\\n/g, "\n");
+
+const PEM_HEADER = "-----BEGIN PRIVATE KEY-----";
+
+/**
+ * 서비스 계정 자격증명을 최대한 관대하게 읽는다.
+ *
+ * 사람이 손으로 옮기는 값이라 형태가 제각각이다. 아래를 전부 받아준다.
+ *   - 다운로드한 JSON 파일 내용을 통째로 붙여넣은 경우 (가장 편한 방법)
+ *   - private_key 값만 꺼낸 경우 (줄바꿈이 \n 문자열로 남아 있어도 됨)
+ *   - 값 양끝에 따옴표가 딸려온 경우
+ */
+function readCredentials(): { email: string; privateKey: string } {
+  const rawKey = (process.env.GA_SERVICE_ACCOUNT_KEY ?? "").trim();
+  let email = (process.env.GA_SERVICE_ACCOUNT_EMAIL ?? "").trim();
+
+  // JSON 파일을 통째로 넣은 경우 — 이메일까지 여기서 얻는다.
+  if (rawKey.startsWith("{")) {
+    try {
+      const parsed = JSON.parse(rawKey) as { private_key?: string; client_email?: string };
+      if (parsed.client_email) email = parsed.client_email;
+      return { email, privateKey: (parsed.private_key ?? "").replace(/\\n/g, "\n").trim() };
+    } catch {
+      return { email, privateKey: "" };
+    }
+  }
+
+  const privateKey = rawKey
+    .replace(/^["']|["']$/g, "") // 양끝 따옴표
+    .replace(/\\n/g, "\n") // \n 문자열 → 실제 줄바꿈
+    .trim();
+
+  return { email, privateKey };
+}
+
+const { email: CLIENT_EMAIL, privateKey: PRIVATE_KEY } = readCredentials();
 
 export function isGaConfigured(): boolean {
-  return Boolean(GA_PROPERTY_ID && CLIENT_EMAIL && PRIVATE_KEY);
+  return Boolean(GA_PROPERTY_ID && (CLIENT_EMAIL || PRIVATE_KEY));
+}
+
+/** 무엇이 빠졌는지 사람이 읽을 수 있게 알려준다. 키 내용 자체는 절대 노출하지 않는다. */
+function credentialProblem(): string {
+  if (!GA_PROPERTY_ID) return "GA_PROPERTY_ID 가 비어 있어요. GA 속성 ID(숫자)를 넣어주세요.";
+  if (!PRIVATE_KEY) {
+    return "GA_SERVICE_ACCOUNT_KEY 가 비어 있어요. 다운로드한 서비스 계정 JSON 파일의 내용을 통째로 붙여넣으면 됩니다.";
+  }
+  if (!PRIVATE_KEY.includes(PEM_HEADER)) {
+    return `GA_SERVICE_ACCOUNT_KEY 값이 비공개 키 형태가 아니에요. "${PEM_HEADER}" 로 시작해야 합니다. 가장 확실한 방법은 다운로드한 JSON 파일을 텍스트편집기로 열어 { 부터 } 까지 전부 복사해 이 값에 붙여넣는 거예요.`;
+  }
+  if (!CLIENT_EMAIL) {
+    return "GA_SERVICE_ACCOUNT_EMAIL 이 비어 있어요. ...gserviceaccount.com 주소를 넣거나, JSON 파일 전체를 GA_SERVICE_ACCOUNT_KEY 에 붙여넣으면 자동으로 읽습니다.";
+  }
+  return "";
 }
 
 let cachedToken: { value: string; expiresAt: number } | null = null;
@@ -31,7 +78,15 @@ let cachedToken: { value: string; expiresAt: number } | null = null;
 async function getAccessToken(): Promise<string> {
   if (cachedToken && cachedToken.expiresAt > Date.now() + 60_000) return cachedToken.value;
 
-  const key = await importPKCS8(PRIVATE_KEY, "RS256");
+  // 값이 잘못 들어간 경우, 라이브러리의 영어 오류 대신 무엇을 고쳐야 하는지 알려준다.
+  const problem = credentialProblem();
+  if (problem) throw new Error(problem);
+
+  const key = await importPKCS8(PRIVATE_KEY, "RS256").catch(() => {
+    throw new Error(
+      "비공개 키를 읽지 못했어요. 중간이 잘렸을 수 있어요. JSON 파일 내용을 통째로 GA_SERVICE_ACCOUNT_KEY 에 붙여넣어 보세요.",
+    );
+  });
   const now = Math.floor(Date.now() / 1000);
   const assertion = await new SignJWT({ scope: SCOPE })
     .setProtectedHeader({ alg: "RS256" })
