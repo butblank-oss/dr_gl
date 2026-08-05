@@ -1,10 +1,4 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "crons": [
-    {
-      "path": "/api/cron/reports",
-      "comment": "한국 시간 매일 오전 10시. 일별은 매일, 주별은 월요일, 월별은 1일에 함께 만들어진다.",
-      "schedule": "0 1 * * *"
-    }
-  ]
+  "crons": [{ "path": "/api/cron/reports", "schedule": "0 1 * * *" }]
 }
