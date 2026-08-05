@@ -10,11 +10,10 @@ import type {
   Country,
   CreatorLabel,
   HomeRowDTO,
-  PlatformType,
   SubmissionDTO,
 } from "@/lib/types";
 
-export type PlatformDraft = { name: string; type: PlatformType; url: string };
+export type PlatformDraft = { name: string; url: string };
 
 export type ContentDraft = {
   id: number | null;
@@ -39,7 +38,7 @@ export type ContentDraft = {
   platforms: PlatformDraft[];
 };
 
-const emptyPlatform = (): PlatformDraft => ({ name: "", type: "유료", url: "" });
+const emptyPlatform = (): PlatformDraft => ({ name: "", url: "" });
 
 export function makeAddDraft(categories: string[]): ContentDraft {
   return {
@@ -88,7 +87,7 @@ export function makeEditDraft(item: ContentDTO): ContentDraft {
     backdropUrl: item.backdropUrl,
     synopsis: item.synopsis,
     platforms: item.platforms.length
-      ? item.platforms.map((p) => ({ name: p.name, type: p.type, url: p.url ?? "" }))
+      ? item.platforms.map((p) => ({ name: p.name, url: p.url ?? "" }))
       : [emptyPlatform()],
   };
 }
@@ -117,11 +116,7 @@ export function makeSubmissionDraft(submission: SubmissionDTO, categories: strin
     synopsis: submission.note ?? "",
     platforms: submission.url
       ? [
-          {
-            name: submission.platform?.trim() || "제보된 링크",
-            type: "유료" as PlatformType,
-            url: submission.url,
-          },
+          { name: submission.platform?.trim() || "제보된 링크", url: submission.url },
         ]
       : [emptyPlatform()],
   };
@@ -211,7 +206,7 @@ export function ContentModal({ draft: initial, categories, onClose, onSaved }: P
       synopsis: draft.synopsis,
       platforms: draft.platforms
         .filter((p) => p.name.trim())
-        .map((p) => ({ name: p.name.trim(), type: p.type, url: p.url.trim() })),
+        .map((p) => ({ name: p.name.trim(), url: p.url.trim() })),
       // 목록을 못 불러왔을 땐 아예 보내지 않는다 — 기존 배치를 지우면 안 되기 때문.
       ...(homeRows ? { homeRowIds: selectedRowIds } : {}),
     };
@@ -416,17 +411,6 @@ export function ContentModal({ draft: initial, categories, onClose, onSaved }: P
                 placeholder="https:// 실제 링크"
                 className="field h-10 min-w-0 flex-1 px-3 text-[13px]"
               />
-              <button
-                type="button"
-                onClick={() => updatePlatform(index, { type: platform.type === "유료" ? "무료" : "유료" })}
-                className={
-                  platform.type === "무료"
-                    ? "h-10 cursor-pointer whitespace-nowrap rounded-lg border-none bg-[rgba(155,126,232,0.16)] px-3.5 text-xs font-bold text-accent"
-                    : "h-10 cursor-pointer whitespace-nowrap rounded-lg border-none bg-surface6 px-3.5 text-xs font-bold text-fg70"
-                }
-              >
-                {platform.type}
-              </button>
               <button
                 type="button"
                 aria-label="링크 삭제"

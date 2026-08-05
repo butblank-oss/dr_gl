@@ -187,18 +187,7 @@ export default async function ContentDetailPage({ params }: { params: Params }) 
               const inner = (
                 <>
                   <span className="text-[13px] font-semibold text-fg">{platform.name}</span>
-                  <div className="flex items-center gap-2">
-                    <span
-                      className={
-                        platform.type === "무료"
-                          ? "rounded-pill bg-accent-soft px-2.5 py-1 text-[11px] font-bold text-accent"
-                          : "rounded-pill bg-surface6 px-2.5 py-1 text-[11px] font-semibold text-fg55"
-                      }
-                    >
-                      {platform.type}
-                    </span>
-                    {platform.url ? <ExternalLinkIcon className="text-fg40" /> : null}
-                  </div>
+                  {platform.url ? <ExternalLinkIcon className="text-fg40" /> : null}
                 </>
               );
               const className =
@@ -217,7 +206,6 @@ export default async function ContentDetailPage({ params }: { params: Params }) 
                     content_id: item.id,
                     content_title: item.title,
                     platform_name: platform.name,
-                    platform_type: platform.type,
                     destination: hostOf(platform.url),
                   }}
                 >

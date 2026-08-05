@@ -1,7 +1,6 @@
 export const COUNTRIES = ["국내", "해외"] as const;
 export const COUNTRY_FILTERS = ["전체", "국내", "해외"] as const;
 export const CREATOR_LABELS = ["감독", "연출", "작가"] as const;
-export const PLATFORM_TYPES = ["무료", "유료"] as const;
 
 export const SUBMISSION_STATUSES = ["pending", "approved", "rejected"] as const;
 export const COMMENT_STATUSES = ["visible", "hidden"] as const;
@@ -9,14 +8,17 @@ export const ADMIN_ROLES = ["ADMIN", "EDITOR"] as const;
 
 export type Country = (typeof COUNTRIES)[number];
 export type CreatorLabel = (typeof CREATOR_LABELS)[number];
-export type PlatformType = (typeof PLATFORM_TYPES)[number];
 export type SubmissionStatus = (typeof SUBMISSION_STATUSES)[number];
 export type CommentStatus = (typeof COMMENT_STATUSES)[number];
 export type AdminRole = (typeof ADMIN_ROLES)[number];
 
+/**
+ * 시청·감상처 한 곳.
+ * 유료/무료 구분은 두지 않는다 — 플랫폼 정책이 수시로 바뀌어 우리가 정확히 유지할 수 없고,
+ * 잘못된 안내가 없느니만 못하다. 들어가서 직접 확인하는 편이 낫다.
+ */
 export type Platform = {
   name: string;
-  type: PlatformType;
   url: string;
 };
 

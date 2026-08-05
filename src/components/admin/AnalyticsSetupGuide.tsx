@@ -35,7 +35,6 @@ export const GA_DIMENSIONS: { key: string; name: string; desc: string; group: st
   { key: "submit_category", name: "제보된 작품 형식", desc: "이용자가 어떤 형식을 더 제보하는지", group: "추가 분석" },
 
   { key: "position", name: "카드 순번", desc: "목록에서 몇 번째 카드가 눌리는지", group: "더 파고들 때" },
-  { key: "platform_type", name: "유료·무료", desc: "유료와 무료 중 어디로 더 나가는지", group: "더 파고들 때" },
   { key: "nav_to", name: "이동한 곳", desc: "버튼을 눌러 어느 화면으로 갔는지", group: "더 파고들 때" },
   { key: "nav_from", name: "이동 전 화면", desc: "그 버튼을 어느 화면에서 눌렀는지", group: "더 파고들 때" },
   { key: "nav_source", name: "버튼 위치", desc: "헤더·푸터·제보 폼 중 어디의 버튼인지", group: "더 파고들 때" },

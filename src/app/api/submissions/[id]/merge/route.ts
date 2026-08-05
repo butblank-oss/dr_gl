@@ -41,7 +41,7 @@ export async function POST(req: Request, { params }: Params) {
 
     // 같은 주소가 이미 있으면 더하지 않는다.
     const already = platforms.some((platform) => (platform.url ?? "").trim() === url);
-    const nextPlatforms = already ? platforms : [...platforms, { name, type: "유료" as const, url }];
+    const nextPlatforms = already ? platforms : [...platforms, { name, url }];
 
     let result;
     try {

@@ -17,7 +17,6 @@ import type {
   SubmissionDTO,
   SubmissionStatus,
 } from "@/lib/types";
-import { PLATFORM_TYPES } from "@/lib/types";
 
 export function toPlatforms(raw: unknown): Platform[] {
   if (!Array.isArray(raw)) return [];
@@ -26,11 +25,9 @@ export function toPlatforms(raw: unknown): Platform[] {
     const record = entry as Record<string, unknown>;
     const name = typeof record.name === "string" ? record.name : "";
     if (!name.trim()) return [];
-    const type = PLATFORM_TYPES.includes(record.type as Platform["type"])
-      ? (record.type as Platform["type"])
-      : "유료";
     const url = typeof record.url === "string" ? record.url : "";
-    return [{ name, type, url }];
+    // 예전 데이터에 남아 있는 유료/무료 값은 읽지 않고 버린다.
+    return [{ name, url }];
   });
 }
 

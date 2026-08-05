@@ -1,9 +1,8 @@
 import { z } from "zod";
-import { ADMIN_ROLES, COUNTRIES, CREATOR_LABELS, PLATFORM_TYPES } from "@/lib/types";
+import { ADMIN_ROLES, COUNTRIES, CREATOR_LABELS } from "@/lib/types";
 
 export const platformSchema = z.object({
   name: z.string().trim().min(1, "플랫폼 이름을 입력해주세요."),
-  type: z.enum(PLATFORM_TYPES),
   url: z
     .string()
     .trim()
