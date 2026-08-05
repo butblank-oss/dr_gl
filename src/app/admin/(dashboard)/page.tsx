@@ -194,7 +194,7 @@ export default async function AdminDashboardPage() {
           label="게시판 알림 신청"
           value={fmt(notifyCount)}
           hint={`홈에 노출중인 큐레이션 줄 ${homeRowCount}개`}
-          href="/admin/home-rows"
+          href="/admin/notify"
         />
       </div>
 
