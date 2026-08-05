@@ -2,6 +2,7 @@ import { fail, handle, ok, parseId } from "@/lib/api";
 import { requireAdmin } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { syncHomeRowMembership } from "@/lib/home-rows";
+import { contentPaths, pingIndexNow } from "@/lib/indexnow";
 import { serializeContent } from "@/lib/serialize";
 import { contentWithRowsSchema } from "@/lib/validation";
 
@@ -34,6 +35,8 @@ export async function PATCH(req: Request, { params }: Params) {
       await syncHomeRowMembership(tx, id, homeRowIds);
       return updated;
     });
+    // 내용이 바뀌었으니 검색엔진에 다시 가져가라고 알린다.
+    void pingIndexNow(contentPaths(row.id));
     return ok({ item: serializeContent(row) });
   });
 }

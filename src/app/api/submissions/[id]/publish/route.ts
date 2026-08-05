@@ -2,6 +2,7 @@ import { fail, handle, ok, parseId } from "@/lib/api";
 import { requireAdmin } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { syncHomeRowMembership } from "@/lib/home-rows";
+import { contentPaths, pingIndexNow } from "@/lib/indexnow";
 import { serializeContent, serializeSubmission } from "@/lib/serialize";
 import { contentWithRowsSchema } from "@/lib/validation";
 
@@ -49,6 +50,7 @@ export async function POST(req: Request, { params }: Params) {
       throw error;
     }
 
+    void pingIndexNow(contentPaths(result.content.id));
     return ok(
       { item: serializeContent(result.content), submission: serializeSubmission(result.submission) },
       201,

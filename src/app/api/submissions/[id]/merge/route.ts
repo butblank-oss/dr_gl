@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { fail, handle, ok, parseId } from "@/lib/api";
 import { requireAdmin } from "@/lib/auth";
+import { contentPaths, pingIndexNow } from "@/lib/indexnow";
 import { prisma } from "@/lib/prisma";
 import { serializeContent, serializeSubmission } from "@/lib/serialize";
 import type { Platform } from "@/lib/types";
@@ -66,6 +67,7 @@ export async function POST(req: Request, { params }: Params) {
       throw error;
     }
 
+    if (!already) void pingIndexNow(contentPaths(result.content.id));
     return ok({
       item: serializeContent(result.content),
       submission: serializeSubmission(result.submission),

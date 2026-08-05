@@ -3,6 +3,7 @@ import { requireAdmin } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getFilteredContents, searchContents } from "@/lib/queries";
 import { syncHomeRowMembership } from "@/lib/home-rows";
+import { contentPaths, pingIndexNow } from "@/lib/indexnow";
 import { serializeContent } from "@/lib/serialize";
 import { contentWithRowsSchema } from "@/lib/validation";
 
@@ -34,6 +35,8 @@ export async function POST(req: Request) {
       await syncHomeRowMembership(tx, created.id, homeRowIds);
       return created;
     });
+    // 검색엔진에 새 주소가 생겼다고 알린다. 실패해도 등록에는 영향이 없다.
+    void pingIndexNow(contentPaths(row.id));
     return ok({ item: serializeContent(row) }, 201);
   });
 }
