@@ -113,12 +113,17 @@ export default async function ContentDetailPage({ params }: { params: Params }) 
         (뒤에 두면 모바일에서 페이지 맨 아래, 푸터 직전까지 밀려났다)
       */}
       <div className="page-shell grid grid-cols-1 gap-6 pb-15 pt-10 lg:grid-cols-[1fr_320px] lg:gap-12">
+        {/*
+          같은 마크업을 폭에 따라 다르게 입힌다.
+          모바일: 테두리 없는 절 + 알약 버튼이 두세 줄로 흐른다 (5개짜리 세로 목록이 화면을 통째로 먹었다)
+          데스크톱: 예전 그대로 오른쪽에 붙는 카드
+        */}
         <aside
           id="watch"
-          className="flex h-fit flex-col gap-3.5 rounded-2xl border border-line8 bg-card p-[22px] lg:sticky lg:top-[88px] lg:col-start-2 lg:row-start-1"
+          className="flex h-fit flex-col gap-3 lg:sticky lg:top-[88px] lg:col-start-2 lg:row-start-1 lg:gap-3.5 lg:rounded-2xl lg:border lg:border-line8 lg:bg-card lg:p-[22px]"
         >
-          <div className="text-[15px] font-bold">시청·감상 가능한 곳</div>
-          <div className="flex flex-col gap-2.5">
+          <h2 className="text-base font-bold lg:text-[15px]">시청·감상 가능한 곳</h2>
+          <div className="flex flex-wrap gap-2 lg:flex-col lg:gap-2.5">
             {item.platforms.length === 0 ? (
               <div className="text-[13px] text-fg35">등록된 시청처가 아직 없어요.</div>
             ) : null}
@@ -126,11 +131,11 @@ export default async function ContentDetailPage({ params }: { params: Params }) 
               const inner = (
                 <>
                   <span className="text-[13px] font-semibold text-fg">{platform.name}</span>
-                  {platform.url ? <ExternalLinkIcon className="text-fg40" /> : null}
+                  {platform.url ? <ExternalLinkIcon className="shrink-0 text-fg40" /> : null}
                 </>
               );
               const className =
-                "flex items-center justify-between rounded-[10px] border border-line6 bg-surface3 px-3.5 py-3 hover:bg-surface6";
+                "inline-flex items-center gap-2 rounded-pill border border-line12 bg-surface4 px-3.5 py-2 hover:bg-surface6 lg:w-full lg:justify-between lg:rounded-[10px] lg:border-line6 lg:bg-surface3 lg:py-3";
 
               // URL이 등록된 플랫폼만 새 탭으로 열린다. 없으면 클릭해도 아무 동작 없음(안전 가드).
               return platform.url ? (
