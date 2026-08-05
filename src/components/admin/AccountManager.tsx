@@ -254,15 +254,9 @@ export function AccountManager({
       </div>
 
       {resetTarget ? (
-        <div
-          className="fixed inset-0 z-110 flex items-center justify-center bg-[rgba(0,0,0,0.6)] p-5"
-          onClick={() => setResetTarget(null)}
-          role="presentation"
-        >
-          <div
-            className="flex w-full max-w-[380px] flex-col gap-3 rounded-2xl border border-line10 bg-modal p-6"
-            onClick={(e) => e.stopPropagation()}
-          >
+        // 입력 도중 바깥을 눌러 닫히지 않도록 한다.
+        <div className="fixed inset-0 z-110 flex items-center justify-center bg-[rgba(0,0,0,0.6)] p-5">
+          <div className="flex w-full max-w-[380px] flex-col gap-3 rounded-2xl border border-line10 bg-modal p-6">
             <div className="text-base font-bold">비밀번호 재설정</div>
             <div className="text-[13px] text-fg60">{resetTarget.email}</div>
             <input

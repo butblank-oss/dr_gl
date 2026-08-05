@@ -237,15 +237,10 @@ export function ContentModal({ draft: initial, categories, onClose, onSaved }: P
   };
 
   return (
-    <div
-      className="fixed inset-0 z-100 flex items-center justify-center bg-[rgba(0,0,0,0.6)] p-3 md:p-10"
-      onClick={onClose}
-      role="presentation"
-    >
-      <div
-        className="flex max-h-[92vh] w-full max-w-[620px] flex-col gap-[18px] overflow-y-auto rounded-[18px] border border-line10 bg-modal p-5 md:max-h-[88vh] md:p-[30px]"
-        onClick={(e) => e.stopPropagation()}
-      >
+    // 바깥을 눌러도 닫히지 않는다 — 길게 입력하다 실수로 눌러 내용이 날아가는 일이 잦았다.
+    // 닫으려면 아래의 "취소"를 눌러야 한다.
+    <div className="fixed inset-0 z-100 flex items-center justify-center bg-[rgba(0,0,0,0.6)] p-3 md:p-10">
+      <div className="flex max-h-[92vh] w-full max-w-[620px] flex-col gap-[18px] overflow-y-auto rounded-[18px] border border-line10 bg-modal p-5 md:max-h-[88vh] md:p-[30px]">
         <div className="text-xl font-extrabold">{modalTitle}</div>
 
         {isFromSubmission ? (
