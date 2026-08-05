@@ -7,6 +7,9 @@ import { CheckIcon, SpinnerIcon } from "@/components/icons";
 import { EVENTS, track } from "@/lib/analytics";
 import { COUNTRIES } from "@/lib/types";
 
+/** 중복 안내에 쓰는 최소 정보 — /api/content/duplicate 응답과 같다. */
+type DuplicateMatch = { id: number; title: string; category: string; year: number };
+
 type Props = { categories: string[] };
 
 const emptyForm = (firstCategory: string) => ({
@@ -36,6 +39,37 @@ export function SubmitForm({ categories }: Props) {
   useEffect(() => {
     if (!submitted) track(EVENTS.submitStart);
   }, [submitted]);
+
+  // 제목을 적는 동안 이미 등록된 작품인지 알려준다. 막지는 않는다 —
+  // 같은 작품이어도 새 시청처 링크를 알려주는 제보일 수 있어서다.
+  const [known, setKnown] = useState<DuplicateMatch[]>([]);
+  const [pendingDup, setPendingDup] = useState(0);
+  const title = form.title.trim();
+
+  useEffect(() => {
+    if (title.length < 2) {
+      setKnown([]);
+      setPendingDup(0);
+      return;
+    }
+    let alive = true;
+    const timer = setTimeout(() => {
+      fetch(`/api/content/duplicate?title=${encodeURIComponent(title)}`)
+        .then((res) => res.json())
+        .then((data) => {
+          if (!alive) return;
+          setKnown(data.matches ?? []);
+          setPendingDup(data.pending ?? 0);
+        })
+        .catch(() => {
+          // 확인에 실패해도 제보는 그대로 할 수 있어야 한다.
+        });
+    }, 400);
+    return () => {
+      alive = false;
+      clearTimeout(timer);
+    };
+  }, [title]);
 
   const reset = () => {
     setForm(emptyForm(firstCategory));
@@ -130,6 +164,31 @@ export function SubmitForm({ categories }: Props) {
           placeholder="예: 아가씨"
           className="field h-11 px-3.5 text-sm"
         />
+        {known.length > 0 ? (
+          <div className="flex flex-col gap-1.5 rounded-[10px] border border-accent-line bg-accent-soft8 px-3.5 py-3">
+            <div className="text-[13px] font-semibold text-accent">이미 등록된 작품이에요</div>
+            {known.map((match) => (
+              <TrackedLink
+                key={match.id}
+                href={`/content/${match.id}`}
+                className="text-[13px] text-fg75 underline underline-offset-2"
+                event={EVENTS.nav}
+                params={{ label: "중복 안내에서 작품 보기", to: `/content/${match.id}` }}
+              >
+                {match.title} · {match.category} {match.year} 보러가기 →
+              </TrackedLink>
+            ))}
+            <div className="text-xs leading-relaxed text-fg50">
+              등록되지 않은 <strong className="text-fg70">새 시청처 링크</strong>를 알려주시는 거라면 그대로
+              제보해주세요. 확인 후 해당 작품에 추가할게요.
+            </div>
+          </div>
+        ) : pendingDup > 0 ? (
+          <div className="rounded-[10px] border border-line12 bg-surface4 px-3.5 py-3 text-xs leading-relaxed text-fg55">
+            같은 제목의 제보가 이미 <strong className="text-fg75">{pendingDup}건</strong> 검토 대기 중이에요.
+            추가로 알려주실 내용이 있으면 그대로 보내주세요.
+          </div>
+        ) : null}
       </label>
 
       <div className="flex flex-col gap-2">

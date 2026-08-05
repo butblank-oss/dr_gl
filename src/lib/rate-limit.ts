@@ -11,6 +11,13 @@ export function hashIp(ip: string): string {
 
 export type RateLimitResult = { allowed: boolean; retryAfterSeconds: number };
 
+function decide(times: Date[], max: number, windowMinutes: number): RateLimitResult {
+  if (times.length < max) return { allowed: true, retryAfterSeconds: 0 };
+  const oldest = times[0]!.getTime();
+  const retryAfterSeconds = Math.max(1, Math.ceil((oldest + windowMinutes * 60 * 1000 - Date.now()) / 1000));
+  return { allowed: false, retryAfterSeconds };
+}
+
 /**
  * 비로그인 한줄평 스팸 방지 — 같은 IP가 윈도우 안에 남길 수 있는 건수를 서버에서 제한한다.
  * 저장소가 DB라 인스턴스가 여러 대여도 동일하게 동작한다.
@@ -26,10 +33,28 @@ export async function checkCommentRateLimit(ipHash: string): Promise<RateLimitRe
     orderBy: { createdAt: "asc" },
     select: { createdAt: true },
   });
+  return decide(
+    recent.map((row) => row.createdAt),
+    max,
+    windowMinutes,
+  );
+}
 
-  if (recent.length < max) return { allowed: true, retryAfterSeconds: 0 };
+/** 제보 도배 방지 — 기본값은 10분에 5건. */
+export async function checkSubmissionRateLimit(ipHash: string): Promise<RateLimitResult> {
+  const max = Number(process.env.SUBMISSION_RATE_LIMIT_MAX ?? 5);
+  const windowMinutes = Number(process.env.SUBMISSION_RATE_LIMIT_WINDOW_MINUTES ?? 10);
+  if (!Number.isFinite(max) || max <= 0) return { allowed: true, retryAfterSeconds: 0 };
 
-  const oldest = recent[0]!.createdAt.getTime();
-  const retryAfterSeconds = Math.max(1, Math.ceil((oldest + windowMinutes * 60 * 1000 - Date.now()) / 1000));
-  return { allowed: false, retryAfterSeconds };
+  const since = new Date(Date.now() - windowMinutes * 60 * 1000);
+  const recent = await prisma.submission.findMany({
+    where: { ipHash, createdAt: { gte: since } },
+    orderBy: { createdAt: "asc" },
+    select: { createdAt: true },
+  });
+  return decide(
+    recent.map((row) => row.createdAt),
+    max,
+    windowMinutes,
+  );
 }

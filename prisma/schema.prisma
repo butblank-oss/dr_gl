@@ -81,10 +81,13 @@ model Submission {
   status    String   @default("pending")
   /// 승인·발행으로 만들어진 콘텐츠 id
   contentId Int?
+  /// 도배 방지용. 원본 IP는 저장하지 않고 되돌릴 수 없게 변환한 값만 둔다.
+  ipHash    String   @default("")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([status])
+  @@index([ipHash, createdAt])
 }
 
 /// 한줄평 — 로그인 불필요(익명). itemId로 콘텐츠와 연결.

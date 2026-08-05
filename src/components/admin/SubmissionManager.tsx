@@ -31,23 +31,55 @@ const STATUS_STYLE: Record<string, string> = {
   rejected: "rounded-pill bg-surface6 px-[9px] py-[3px] text-[10px] font-semibold text-fg40",
 };
 
+/** 제목이 같은 기존 작품 — 서버에서 대조해 내려준다 */
+export type DuplicateMatch = { id: number; title: string; category: string; year: number };
+
 export function SubmissionManager({
   initialSubmissions,
+  initialDuplicates,
   categories,
 }: {
   initialSubmissions: SubmissionDTO[];
+  initialDuplicates: Record<number, DuplicateMatch[]>;
   categories: string[];
 }) {
   const router = useRouter();
   const [submissions, setSubmissions] = useState(initialSubmissions);
+  const [duplicates, setDuplicates] = useState(initialDuplicates);
   const [filter, setFilter] = useState<string>("대기중");
   const [draft, setDraft] = useState<ContentDraft | null>(null);
+  const [merging, setMerging] = useState<number | null>(null);
   const { toast, show } = useToast();
 
   const reload = async () => {
-    const data = await api<{ submissions: SubmissionDTO[] }>("/api/submissions");
+    const data = await api<{
+      submissions: SubmissionDTO[];
+      duplicates: Record<number, DuplicateMatch[]>;
+    }>("/api/submissions");
     setSubmissions(data.submissions);
+    setDuplicates(data.duplicates ?? {});
     router.refresh(); // 사이드바의 대기 건수 배지를 갱신
+  };
+
+  /** 새 콘텐츠를 만들지 않고, 제보된 시청처만 기존 작품에 더한다. */
+  const merge = async (submission: SubmissionDTO, match: DuplicateMatch) => {
+    setMerging(submission.id);
+    try {
+      const data = await api<{ added: boolean }>(`/api/submissions/${submission.id}/merge`, {
+        method: "POST",
+        body: JSON.stringify({ contentId: match.id }),
+      });
+      await reload();
+      show(
+        data.added
+          ? `"${match.title}"에 시청처를 추가하고 제보를 승인했어요.`
+          : `이미 등록된 링크라 추가하지 않고 제보만 승인 처리했어요.`,
+      );
+    } catch (e) {
+      show(e instanceof ApiError ? e.message : "합치지 못했어요.", "error");
+    } finally {
+      setMerging(null);
+    }
   };
 
   const reject = async (submission: SubmissionDTO) => {
@@ -94,6 +126,11 @@ export function SubmissionManager({
                 <span className={STATUS_STYLE[submission.status]}>
                   {SUBMISSION_STATUS_TEXT[submission.status]}
                 </span>
+                {(duplicates[submission.id]?.length ?? 0) > 0 ? (
+                  <span className="rounded-pill bg-[rgba(255,176,32,0.16)] px-[9px] py-[3px] text-[10px] font-bold text-[#ffb020]">
+                    이미 등록된 작품
+                  </span>
+                ) : null}
                 <span className="text-[11px] text-fg30">{formatDateTime(submission.createdAt)}</span>
               </div>
               {submission.status === "pending" ? (
@@ -115,6 +152,39 @@ export function SubmissionManager({
                 </div>
               ) : null}
             </div>
+
+            {/* 같은 제목의 작품이 이미 있으면, 새로 만들지 말고 링크만 합치는 길을 먼저 준다 */}
+            {submission.status === "pending" && duplicates[submission.id]?.length ? (
+              <div className="flex flex-col gap-2 rounded-[10px] border border-[rgba(255,176,32,0.3)] bg-[rgba(255,176,32,0.07)] px-3.5 py-3">
+                <div className="text-xs font-bold text-[#ffb020]">
+                  같은 제목의 작품이 이미 등록돼 있어요
+                </div>
+                {duplicates[submission.id].map((match) => (
+                  <div key={match.id} className="flex flex-wrap items-center gap-2 text-xs">
+                    <a
+                      href={`/content/${match.id}`}
+                      target="_blank"
+                      rel="noreferrer noopener"
+                      className="text-accent"
+                    >
+                      {match.title} · {match.category} {match.year} ↗
+                    </a>
+                    <button
+                      type="button"
+                      disabled={merging === submission.id}
+                      onClick={() => merge(submission, match)}
+                      className="cursor-pointer rounded-lg border border-line12 bg-surface4 px-3 py-[6px] text-[11px] font-semibold text-fg disabled:opacity-50"
+                    >
+                      이 작품에 시청처만 추가하고 승인
+                    </button>
+                  </div>
+                ))}
+                <div className="text-[11px] leading-relaxed text-fg45">
+                  제보된 링크가 새 감상처면 위 버튼으로 기존 작품에 더하세요. 전혀 다른 작품이면
+                  그대로 &quot;검토 · 발행&quot;으로 새로 등록하시면 됩니다.
+                </div>
+              </div>
+            ) : null}
 
             {/* 제보자가 입력한 값을 하나도 빠뜨리지 않고 보여준다 */}
             <div className="grid grid-cols-1 gap-x-8 gap-y-1.5 rounded-[10px] border border-line6 bg-surface3 px-3.5 py-3 lg:grid-cols-2">
