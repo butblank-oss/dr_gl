@@ -41,6 +41,7 @@ export const GA_DIMENSIONS: { key: string; label: string; group: string }[] = [
   { key: "cta", label: "히어로의 어떤 버튼인지", group: "더 파고들 때" },
   { key: "submit_country", label: "제보된 작품 국가", group: "더 파고들 때" },
   { key: "reason", label: "제보 실패 사유", group: "더 파고들 때" },
+  { key: "http_status", label: "제보 실패 시 서버 응답 코드", group: "더 파고들 때" },
 ];
 
 const GROUPS = ["핵심", "추가 분석", "더 파고들 때"] as const;
@@ -105,8 +106,9 @@ export function GaDimensionGuide() {
         ))}
         <div className="text-[11px] leading-relaxed text-fg40">
           측정기준 이름은 아무렇게나 적어도 되고, <strong className="text-fg60">이벤트 매개변수</strong>만
-          위와 정확히 같으면 됩니다. GA4는 이벤트 범위 측정기준을 50개까지 만들 수 있어서 전부 넣어도
-          여유가 있어요.
+          위와 정확히 같으면 됩니다. 한 줄에 하나씩, <strong className="text-fg60">따로따로</strong>{" "}
+          등록하세요 — 매개변수 이름에는 공백이나 · 같은 기호를 넣을 수 없습니다. GA4는 이벤트 범위
+          측정기준을 50개까지 만들 수 있어서 전부 넣어도 여유가 있어요.
         </div>
       </div>
     </details>
