@@ -33,6 +33,15 @@ export const contentInputSchema = z.object({
 
 export type ContentInput = z.input<typeof contentInputSchema>;
 
+/**
+ * 콘텐츠 저장 + 홈 큐레이션 배치를 한 번에 받는다.
+ * homeRowIds 를 아예 보내지 않으면(undefined) 기존 배치는 건드리지 않는다.
+ * 빈 배열을 보내면 "모든 행에서 빼기"를 뜻한다.
+ */
+export const contentWithRowsSchema = contentInputSchema.extend({
+  homeRowIds: z.array(z.coerce.number().int().positive()).optional(),
+});
+
 export const submissionInputSchema = z.object({
   title: z.string().trim().min(1, "제목과 링크는 꼭 입력해주세요."),
   category: z.string().trim().min(1, "형식을 선택해주세요."),

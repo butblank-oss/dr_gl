@@ -1,8 +1,9 @@
 import { fail, handle, ok, parseId } from "@/lib/api";
 import { requireAdmin } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { syncHomeRowMembership } from "@/lib/home-rows";
 import { serializeContent } from "@/lib/serialize";
-import { contentInputSchema } from "@/lib/validation";
+import { contentWithRowsSchema } from "@/lib/validation";
 
 export const dynamic = "force-dynamic";
 
@@ -24,10 +25,14 @@ export async function PATCH(req: Request, { params }: Params) {
     const existing = await prisma.content.findUnique({ where: { id } });
     if (!existing) return fail("콘텐츠를 찾을 수 없어요.", 404);
 
-    const input = contentInputSchema.parse(await req.json());
-    const row = await prisma.content.update({
-      where: { id },
-      data: { ...input, platforms: input.platforms },
+    const { homeRowIds, ...input } = contentWithRowsSchema.parse(await req.json());
+    const row = await prisma.$transaction(async (tx) => {
+      const updated = await tx.content.update({
+        where: { id },
+        data: { ...input, platforms: input.platforms },
+      });
+      await syncHomeRowMembership(tx, id, homeRowIds);
+      return updated;
     });
     return ok({ item: serializeContent(row) });
   });

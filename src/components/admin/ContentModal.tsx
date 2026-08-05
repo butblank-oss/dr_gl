@@ -1,11 +1,18 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { SpinnerIcon } from "@/components/icons";
 import { ImageUploadField } from "@/components/admin/ImageUploadField";
 import { ApiError, api } from "@/lib/client-api";
 import { COUNTRIES, CREATOR_LABELS } from "@/lib/types";
-import type { ContentDTO, Country, CreatorLabel, PlatformType, SubmissionDTO } from "@/lib/types";
+import type {
+  ContentDTO,
+  Country,
+  CreatorLabel,
+  HomeRowDTO,
+  PlatformType,
+  SubmissionDTO,
+} from "@/lib/types";
 
 export type PlatformDraft = { name: string; type: PlatformType; url: string };
 
@@ -139,6 +146,35 @@ export function ContentModal({ draft: initial, categories, onClose, onSaved }: P
   const [error, setError] = useState("");
   const [pending, setPending] = useState(false);
 
+  // 홈 큐레이션 행 목록과, 이 콘텐츠가 이미 들어가 있는 행.
+  // 한 번의 요청으로 둘 다 알 수 있어서 별도 API를 만들지 않았다.
+  const [homeRows, setHomeRows] = useState<HomeRowDTO[] | null>(null);
+  const [selectedRowIds, setSelectedRowIds] = useState<number[]>([]);
+
+  useEffect(() => {
+    let alive = true;
+    api<{ rows: HomeRowDTO[] }>("/api/home-rows")
+      .then(({ rows }) => {
+        if (!alive) return;
+        setHomeRows(rows);
+        setSelectedRowIds(
+          initial.id == null
+            ? []
+            : rows.filter((row) => row.items.some((item) => item.id === initial.id)).map((r) => r.id),
+        );
+      })
+      .catch(() => {
+        // 목록을 못 불러와도 콘텐츠 저장 자체는 되어야 하므로 조용히 숨긴다.
+        if (alive) setHomeRows([]);
+      });
+    return () => {
+      alive = false;
+    };
+  }, [initial.id]);
+
+  const toggleRow = (rowId: number) =>
+    setSelectedRowIds((ids) => (ids.includes(rowId) ? ids.filter((id) => id !== rowId) : [...ids, rowId]));
+
   const patch = (partial: Partial<ContentDraft>) => setDraft((d) => ({ ...d, ...partial }));
   const isFromSubmission = draft.sourceSubmissionId != null;
   const modalTitle = isFromSubmission ? "제보 검토 · 발행" : draft.id == null ? "콘텐츠 추가" : "콘텐츠 수정";
@@ -176,6 +212,8 @@ export function ContentModal({ draft: initial, categories, onClose, onSaved }: P
       platforms: draft.platforms
         .filter((p) => p.name.trim())
         .map((p) => ({ name: p.name.trim(), type: p.type, url: p.url.trim() })),
+      // 목록을 못 불러왔을 땐 아예 보내지 않는다 — 기존 배치를 지우면 안 되기 때문.
+      ...(homeRows ? { homeRowIds: selectedRowIds } : {}),
     };
 
     try {
@@ -414,6 +452,36 @@ export function ContentModal({ draft: initial, categories, onClose, onSaved }: P
             + 링크 추가
           </button>
         </div>
+
+        {homeRows && homeRows.length > 0 ? (
+          <div className="flex flex-col gap-2">
+            <span className="text-xs font-semibold text-fg70">
+              홈 큐레이션에 넣기 <span className="font-normal text-fg40">(선택 안 해도 돼요)</span>
+            </span>
+            <div className="flex flex-wrap gap-2">
+              {homeRows.map((row) => {
+                const on = selectedRowIds.includes(row.id);
+                return (
+                  <button
+                    key={row.id}
+                    type="button"
+                    onClick={() => toggleRow(row.id)}
+                    className={`chip !px-[13px] !py-2 !text-xs ${on ? "chip-on" : "chip-off"}`}
+                  >
+                    {on ? "✓ " : "+ "}
+                    {row.title}
+                    <span className={on ? "ml-1 opacity-70" : "ml-1 text-fg35"}>{row.items.length}</span>
+                    {row.isActive ? null : <span className="ml-1 text-fg35">· 숨김</span>}
+                  </button>
+                );
+              })}
+            </div>
+            <span className="text-[11px] leading-relaxed text-fg40">
+              저장하면 선택한 행의 맨 뒤에 추가돼요. 순서 조정과 삭제는 홈 큐레이션 화면에서 드래그로
+              할 수 있고, 여기서 체크를 풀면 그 행에서 빠져요.
+            </span>
+          </div>
+        ) : null}
 
         {error ? <div className="text-[13px] text-danger">{error}</div> : null}
 

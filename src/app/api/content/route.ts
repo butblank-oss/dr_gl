@@ -2,8 +2,9 @@ import { handle, ok } from "@/lib/api";
 import { requireAdmin } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getFilteredContents, searchContents } from "@/lib/queries";
+import { syncHomeRowMembership } from "@/lib/home-rows";
 import { serializeContent } from "@/lib/serialize";
-import { contentInputSchema } from "@/lib/validation";
+import { contentWithRowsSchema } from "@/lib/validation";
 
 export const dynamic = "force-dynamic";
 
@@ -26,8 +27,13 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
   return handle(async () => {
     await requireAdmin();
-    const input = contentInputSchema.parse(await req.json());
-    const row = await prisma.content.create({ data: { ...input, platforms: input.platforms } });
+    const { homeRowIds, ...input } = contentWithRowsSchema.parse(await req.json());
+    // 콘텐츠 생성과 홈 큐레이션 배치는 함께 반영되거나 함께 취소돼야 한다.
+    const row = await prisma.$transaction(async (tx) => {
+      const created = await tx.content.create({ data: { ...input, platforms: input.platforms } });
+      await syncHomeRowMembership(tx, created.id, homeRowIds);
+      return created;
+    });
     return ok({ item: serializeContent(row) }, 201);
   });
 }

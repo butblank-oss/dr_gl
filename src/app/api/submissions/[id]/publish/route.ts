@@ -1,8 +1,9 @@
 import { fail, handle, ok, parseId } from "@/lib/api";
 import { requireAdmin } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { syncHomeRowMembership } from "@/lib/home-rows";
 import { serializeContent, serializeSubmission } from "@/lib/serialize";
-import { contentInputSchema } from "@/lib/validation";
+import { contentWithRowsSchema } from "@/lib/validation";
 
 export const dynamic = "force-dynamic";
 
@@ -24,12 +25,14 @@ export async function POST(req: Request, { params }: Params) {
     if (!submission) return fail("제보를 찾을 수 없어요.", 404);
     if (submission.status !== "pending") return fail("이미 처리된 제보예요.", 409);
 
-    const input = contentInputSchema.parse(await req.json());
+    const { homeRowIds, ...input } = contentWithRowsSchema.parse(await req.json());
 
     let result;
     try {
       result = await prisma.$transaction(async (tx) => {
         const content = await tx.content.create({ data: { ...input, platforms: input.platforms } });
+        // 발행과 동시에 홈 큐레이션에 배치한다. 선택하지 않았으면 아무 일도 일어나지 않는다.
+        await syncHomeRowMembership(tx, content.id, homeRowIds);
 
         // 트랜잭션 안에서 상태를 한 번 더 확인해 동시 승인(중복 발행)을 막는다.
         const updated = await tx.submission.updateMany({
