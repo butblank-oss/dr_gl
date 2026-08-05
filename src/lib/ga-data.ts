@@ -248,6 +248,49 @@ export async function runReport(body: RunReportRequest): Promise<RunReportRespon
   return (await res.json()) as RunReportResponse;
 }
 
+/**
+ * 여러 보고서를 한 번의 요청으로 받아온다 (GA는 한 번에 5개까지).
+ * 화면 하나에 표가 열 개씩 붙으면 요청 수가 그대로 대기 시간이 되기 때문에 묶는다.
+ * 실패해도 화면이 죽지 않도록, 실패한 묶음은 빈 결과로 돌려준다.
+ */
+export async function runReports(bodies: RunReportRequest[]): Promise<ReportRow[][]> {
+  const credentials = await loadCredentials();
+  if (!credentialsLookValid(credentials) || !credentials.propertyId) {
+    const status = await getGaStatus();
+    throw new Error(status.problem || "GA 연결 설정이 필요해요.");
+  }
+  const token = await getAccessToken(credentials);
+
+  const chunks: RunReportRequest[][] = [];
+  for (let i = 0; i < bodies.length; i += 5) chunks.push(bodies.slice(i, i + 5));
+
+  const results = await Promise.all(
+    chunks.map(async (chunk) => {
+      const res = await fetch(
+        `https://analyticsdata.googleapis.com/v1beta/properties/${credentials.propertyId}:batchRunReports`,
+        {
+          method: "POST",
+          headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+          body: JSON.stringify({ requests: chunk }),
+          next: { revalidate: 300 },
+        },
+      );
+      if (!res.ok) {
+        if (res.status === 403) {
+          throw new Error(
+            `GA 속성(${credentials.propertyId})에 접근 권한이 없어요. 애널리틱스 → 관리 → 속성 액세스 관리에서 ${credentials.clientEmail} 을 '뷰어'로 추가했는지 확인해주세요.`,
+          );
+        }
+        throw new Error(`GA 데이터를 불러오지 못했어요 (${res.status}).`);
+      }
+      const data = (await res.json()) as { reports?: RunReportResponse[] };
+      return chunk.map((_, index) => toRows(data.reports?.[index] ?? {}));
+    }),
+  );
+
+  return results.flat();
+}
+
 /** 행을 [차원값들, 숫자] 형태로 다루기 쉽게 편다. */
 export type ReportRow = { keys: string[]; values: number[] };
 
