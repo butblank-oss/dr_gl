@@ -10,6 +10,7 @@ import type { SessionUser } from "@/lib/types";
 
 const NAV = [
   { href: "/admin", label: "대시보드" },
+  { href: "/admin/analytics", label: "방문 분석" },
   { href: "/admin/content", label: "콘텐츠 관리" },
   { href: "/admin/home-rows", label: "홈 큐레이션" },
   { href: "/admin/categories", label: "카테고리 관리" },
