@@ -53,18 +53,14 @@ export default async function HomePage({
             {hero.title}
           </h1>
           <p className="line-clamp-2-box text-[13px] leading-relaxed text-fg68 md:text-sm">{hero.synopsis}</p>
+          {/*
+            버튼은 둘까지. 셋을 늘어놓으니 무엇을 눌러야 할지가 오히려 흐려졌다.
+            상세보기와 시청 가능한 곳은 어차피 같은 페이지라, 사람들이 실제로 찾는 말 하나로 합친다.
+          */}
           <div className="mt-1 flex flex-wrap gap-2.5">
             <TrackedLink
-              href={`/content/${hero.id}`}
-              className="btn-grad px-[22px] py-3 text-sm"
-              event={EVENTS.selectContent}
-              params={{ content_id: hero.id, content_title: hero.title, list_name: "히어로", cta: "상세보기" }}
-            >
-              상세보기
-            </TrackedLink>
-            <TrackedLink
               href={`/content/${hero.id}#watch`}
-              className="btn-ghost px-[22px] py-3 text-sm"
+              className="btn-grad px-[22px] py-3 text-sm"
               event={EVENTS.selectContent}
               params={{ content_id: hero.id, content_title: hero.title, list_name: "히어로", cta: "시청 가능한 곳" }}
             >
