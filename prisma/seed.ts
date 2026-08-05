@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
-import { LEGAL_DOCUMENTS } from "./legal-seed";
+import { LEGAL_DOCUMENTS, LEGAL_REVISIONS } from "./legal-seed";
 
 const prisma = new PrismaClient();
 
@@ -129,8 +129,50 @@ async function ensureLegalDocuments() {
   }
 }
 
+/**
+ * 법적으로 꼭 반영돼야 하는 개정을 발행한다.
+ * 발행중인 본문에 표식 문구가 이미 있으면 건너뛴다 — 배포할 때마다 새 버전이 쌓이지 않는다.
+ */
+async function ensureLegalRevisions() {
+  for (const revision of LEGAL_REVISIONS) {
+    const document = await prisma.legalDocument.findUnique({
+      where: { slug: revision.slug },
+      include: { versions: { orderBy: { version: "desc" } } },
+    });
+    if (!document || document.versions.length === 0) continue;
+
+    const published = document.versions.find((v) => v.isPublished);
+    if (published?.body.includes(revision.marker)) {
+      console.log(`· ${document.title} 개정 이미 반영됨 (건너뜀)`);
+      continue;
+    }
+
+    const nextVersion = document.versions[0].version + 1;
+    await prisma.$transaction([
+      prisma.legalDocumentVersion.updateMany({
+        where: { documentId: document.id, isPublished: true },
+        data: { isPublished: false },
+      }),
+      prisma.legalDocumentVersion.create({
+        data: {
+          documentId: document.id,
+          version: nextVersion,
+          body: revision.body,
+          effectiveDate: new Date(revision.effectiveDate),
+          changeNote: revision.changeNote,
+          isPublished: true,
+          publishedAt: new Date(),
+          createdByName: "시스템",
+        },
+      }),
+    ]);
+    console.log(`· ${document.title} v${nextVersion} 발행 (${revision.changeNote})`);
+  }
+}
+
 async function main() {
   await ensureLegalDocuments();
+  await ensureLegalRevisions();
 
   // 이미 운영 중인 DB에 배포할 때마다 시드가 덮어쓰지 않도록,
   // 콘텐츠가 하나라도 있으면 데모 데이터 시드는 건너뛴다.

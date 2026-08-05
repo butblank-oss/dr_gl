@@ -146,3 +146,49 @@ export const LEGAL_DOCUMENTS = [
   { slug: "terms", title: "이용약관", body: TERMS_V1 },
   { slug: "privacy", title: "개인정보처리방침", body: PRIVACY_V1 },
 ] as const;
+
+/* ------------------------------------------------------------------------- *
+ * 개정본
+ *
+ * 어드민에서 고칠 수 있는 문서지만, 법적으로 꼭 반영돼야 하는 변경은 코드로도
+ * 남겨둔다. 배포할 때 `marker` 문구가 현재 발행본에 없으면 새 버전으로 발행하고,
+ * 이미 반영돼 있으면 아무것도 하지 않는다(멱등).
+ * ------------------------------------------------------------------------- */
+
+/** 방문자 분석(GA)을 켜면서 바뀐 쿠키 문단 */
+const PRIVACY_COOKIE_BEFORE =
+  "현재 Dr. GL은 광고나 방문자 분석을 위한 쿠키를 사용하지 않습니다. 어드민 로그인 상태를 유지하기 위한 쿠키만 운영자에게 사용되며, 일반 이용자에게는 발급되지 않습니다.";
+
+const PRIVACY_COOKIE_AFTER = `Dr. GL은 서비스 개선을 위해 구글의 방문자 분석 도구인 Google Analytics를 사용합니다. 이 과정에서 방문한 화면, 머문 시간, 누른 버튼, 검색어, 기기·브라우저 종류, 대략적인 지역 정보가 쿠키를 통해 수집되어 Google LLC(미국)로 전송·보관됩니다. 이름·이메일처럼 개인을 직접 식별할 수 있는 정보는 전송하지 않습니다.
+
+브라우저 설정에서 쿠키를 차단하거나, 구글이 제공하는 [Google Analytics 차단 브라우저 부가기능](https://tools.google.com/dlpage/gaoptout)을 설치하면 수집을 거부할 수 있습니다. 이 경우에도 서비스 이용에는 제한이 없습니다.
+
+어드민 로그인 상태를 유지하기 위한 쿠키는 운영자에게만 발급됩니다.`;
+
+const PRIVACY_TRANSFER_BEFORE = "- **Neon Inc.** — 데이터베이스 보관 (미국)";
+const PRIVACY_TRANSFER_AFTER = `- **Neon Inc.** — 데이터베이스 보관 (미국)
+- **Google LLC** — 방문자 분석 (미국)`;
+
+/** 치환이 실제로 일어났는지 확인한다. 원문이 바뀌어 조용히 누락되는 걸 막는다. */
+function replaceOnce(source: string, from: string, to: string, label: string): string {
+  if (!source.includes(from)) throw new Error(`정책 개정 실패: ${label} 원문을 찾지 못했습니다.`);
+  return source.replace(from, to);
+}
+
+export const PRIVACY_WITH_ANALYTICS = replaceOnce(
+  replaceOnce(PRIVACY_V1, PRIVACY_COOKIE_BEFORE, PRIVACY_COOKIE_AFTER, "쿠키 문단"),
+  PRIVACY_TRANSFER_BEFORE,
+  PRIVACY_TRANSFER_AFTER,
+  "국외 이전 목록",
+);
+
+export const LEGAL_REVISIONS = [
+  {
+    slug: "privacy",
+    /** 이 문구가 발행본에 있으면 이미 반영된 것으로 본다 */
+    marker: "**Google LLC** — 방문자 분석 (미국)",
+    body: PRIVACY_WITH_ANALYTICS,
+    effectiveDate: "2026-08-05T00:00:00Z",
+    changeNote: "방문자 분석 도구(Google Analytics) 사용 및 국외 이전 항목 반영",
+  },
+] as const;

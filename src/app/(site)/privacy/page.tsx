@@ -4,7 +4,7 @@ import { getLegalDocument } from "@/lib/queries";
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = { title: "개인정보처리방침 · Dr. GL" };
+export const metadata: Metadata = { title: "개인정보처리방침", alternates: { canonical: "/privacy" } };
 
 export default async function PrivacyPage() {
   const doc = await getLegalDocument("privacy");

@@ -3,6 +3,7 @@ import { TrackedLink } from "@/components/analytics/TrackedLink";
 import { EVENTS } from "@/lib/analytics";
 import { BannerBackdrop, PosterCard } from "@/components/site/Banner";
 import { ContentCard } from "@/components/site/ContentCard";
+import { SiteJsonLd } from "@/components/site/JsonLd";
 import { getFeaturedContent, getHomeRows } from "@/lib/queries";
 
 // 어드민에서 바꾼 내용이 사이트에 바로 보이도록 매 요청마다 최신 데이터를 읽는다.
@@ -29,6 +30,7 @@ export default async function HomePage({
 
   return (
     <div>
+      <SiteJsonLd />
       <section className="relative h-[420px] w-full overflow-hidden md:h-[520px]">
         <BannerBackdrop item={hero} />
         <div className="banner-scrim pointer-events-none absolute inset-0" />

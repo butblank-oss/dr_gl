@@ -5,7 +5,11 @@ import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
 
-export const metadata = { title: "Dr. GL Admin" };
+export const metadata = {
+  title: "Dr. GL Admin",
+  // 어드민은 검색에 절대 노출되면 안 된다
+  robots: { index: false, follow: false },
+};
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const user = await getSessionUser();

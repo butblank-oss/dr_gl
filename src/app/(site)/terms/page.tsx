@@ -4,7 +4,7 @@ import { getLegalDocument } from "@/lib/queries";
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = { title: "이용약관 · Dr. GL" };
+export const metadata: Metadata = { title: "이용약관", alternates: { canonical: "/terms" } };
 
 export default async function TermsPage() {
   const doc = await getLegalDocument("terms");

@@ -7,12 +7,14 @@ import { BackButton } from "@/components/site/BackButton";
 import { BannerBackdrop, PosterCard } from "@/components/site/Banner";
 import { CommentSection } from "@/components/site/CommentSection";
 import { ContentCard } from "@/components/site/ContentCard";
+import { ContentJsonLd } from "@/components/site/JsonLd";
 import {
   getContentById,
   getRelatedByCategory,
   getRelatedByLead,
   getVisibleComments,
 } from "@/lib/queries";
+import { absoluteUrl } from "@/lib/site";
 
 export const dynamic = "force-dynamic";
 
@@ -22,9 +24,34 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
   const id = Number((await params).id);
   const item = Number.isInteger(id) ? await getContentById(id) : null;
   if (!item) return { title: "Dr. GL" };
+
+  const path = `/content/${item.id}`;
+  const image = item.poster && item.posterUrl ? absoluteUrl(item.posterUrl) : undefined;
+  // 검색 결과에 그대로 노출되는 문장. 작품만 보고도 무엇인지 알 수 있게 앞에 정보를 붙인다.
+  const description =
+    `${item.countryDetail} ${item.category} · ${item.year}` +
+    (item.creatorName ? ` · ${item.creatorLabel} ${item.creatorName}` : "") +
+    (item.synopsis ? ` — ${item.synopsis}` : "");
+  const watchAt = item.platforms.map((platform) => platform.name).join(", ");
+
   return {
-    title: `${item.title} · Dr. GL`,
-    description: item.synopsis,
+    title: `${item.title} (${item.year}) — 줄거리·출연·어디서 볼까`,
+    description: watchAt ? `${description} 시청 가능한 곳: ${watchAt}.` : description,
+    keywords: [item.title, ...item.leads, ...item.tags, item.category, "GL", "백합", "yuri"],
+    alternates: { canonical: path },
+    openGraph: {
+      type: "article",
+      url: absoluteUrl(path),
+      title: `${item.title} · Dr. GL`,
+      description,
+      images: image ? [{ url: image, alt: `${item.title} 포스터` }] : undefined,
+    },
+    twitter: {
+      card: image ? "summary_large_image" : "summary",
+      title: `${item.title} · Dr. GL`,
+      description,
+      images: image ? [image] : undefined,
+    },
   };
 }
 
@@ -43,6 +70,7 @@ export default async function ContentDetailPage({ params }: { params: Params }) 
 
   return (
     <div>
+      <ContentJsonLd item={item} />
       <div className="page-shell pt-5">
         <BackButton />
       </div>

@@ -7,12 +7,16 @@ const emptyBackdrop = (
   </div>
 );
 
+/** 오른쪽에 놓이는 큰 포스터가 왼쪽·오른쪽 끝으로 스며들며 사라지게 하는 마스크 */
+const FADE_MASK = "linear-gradient(90deg, transparent 0%, rgba(0,0,0,0.45) 26%, #000 62%, #000 90%, transparent 100%)";
+
 /**
  * 히어로 / 상세 상단의 배경.
- * - 가로형 배경 이미지가 따로 올라와 있으면 그대로 꽉 채운다.
- * - 세로 포스터만 있으면 그걸 늘려 쓰지 않고 **크게 흐린 배경**으로만 깔고,
- *   실제 포스터는 앞쪽에 원래 비율로 보여준다(PosterCard).
- *   세로 이미지를 초광폭 배너에 object-cover 하면 얼굴 일부만 남는다.
+ * - 가로형 배경 이미지가 따로 올라와 있으면 그대로 꽉 채운다. (넷플릭스처럼 포스터와 배경은 별개 이미지다)
+ * - 세로 포스터만 있으면 두 겹으로 쌓는다.
+ *   ① 흐리게 깐 포스터 — 화면을 채우는 색과 분위기
+ *   ② 오른쪽에 원래 비율 그대로 크게 놓은 포스터 — 가장자리를 서서히 지워 배경에 녹인다
+ *   세로 이미지를 초광폭 배너에 그냥 object-cover 하면 얼굴 일부만 남기 때문에 이렇게 나눈다.
  */
 export function BannerBackdrop({ item }: { item: ContentDTO }) {
   if (!item.poster) return emptyBackdrop;
@@ -30,12 +34,27 @@ export function BannerBackdrop({ item }: { item: ContentDTO }) {
 
   if (item.posterUrl) {
     return (
-      <ImageWithFallback
-        src={item.posterUrl}
-        alt=""
-        className="absolute inset-0 h-full w-full scale-110 object-cover blur-2xl saturate-150"
-        fallback={emptyBackdrop}
-      />
+      <>
+        <ImageWithFallback
+          src={item.posterUrl}
+          alt=""
+          className="absolute inset-0 h-full w-full scale-125 object-cover object-top opacity-70 blur-[36px] saturate-125"
+          fallback={emptyBackdrop}
+        />
+        {/* 좁은 화면에서는 글자를 가리므로 내보내지 않는다 */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-y-0 right-0 hidden aspect-2/3 sm:block"
+          style={{ maskImage: FADE_MASK, WebkitMaskImage: FADE_MASK }}
+        >
+          <ImageWithFallback
+            src={item.posterUrl}
+            alt=""
+            className="h-full w-full object-cover object-top opacity-90"
+            fallback={<span />}
+          />
+        </div>
+      </>
     );
   }
 

@@ -1,10 +1,48 @@
 import type { Metadata } from "next";
+import { SITE, SITE_DESCRIPTION, SITE_KEYWORDS, SITE_URL } from "@/lib/site";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Dr. GL · GL 콘텐츠 큐레이션 플랫폼",
-  description:
-    "영화·드라마·웹툰·웹소설·소설·애니·만화 등 GL(백합) 콘텐츠를 한곳에 모아 소개·추천하고, 어디서 볼 수 있는지 연결해주는 콘텐츠 큐레이션 플랫폼.",
+  // 모든 상대 주소(OG 이미지, canonical)를 절대 주소로 바꾸는 기준
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: "Dr. GL · GL(백합) 콘텐츠 큐레이션 플랫폼",
+    // 하위 페이지에서 title 만 주면 "제목 · Dr. GL" 로 붙는다
+    template: "%s · Dr. GL",
+  },
+  description: SITE_DESCRIPTION,
+  keywords: SITE_KEYWORDS,
+  applicationName: SITE.name,
+  alternates: { canonical: "/" },
+  openGraph: {
+    type: "website",
+    siteName: SITE.name,
+    locale: "ko_KR",
+    url: SITE_URL,
+    title: "Dr. GL · GL(백합) 콘텐츠 큐레이션 플랫폼",
+    description: SITE_DESCRIPTION,
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Dr. GL · GL(백합) 콘텐츠 큐레이션 플랫폼",
+    description: SITE_DESCRIPTION,
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      // 검색 결과에 미리보기 이미지·설명이 넉넉히 나오도록 제한을 풀어둔다
+      "max-image-preview": "large",
+      "max-snippet": -1,
+      "max-video-preview": -1,
+    },
+  },
+  // 서치 콘솔 소유 확인용. 환경변수를 넣으면 메타 태그가 자동으로 붙는다.
+  verification: process.env.GOOGLE_SITE_VERIFICATION
+    ? { google: process.env.GOOGLE_SITE_VERIFICATION }
+    : undefined,
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

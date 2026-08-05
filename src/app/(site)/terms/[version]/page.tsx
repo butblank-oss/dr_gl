@@ -8,7 +8,7 @@ export const dynamic = "force-dynamic";
 type Params = Promise<{ version: string }>;
 
 export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
-  return { title: `이용약관 (v${(await params).version}) · Dr. GL` };
+  return { title: `이용약관 (v${(await params).version})`, robots: { index: false, follow: true } };
 }
 
 /** 지난 버전 열람 — 발행된 적 있는 버전만 볼 수 있다. */

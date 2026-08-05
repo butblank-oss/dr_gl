@@ -1,10 +1,19 @@
 import { TrackedLink } from "@/components/analytics/TrackedLink";
 import { EVENTS } from "@/lib/analytics";
+import type { Metadata } from "next";
 import { ContentCard } from "@/components/site/ContentCard";
+import { ContentListJsonLd } from "@/components/site/JsonLd";
 import { getCategories, getFilteredContents } from "@/lib/queries";
 import { COUNTRY_FILTERS } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "카테고리 탐색 — 영화·드라마·웹툰·웹소설 GL 작품",
+  description:
+    "형식과 국가로 GL(백합) 작품을 찾아보세요. 영화·드라마·웹툰·웹소설·소설·애니·만화, 국내와 해외, 착즙 작품까지 골라볼 수 있습니다.",
+  alternates: { canonical: "/category" },
+};
 
 type SearchParams = Promise<{ category?: string; country?: string; juice?: string }>;
 
@@ -32,6 +41,11 @@ export default async function CategoryPage({ searchParams }: { searchParams: Sea
 
   return (
     <div className="page-shell py-10">
+      <ContentListJsonLd
+        items={items}
+        name={`카테고리 탐색 — ${category}${country === "전체" ? "" : ` · ${country}`}`}
+        path="/category"
+      />
       <h1 className="mb-1.5 text-[28px] font-extrabold">카테고리 탐색</h1>
       <p className="mb-7 text-sm text-fg55">장르와 형식을 넘나들며, 원하는 콘텐츠를 찾아보세요.</p>
 

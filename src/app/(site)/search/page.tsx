@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { TrackedLink } from "@/components/analytics/TrackedLink";
 import { EVENTS } from "@/lib/analytics";
 import { ContentCard } from "@/components/site/ContentCard";
@@ -5,6 +6,12 @@ import { SearchTracker } from "@/components/site/SearchTracker";
 import { searchContents } from "@/lib/queries";
 
 export const dynamic = "force-dynamic";
+
+// 내부 검색 결과는 색인하지 않는다 — 구글이 "검색 결과 안의 검색 결과"로 보고 감점한다.
+export const metadata: Metadata = {
+  title: "검색",
+  robots: { index: false, follow: true },
+};
 
 const SUGGESTED_TAGS = ["오피스", "학원", "로맨스판타지", "시대극", "착즙"];
 
