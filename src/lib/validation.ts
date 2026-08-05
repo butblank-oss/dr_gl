@@ -10,6 +10,26 @@ export const platformSchema = z.object({
     .default(""),
 });
 
+/**
+ * 포스터·배경은 "주소만" 받는다. 이미지를 내려받아 우리 서버에 복제하지 않기 위한 규칙이라,
+ * 서버와 어드민 입력칸이 같은 함수를 본다.
+ * `/media/...` 는 파일 업로드를 없애기 전에 올려둔 이미지들 — 계속 열려 있어야 한다.
+ */
+export function isAllowedImageUrl(raw: string): boolean {
+  const value = raw.trim();
+  if (!value) return true;
+  return /^https:\/\//i.test(value) || value.startsWith("/media/");
+}
+
+const imageUrlField = z
+  .string()
+  .trim()
+  .refine(isAllowedImageUrl, "이미지는 https:// 로 시작하는 주소만 넣을 수 있어요.")
+  .nullable()
+  .default(null)
+  // 빈 문자열은 "이미지 없음"과 같은 뜻이라 null 로 눕힌다.
+  .transform((v) => (v ? v : null));
+
 const currentYear = new Date().getFullYear();
 
 export const contentInputSchema = z.object({
@@ -24,8 +44,8 @@ export const contentInputSchema = z.object({
   tags: z.array(z.string().trim().min(1)).default([]),
   juice: z.boolean().default(false),
   poster: z.boolean().default(true),
-  posterUrl: z.string().trim().nullable().default(null),
-  backdropUrl: z.string().trim().nullable().default(null),
+  posterUrl: imageUrlField,
+  backdropUrl: imageUrlField,
   synopsis: z.string().default(""),
   platforms: z.array(platformSchema).default([]),
 });

@@ -1,56 +1,25 @@
 import "server-only";
 
-import { createHash, createHmac, randomUUID } from "node:crypto";
-import { mkdir, readFile, stat, writeFile } from "node:fs/promises";
+import { readFile, stat } from "node:fs/promises";
 import path from "node:path";
 import { prisma } from "@/lib/prisma";
 
-export const MAX_UPLOAD_BYTES = 5 * 1024 * 1024; // 5MB
-const ALLOWED = new Map<string, string>([
-  ["image/jpeg", "jpg"],
-  ["image/png", "png"],
-  ["image/webp", "webp"],
-  ["image/gif", "gif"],
-  ["image/avif", "avif"],
-]);
-
-export class UploadError extends Error {}
-
-export type StoredFile = { url: string; key: string };
-
-export type StorageDriver = "local" | "db" | "s3";
+/**
+ * 읽기 전용 미디어 저장소.
+ *
+ * 포스터·배경은 이제 주소로만 등록한다(이미지를 우리 서버에 복제하지 않기 위해서).
+ * 그래서 쓰기 경로는 없고, 업로드를 없애기 전에 올려둔 이미지들을 계속 서빙하는 일만 남았다.
+ */
+export type StorageDriver = "local" | "db";
 
 /**
  * 스토리지 드라이버 결정.
- * 명시적으로 지정하지 않았고 서버리스(Vercel)에서 돌고 있으면 디스크에 쓸 수 없으므로 db 를 쓴다.
+ * 명시적으로 지정하지 않았고 서버리스(Vercel)에서 돌고 있으면 디스크를 쓸 수 없으므로 db 를 쓴다.
  */
 export function storageDriver(): StorageDriver {
   const explicit = process.env.STORAGE_DRIVER;
-  if (explicit === "local" || explicit === "db" || explicit === "s3") return explicit;
+  if (explicit === "local" || explicit === "db") return explicit;
   return process.env.VERCEL ? "db" : "local";
-}
-
-/**
- * 포스터/배경 이미지 저장.
- * (프로토타입의 <image-slot> sidecar 방식을 완전히 대체하는 지점)
- */
-export async function storeImage(file: File, prefix = "poster"): Promise<StoredFile> {
-  const ext = ALLOWED.get(file.type);
-  if (!ext) throw new UploadError("JPG, PNG, WEBP, GIF, AVIF 이미지만 올릴 수 있어요.");
-  if (file.size <= 0) throw new UploadError("빈 파일이에요.");
-  if (file.size > MAX_UPLOAD_BYTES) throw new UploadError("이미지는 5MB까지 올릴 수 있어요.");
-
-  const buffer = Buffer.from(await file.arrayBuffer());
-  const key = `${prefix}/${new Date().toISOString().slice(0, 7)}/${randomUUID()}.${ext}`;
-
-  switch (storageDriver()) {
-    case "s3":
-      return putToS3(key, buffer, file.type);
-    case "db":
-      return putToDatabase(key, buffer, file.type);
-    default:
-      return putToLocalDisk(key, buffer);
-  }
 }
 
 /** Buffer 는 풀에서 잘라 쓴 뷰라서, 그대로 넘기면 옆 데이터까지 딸려간다. 항상 복사본을 만든다. */
@@ -59,18 +28,6 @@ function toArrayBuffer(buffer: Buffer): ArrayBuffer {
     buffer.byteOffset,
     buffer.byteOffset + buffer.byteLength,
   ) as ArrayBuffer;
-}
-
-async function putToDatabase(key: string, buffer: Buffer, contentType: string): Promise<StoredFile> {
-  await prisma.mediaFile.create({
-    data: {
-      key,
-      contentType,
-      size: buffer.byteLength,
-      data: new Uint8Array(toArrayBuffer(buffer)),
-    },
-  });
-  return { url: `/media/${key}`, key };
 }
 
 export type LoadedMedia = { body: ArrayBuffer; contentType: string; size: number };
@@ -129,83 +86,3 @@ export const MEDIA_CONTENT_TYPES: Record<string, string> = {
   ".gif": "image/gif",
   ".avif": "image/avif",
 };
-
-async function putToLocalDisk(key: string, buffer: Buffer): Promise<StoredFile> {
-  const target = path.join(uploadRoot(), key);
-  await mkdir(path.dirname(target), { recursive: true });
-  await writeFile(target, buffer);
-  return { url: `/media/${key}`, key };
-}
-
-/* ---------- S3 (AWS SigV4, S3 호환 스토리지 모두 지원) ---------- */
-
-function hmac(key: Buffer | string, data: string): Buffer {
-  return createHmac("sha256", key).update(data, "utf8").digest();
-}
-
-function sha256Hex(data: Buffer | string): string {
-  return createHash("sha256").update(data).digest("hex");
-}
-
-async function putToS3(key: string, body: Buffer, contentType: string): Promise<StoredFile> {
-  const bucket = requireEnv("S3_BUCKET");
-  const region = process.env.S3_REGION || "us-east-1";
-  const accessKeyId = requireEnv("S3_ACCESS_KEY_ID");
-  const secretAccessKey = requireEnv("S3_SECRET_ACCESS_KEY");
-  const endpoint = process.env.S3_ENDPOINT || `https://s3.${region}.amazonaws.com`;
-
-  const url = new URL(`${endpoint.replace(/\/$/, "")}/${bucket}/${key}`);
-  const now = new Date();
-  const amzDate = now.toISOString().replace(/[:-]|\.\d{3}/g, "");
-  const dateStamp = amzDate.slice(0, 8);
-  const payloadHash = sha256Hex(body);
-
-  const headers: Record<string, string> = {
-    host: url.host,
-    "content-type": contentType,
-    "x-amz-content-sha256": payloadHash,
-    "x-amz-date": amzDate,
-  };
-  const signedHeaders = Object.keys(headers).sort().join(";");
-  const canonicalHeaders = Object.keys(headers)
-    .sort()
-    .map((h) => `${h}:${headers[h]}\n`)
-    .join("");
-
-  const canonicalRequest = [
-    "PUT",
-    url.pathname,
-    "",
-    canonicalHeaders,
-    signedHeaders,
-    payloadHash,
-  ].join("\n");
-
-  const scope = `${dateStamp}/${region}/s3/aws4_request`;
-  const stringToSign = ["AWS4-HMAC-SHA256", amzDate, scope, sha256Hex(canonicalRequest)].join("\n");
-
-  const signingKey = hmac(hmac(hmac(hmac(`AWS4${secretAccessKey}`, dateStamp), region), "s3"), "aws4_request");
-  const signature = createHmac("sha256", signingKey).update(stringToSign, "utf8").digest("hex");
-
-  const response = await fetch(url, {
-    method: "PUT",
-    headers: {
-      ...headers,
-      Authorization: `AWS4-HMAC-SHA256 Credential=${accessKeyId}/${scope}, SignedHeaders=${signedHeaders}, Signature=${signature}`,
-    },
-    body: new Uint8Array(body),
-  });
-
-  if (!response.ok) {
-    throw new UploadError(`이미지 업로드에 실패했어요. (S3 ${response.status})`);
-  }
-
-  const publicBase = process.env.S3_PUBLIC_BASE_URL?.replace(/\/$/, "");
-  return { url: publicBase ? `${publicBase}/${key}` : url.toString(), key };
-}
-
-function requireEnv(name: string): string {
-  const value = process.env[name];
-  if (!value) throw new UploadError(`스토리지 설정(${name})이 비어 있어요.`);
-  return value;
-}

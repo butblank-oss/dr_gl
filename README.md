@@ -115,13 +115,12 @@ npm run dev
 | `GET /api/comments?itemId=` · `POST /api/comments` | 공개 | 노출중 한줄평 조회 · 익명 작성(rate limit) |
 | `PATCH /api/comments/:id` | 운영자 | 노출/숨김 토글 |
 | `DELETE /api/comments/:id` | 운영자 | 영구 삭제 |
-| `POST /api/uploads` | 운영자 | 이미지 업로드(5MB, jpg/png/webp/gif/avif) |
 | `GET /api/home-rows` · `POST` · `PATCH /:id` · `DELETE /:id` | 운영자 | 홈 큐레이션 |
 | `PUT /api/settings/featured` | 운영자 | 히어로 배너 콘텐츠 지정 |
 | `POST /api/notify` | 공개 | 게시판 오픈 알림 신청 |
 | `GET/POST /api/admins`, `PATCH/DELETE /api/admins/:id` | **슈퍼관리자** | 운영자 계정 관리 |
 | `PATCH /api/admins/me/password` | 로그인한 본인 | 내 비밀번호 변경 |
-| `GET /media/*` | 공개 | 로컬 스토리지 이미지 서빙 |
+| `GET /media/*` | 공개 | 업로드 기능을 없애기 전에 올려둔 이미지 서빙(읽기 전용) |
 
 ## 프로토타입에서 교체한 것
 
@@ -129,32 +128,25 @@ npm run dev
 |---|---|
 | `localStorage` 키 `drgl_store_v1` 공유 | Postgres + Prisma. 모든 페이지가 `force-dynamic` 이라 요청마다 최신 데이터를 읽음 |
 | 다른 탭 동기화용 `storage` 이벤트 | 서버가 단일 진실 공급원이라 기기·브라우저가 달라도 동일하게 반영 |
-| `<image-slot>` sidecar 업로드 | `POST /api/uploads` → 로컬 디스크 또는 S3 호환 버킷. 저장된 URL을 `Content.posterUrl` / `backdropUrl` 에 기록 |
+| `<image-slot>` sidecar 업로드 | 이미지 **주소만** 입력. `Content.posterUrl` / `backdropUrl` 에 원본 주소를 그대로 기록하고 서버에 복제하지 않음 |
 | 어드민 인증 없음 | 로그인 필수 + 역할 기반 권한(슈퍼관리자/운영자) + `/admin/*` 미들웨어 가드 + 어드민 안에서 계정 관리 |
 | 한줄평 무제한 작성 | IP 해시 기준 rate limit (기본 10분에 5건, `.env` 로 조정) |
 | 콘텐츠 생성과 제보 승인이 별개 state 갱신 | `POST /api/submissions/:id/publish` 한 트랜잭션. 중복 승인은 409 |
 | `window.confirm()` | 자체 확인 모달 + 결과 토스트 |
 | 로딩·에러 상태 없음 | 모든 CRUD 액션에 로딩 스피너 + 실패 토스트/인라인 에러 |
 
-## 이미지 스토리지 전환
+## 이미지 정책 — 주소만 받는다
 
-기본값은 로컬 디스크입니다. 업로드 파일은 `UPLOAD_DIR`(기본 `./uploads`)에 저장되고 `/media/*` 라우트로
-서빙됩니다. `public/` 이 아니라 별도 디렉터리를 쓰는 이유는, `next start` 가 `public/` 을 빌드 시점
-스냅샷으로 다루기 때문에 런타임에 추가된 파일을 내보내지 못해서입니다.
+포스터·배경은 **이미지 주소(URL)만** 등록할 수 있고, 파일 업로드 경로는 없습니다.
+이미지를 내려받아 우리 서버에 다시 올리면 그 자체가 복제(재배포)라서, 원본을 그대로
+가리키는 편이 저작권 위험이 낮다는 판단입니다. TMDB(`image.tmdb.org`)처럼 배포가
+허용된 출처를 쓰는 것을 권장합니다.
 
-S3(또는 R2·MinIO 등 S3 호환 스토리지)로 바꾸려면 `.env` 에서:
-
-```
-STORAGE_DRIVER="s3"
-S3_BUCKET="..."
-S3_REGION="ap-northeast-2"
-S3_ACCESS_KEY_ID="..."
-S3_SECRET_ACCESS_KEY="..."
-S3_ENDPOINT=""            # S3 호환 스토리지면 엔드포인트 지정
-S3_PUBLIC_BASE_URL=""     # CDN 도메인이 있으면 지정
-```
-
-이 경우 `Content.posterUrl` 에 버킷 URL이 직접 저장되고 `/media/*` 라우트는 쓰이지 않습니다.
+- 허용값: `https://...` 또는 `/media/...` (업로드 기능을 없애기 전에 올려둔 이미지)
+- 검증은 `isAllowedImageUrl()`(`src/lib/validation.ts`) 한 곳에서 하고, 어드민 입력칸과
+  서버 스키마가 같은 함수를 봅니다.
+- `/media/*` 라우트와 `MediaFile` 테이블은 **읽기 전용**으로 남아 있습니다. 기존 포스터가
+  깨지지 않게 하기 위한 것이고, 새로 쓰이지는 않습니다.
 
 ## 스크립트
 
