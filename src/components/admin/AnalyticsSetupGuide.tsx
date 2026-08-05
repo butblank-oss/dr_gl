@@ -17,31 +17,32 @@ const STEPS = [
   },
 ];
 
-export const GA_DIMENSIONS: { key: string; label: string; group: string }[] = [
-  { key: "content_title", label: "작품 이름 — 작품별 클릭·시청처 전환", group: "핵심" },
-  { key: "platform_name", label: "플랫폼 이름 — 어디로 보러 나갔는지", group: "핵심" },
-  { key: "search_term", label: "검색어", group: "핵심" },
-  { key: "list_name", label: "목록 이름 — 홈의 어느 줄에서 눌렸는지", group: "핵심" },
-  { key: "results", label: "검색 결과 수 — 결과 0건 검색어를 뽑는 데 씀", group: "핵심" },
-  { key: "destination", label: "나간 도메인", group: "핵심" },
+/** GA 등록 화면의 세 칸(이름·설명·이벤트 매개변수)에 그대로 옮겨 적을 수 있게 나눠 둔다. */
+export const GA_DIMENSIONS: { key: string; name: string; desc: string; group: string }[] = [
+  { key: "content_title", name: "작품 이름", desc: "작품별 클릭과 시청처 전환을 보기 위한 값", group: "핵심" },
+  { key: "platform_name", name: "플랫폼 이름", desc: "어느 플랫폼으로 보러 나갔는지", group: "핵심" },
+  { key: "search_term", name: "검색어", desc: "이용자가 검색창에 입력한 말", group: "핵심" },
+  { key: "list_name", name: "목록 이름", desc: "홈의 어느 줄에서 작품을 눌렀는지", group: "핵심" },
+  { key: "results", name: "검색 결과 수", desc: "결과가 0건이던 검색어를 뽑는 데 씀", group: "핵심" },
+  { key: "destination", name: "나간 도메인", desc: "시청처 클릭으로 이동한 사이트 도메인", group: "핵심" },
 
-  { key: "content_category", label: "작품 형식 — 어떤 형식이 눌리는지", group: "추가 분석" },
-  { key: "juice", label: "착즙 여부 — 착즙 작품 반응", group: "추가 분석" },
-  { key: "label", label: "버튼 이름 — 많이 눌린 버튼", group: "추가 분석" },
-  { key: "filter_type", label: "필터 종류 (형식·국가·착즙)", group: "추가 분석" },
-  { key: "filter_value", label: "고른 필터 값", group: "추가 분석" },
-  { key: "percent", label: "스크롤 도달 지점 (25·50·75·100)", group: "추가 분석" },
-  { key: "submit_category", label: "제보된 작품 형식", group: "추가 분석" },
+  { key: "content_category", name: "작품 형식", desc: "영화·드라마·웹툰 등 어떤 형식이 눌리는지", group: "추가 분석" },
+  { key: "juice", name: "착즙 여부", desc: "착즙 작품이 일반 작품보다 반응이 좋은지", group: "추가 분석" },
+  { key: "label", name: "버튼 이름", desc: "어떤 이동 버튼이 많이 눌리는지", group: "추가 분석" },
+  { key: "filter_type", name: "필터 종류", desc: "형식·국가·착즙 중 무엇을 주로 만지는지", group: "추가 분석" },
+  { key: "filter_value", name: "고른 필터 값", desc: "그 필터에서 어떤 값을 골랐는지", group: "추가 분석" },
+  { key: "percent", name: "스크롤 도달 지점", desc: "화면을 어디까지 읽었는지 (25·50·75·100)", group: "추가 분석" },
+  { key: "submit_category", name: "제보된 작품 형식", desc: "이용자가 어떤 형식을 더 제보하는지", group: "추가 분석" },
 
-  { key: "position", label: "목록에서 몇 번째 카드였는지", group: "더 파고들 때" },
-  { key: "platform_type", label: "유료 · 무료", group: "더 파고들 때" },
-  { key: "nav_to", label: "어디로 이동했는지", group: "더 파고들 때" },
-  { key: "nav_from", label: "어디에서 눌렀는지", group: "더 파고들 때" },
-  { key: "nav_source", label: "헤더 · 푸터 · 제보 폼 등 위치", group: "더 파고들 때" },
-  { key: "cta", label: "히어로의 어떤 버튼인지", group: "더 파고들 때" },
-  { key: "submit_country", label: "제보된 작품 국가", group: "더 파고들 때" },
-  { key: "reason", label: "제보 실패 사유", group: "더 파고들 때" },
-  { key: "http_status", label: "제보 실패 시 서버 응답 코드", group: "더 파고들 때" },
+  { key: "position", name: "카드 순번", desc: "목록에서 몇 번째 카드가 눌리는지", group: "더 파고들 때" },
+  { key: "platform_type", name: "유료·무료", desc: "유료와 무료 중 어디로 더 나가는지", group: "더 파고들 때" },
+  { key: "nav_to", name: "이동한 곳", desc: "버튼을 눌러 어느 화면으로 갔는지", group: "더 파고들 때" },
+  { key: "nav_from", name: "이동 전 화면", desc: "그 버튼을 어느 화면에서 눌렀는지", group: "더 파고들 때" },
+  { key: "nav_source", name: "버튼 위치", desc: "헤더·푸터·제보 폼 중 어디의 버튼인지", group: "더 파고들 때" },
+  { key: "cta", name: "히어로 버튼", desc: "상세보기와 시청 가능한 곳 중 어느 쪽인지", group: "더 파고들 때" },
+  { key: "submit_country", name: "제보된 국가", desc: "제보된 작품이 국내인지 해외인지", group: "더 파고들 때" },
+  { key: "reason", name: "제보 실패 사유", desc: "필수값 누락·서버 거절·네트워크 중 무엇인지", group: "더 파고들 때" },
+  { key: "http_status", name: "제보 실패 응답 코드", desc: "서버가 거절할 때의 상태 코드", group: "더 파고들 때" },
 ];
 
 const GROUPS = ["핵심", "추가 분석", "더 파고들 때"] as const;
@@ -93,11 +94,19 @@ export function GaDimensionGuide() {
               ) : null}
             </div>
             <table className="w-full border-collapse text-[13px]">
+              <thead>
+                <tr className="text-left text-[10px] text-fg35">
+                  <th className="w-[150px] pb-1 font-semibold">측정기준 이름</th>
+                  <th className="pb-1 font-semibold">설명</th>
+                  <th className="w-[170px] pb-1 font-semibold">이벤트 매개변수</th>
+                </tr>
+              </thead>
               <tbody>
                 {GA_DIMENSIONS.filter((dimension) => dimension.group === group).map((dimension) => (
                   <tr key={dimension.key} className="border-t border-[rgba(255,255,255,0.05)]">
-                    <td className="w-[220px] py-2 pr-3 font-mono text-xs text-accent">{dimension.key}</td>
-                    <td className="py-2 text-fg55">{dimension.label}</td>
+                    <td className="py-2 pr-3 font-semibold text-fg75">{dimension.name}</td>
+                    <td className="py-2 pr-3 text-[12px] text-fg55">{dimension.desc}</td>
+                    <td className="py-2 font-mono text-xs text-accent">{dimension.key}</td>
                   </tr>
                 ))}
               </tbody>
