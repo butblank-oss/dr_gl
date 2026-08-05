@@ -77,9 +77,30 @@ export function ShareButton({ path, title, contentId, campaign, className }: Pro
       type="button"
       onClick={share}
       aria-label={`${title} 공유하기`}
-      className={className ?? "btn-ghost px-[18px] py-2.5 text-[13px] text-fg75"}
+      className={className ?? "btn-grad gap-1.5 px-[18px] py-2.5 text-[13px]"}
     >
+      <ShareIcon />
       {copied ? "링크를 복사했어요" : "공유하기"}
     </button>
+  );
+}
+
+function ShareIcon() {
+  return (
+    <svg
+      width="15"
+      height="15"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M4 12v7a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7" />
+      <path d="M16 6l-4-4-4 4" />
+      <path d="M12 2v13" />
+    </svg>
   );
 }

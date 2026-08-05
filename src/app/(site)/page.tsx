@@ -4,6 +4,7 @@ import { EVENTS } from "@/lib/analytics";
 import { BannerBackdrop, PosterCard } from "@/components/site/Banner";
 import { ContentCard } from "@/components/site/ContentCard";
 import { SiteJsonLd } from "@/components/site/JsonLd";
+import { ShareButton } from "@/components/site/ShareButton";
 import { getFeaturedContent, getHomeRows } from "@/lib/queries";
 
 // 어드민에서 바꾼 내용이 사이트에 바로 보이도록 매 요청마다 최신 데이터를 읽는다.
@@ -69,6 +70,13 @@ export default async function HomePage({
             >
               시청 가능한 곳
             </TrackedLink>
+            {/* 홈 주소를 공유한다 — 특정 작품이 아니라 사이트를 알리는 쪽 */}
+            <ShareButton
+              path="/"
+              title="Dr. GL"
+              campaign="home"
+              className="btn-ghost gap-1.5 px-[22px] py-3 text-sm text-fg75"
+            />
           </div>
         </div>
         </div>

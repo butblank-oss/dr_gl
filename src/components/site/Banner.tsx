@@ -35,22 +35,26 @@ export function BannerBackdrop({ item }: { item: ContentDTO }) {
   if (item.posterUrl) {
     return (
       <>
+        {/*
+          좁은 화면에서는 오른쪽 포스터를 내보내지 않으므로, 흐린 배경이 유일한 그림이 된다.
+          그래서 모바일은 덜 어둡고 덜 흐리게 깔아 작품 분위기가 보이게 한다.
+        */}
         <ImageWithFallback
           src={item.posterUrl}
           alt=""
-          className="absolute inset-0 h-full w-full scale-125 object-cover object-top opacity-70 blur-[36px] saturate-125"
+          className="absolute inset-0 h-full w-full scale-125 object-cover object-top opacity-95 blur-[22px] saturate-125 sm:opacity-70 sm:blur-[36px]"
           fallback={emptyBackdrop}
         />
-        {/* 좁은 화면에서는 글자를 가리므로 내보내지 않는다 */}
+        {/* 좁은 화면에서는 글자와 겹치므로 더 옅게 깐다 */}
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-y-0 right-0 hidden aspect-2/3 sm:block"
+          className="pointer-events-none absolute inset-y-0 right-0 aspect-2/3"
           style={{ maskImage: FADE_MASK, WebkitMaskImage: FADE_MASK }}
         >
           <ImageWithFallback
             src={item.posterUrl}
             alt=""
-            className="h-full w-full object-cover object-top opacity-90"
+            className="h-full w-full object-cover object-top opacity-45 sm:opacity-90"
             fallback={<span />}
           />
         </div>

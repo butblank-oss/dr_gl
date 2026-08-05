@@ -72,18 +72,17 @@ export default async function ContentDetailPage({ params }: { params: Params }) 
   return (
     <div>
       <ContentJsonLd item={item} />
-      <div className="page-shell flex items-center justify-between gap-3 pt-5">
+      <div className="page-shell flex items-center justify-between gap-3 pb-1 pt-5">
         <BackButton />
         <ShareButton
           path={`/content/${item.id}`}
           title={item.title}
           contentId={item.id}
           campaign={`content_${item.id}`}
-          className="cursor-pointer rounded-[9px] border border-line12 bg-surface4 px-4 py-[9px] text-[13px] text-fg75"
         />
       </div>
 
-      <div className="relative mt-2 h-[360px] w-full overflow-hidden md:h-[440px]">
+      <div className="relative mt-4 h-[380px] w-full overflow-hidden md:h-[440px]">
         <BannerBackdrop item={item} />
         <div className="banner-scrim pointer-events-none absolute inset-0" />
         <div className="page-shell absolute inset-x-0 bottom-8 md:bottom-10">

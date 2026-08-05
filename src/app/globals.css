@@ -201,7 +201,9 @@
 .banner-scrim {
   background:
     linear-gradient(90deg, rgba(11, 10, 15, 0.96) 28%, rgba(11, 10, 15, 0.3) 78%),
-    linear-gradient(0deg, rgba(11, 10, 15, 0.92), rgba(11, 10, 15, 0.05) 42%);
+    linear-gradient(0deg, rgba(11, 10, 15, 0.92), rgba(11, 10, 15, 0.05) 42%),
+    /* 위쪽 경계가 툭 잘려 보이지 않게 배경색으로 부드럽게 이어준다 */
+      linear-gradient(180deg, var(--color-ink) 0%, rgba(11, 10, 15, 0) 12%);
 }
 .card-scrim {
   background: linear-gradient(180deg, rgba(11, 10, 15, 0) 55%, rgba(11, 10, 15, 0.75) 100%);
