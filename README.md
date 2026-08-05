@@ -110,7 +110,7 @@ npm run dev
 | `POST /api/categories` · `PATCH /api/categories/:id` | 운영자 | 추가(중복 409) · 이름변경(cascade) |
 | `DELETE /api/categories/:id` | 운영자 | 사용 중이면 409 + 걸린 콘텐츠 수 반환 |
 | `POST /api/submissions` | 공개 | 사이트 제보 폼 |
-| `GET /api/submissions` · `PATCH /api/submissions/:id` | 운영자 | 목록 · 상태 변경 |
+| `GET /api/submissions` · `PATCH /api/submissions/:id` | 운영자 | 목록 · 상태 변경(반려는 사유 코드 필수, `기타`는 메모까지) |
 | `POST /api/submissions/:id/publish` | 운영자 | **콘텐츠 생성 + 제보 승인을 한 트랜잭션으로 처리** |
 | `GET /api/comments?itemId=` · `POST /api/comments` | 공개 | 노출중 한줄평 조회 · 익명 작성(rate limit) |
 | `PATCH /api/comments/:id` | 운영자 | 노출/숨김 토글 |

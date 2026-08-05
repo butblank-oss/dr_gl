@@ -60,9 +60,35 @@ export type SubmissionDTO = {
   note: string;
   contact: string;
   status: SubmissionStatus;
+  rejectReason: string;
+  rejectNote: string;
   contentId: number | null;
   createdAt: string;
 };
+
+/**
+ * 반려 사유. 나중에 "무엇 때문에 많이 반려됐는지"를 세어 제보 폼 안내를 고치려는 목적이라,
+ * 자유 입력이 아니라 코드로 남긴다. '기타'는 반드시 설명을 함께 받는다.
+ */
+export const REJECT_REASONS = [
+  { code: "duplicate", label: "중복 제보", desc: "이미 등록돼 있는 작품이에요." },
+  { code: "unverifiable", label: "확인 불가", desc: "작품이 실제로 있는지 확인할 수 없었어요." },
+  { code: "not_gl", label: "GL 작품 아님", desc: "여성 서사·백합 요소를 찾지 못했어요." },
+  { code: "adult", label: "성인물", desc: "성인 등급 콘텐츠는 다루지 않아요." },
+  { code: "bad_link", label: "링크 문제", desc: "링크가 열리지 않거나 정식 감상처가 아니에요." },
+  { code: "illegal", label: "불법 유통", desc: "권리 없이 올라온 곳으로 보여요." },
+  { code: "spam", label: "장난·광고", desc: "작품 제보로 보기 어려운 내용이에요." },
+  { code: "other", label: "기타", desc: "사유를 직접 적어주세요." },
+] as const;
+
+export type RejectReasonCode = (typeof REJECT_REASONS)[number]["code"];
+export const REJECT_REASON_CODES = REJECT_REASONS.map((r) => r.code) as unknown as [
+  RejectReasonCode,
+  ...RejectReasonCode[],
+];
+export const REJECT_REASON_LABELS: Record<string, string> = Object.fromEntries(
+  REJECT_REASONS.map((r) => [r.code, r.label]),
+);
 
 export type CommentDTO = {
   id: number;

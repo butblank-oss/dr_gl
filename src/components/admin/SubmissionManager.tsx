@@ -7,11 +7,16 @@ import {
   makeSubmissionDraft,
   type ContentDraft,
 } from "@/components/admin/ContentModal";
+import { RejectDialog } from "@/components/admin/RejectDialog";
 import { Toast, useToast } from "@/components/admin/Toast";
 import { ApiError, api } from "@/lib/client-api";
 import { formatDateTime } from "@/lib/format";
-import { SUBMISSION_FILTER_LABELS, SUBMISSION_STATUS_TEXT } from "@/lib/types";
-import type { SubmissionDTO } from "@/lib/types";
+import {
+  REJECT_REASON_LABELS,
+  SUBMISSION_FILTER_LABELS,
+  SUBMISSION_STATUS_TEXT,
+} from "@/lib/types";
+import type { RejectReasonCode, SubmissionDTO } from "@/lib/types";
 
 /** 제보 내용을 항목별로 빠짐없이 보여준다. 값이 없으면 없다고 명시한다. */
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
@@ -49,6 +54,8 @@ export function SubmissionManager({
   const [filter, setFilter] = useState<string>("대기중");
   const [draft, setDraft] = useState<ContentDraft | null>(null);
   const [merging, setMerging] = useState<number | null>(null);
+  const [rejecting, setRejecting] = useState<SubmissionDTO | null>(null);
+  const [rejectPending, setRejectPending] = useState(false);
   const { toast, show } = useToast();
 
   const reload = async () => {
@@ -82,16 +89,20 @@ export function SubmissionManager({
     }
   };
 
-  const reject = async (submission: SubmissionDTO) => {
+  const reject = async (submission: SubmissionDTO, reason: RejectReasonCode, note: string) => {
+    setRejectPending(true);
     try {
       await api(`/api/submissions/${submission.id}`, {
         method: "PATCH",
-        body: JSON.stringify({ status: "rejected" }),
+        body: JSON.stringify({ status: "rejected", rejectReason: reason, rejectNote: note }),
       });
+      setRejecting(null);
       await reload();
-      show(`"${submission.title}" 제보를 반려했어요.`);
+      show(`"${submission.title}" 제보를 반려했어요. (${REJECT_REASON_LABELS[reason]})`);
     } catch (e) {
       show(e instanceof ApiError ? e.message : "반려하지 못했어요.", "error");
+    } finally {
+      setRejectPending(false);
     }
   };
 
@@ -126,6 +137,11 @@ export function SubmissionManager({
                 <span className={STATUS_STYLE[submission.status]}>
                   {SUBMISSION_STATUS_TEXT[submission.status]}
                 </span>
+                {submission.status === "rejected" && submission.rejectReason ? (
+                  <span className="rounded-pill border border-line12 bg-surface6 px-[9px] py-[3px] text-[10px] font-semibold text-fg55">
+                    {REJECT_REASON_LABELS[submission.rejectReason] ?? submission.rejectReason}
+                  </span>
+                ) : null}
                 {(duplicates[submission.id]?.length ?? 0) > 0 ? (
                   <span className="rounded-pill bg-[rgba(255,176,32,0.16)] px-[9px] py-[3px] text-[10px] font-bold text-[#ffb020]">
                     이미 등록된 작품
@@ -144,7 +160,7 @@ export function SubmissionManager({
                   </button>
                   <button
                     type="button"
-                    onClick={() => reject(submission)}
+                    onClick={() => setRejecting(submission)}
                     className="cursor-pointer rounded-lg border border-line12 bg-surface4 px-3.5 py-[7px] text-xs text-fg"
                   >
                     반려
@@ -224,6 +240,18 @@ export function SubmissionManager({
               <div className="lg:col-span-2">
                 <Field label="코멘트">{submission.note || <Empty text="코멘트 없음" />}</Field>
               </div>
+              {submission.status === "rejected" && submission.rejectReason ? (
+                <div className="lg:col-span-2">
+                  <Field label="반려 사유">
+                    <span className="font-semibold text-fg70">
+                      {REJECT_REASON_LABELS[submission.rejectReason] ?? submission.rejectReason}
+                    </span>
+                    {submission.rejectNote ? (
+                      <span className="text-fg55"> — {submission.rejectNote}</span>
+                    ) : null}
+                  </Field>
+                </div>
+              ) : null}
               {submission.contentId ? (
                 <div className="lg:col-span-2">
                   <Field label="발행 결과">
@@ -257,6 +285,15 @@ export function SubmissionManager({
             await reload();
             show("콘텐츠를 발행하고 제보를 승인 처리했어요.");
           }}
+        />
+      ) : null}
+
+      {rejecting ? (
+        <RejectDialog
+          title={rejecting.title}
+          pending={rejectPending}
+          onConfirm={(reason, note) => reject(rejecting, reason, note)}
+          onCancel={() => setRejecting(null)}
         />
       ) : null}
 

@@ -79,6 +79,10 @@ model Submission {
   contact   String   @default("")
   /// 'pending' | 'approved' | 'rejected'
   status    String   @default("pending")
+  /// 반려 사유 코드 (REJECT_REASONS). 반려가 아니면 빈 문자열.
+  rejectReason String @default("")
+  /// 반려 사유 보충 설명. '기타'일 때는 필수.
+  rejectNote   String @default("")
   /// 승인·발행으로 만들어진 콘텐츠 id
   contentId Int?
   /// 도배 방지용. 원본 IP는 저장하지 않고 되돌릴 수 없게 변환한 값만 둔다.

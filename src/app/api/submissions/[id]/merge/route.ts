@@ -55,7 +55,7 @@ export async function POST(req: Request, { params }: Params) {
 
         const updated = await tx.submission.updateMany({
           where: { id: submissionId, status: "pending" },
-          data: { status: "approved", contentId },
+          data: { status: "approved", contentId, rejectReason: "", rejectNote: "" },
         });
         if (updated.count === 0) throw new AlreadyHandledError();
 

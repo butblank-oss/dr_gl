@@ -38,7 +38,7 @@ export async function POST(req: Request, { params }: Params) {
         // 트랜잭션 안에서 상태를 한 번 더 확인해 동시 승인(중복 발행)을 막는다.
         const updated = await tx.submission.updateMany({
           where: { id: submissionId, status: "pending" },
-          data: { status: "approved", contentId: content.id },
+          data: { status: "approved", contentId: content.id, rejectReason: "", rejectNote: "" },
         });
         if (updated.count === 0) throw new AlreadyHandledError();
 

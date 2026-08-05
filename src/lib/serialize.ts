@@ -69,6 +69,8 @@ export function serializeSubmission(row: SubmissionRow): SubmissionDTO {
     note: row.note,
     contact: row.contact,
     status: row.status as SubmissionStatus,
+    rejectReason: row.rejectReason,
+    rejectNote: row.rejectNote,
     contentId: row.contentId,
     createdAt: row.createdAt.toISOString(),
   };
