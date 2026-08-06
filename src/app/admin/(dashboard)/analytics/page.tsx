@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { TrendChart } from "@/components/admin/TrendChart";
 import { AnalyticsSetupGuide, GaDimensionGuide } from "@/components/admin/AnalyticsSetupGuide";
 import { DateRangePicker } from "@/components/admin/DateRangePicker";
 import { GaConnectForm } from "@/components/admin/GaConnectForm";
@@ -31,7 +32,7 @@ type TabKey = (typeof TABS)[number]["key"];
 
 /** 탭마다 필요한 보고서만 부른다 — 안 쓰는 표까지 매번 불러올 이유가 없다. */
 const TAB_REPORTS: Record<TabKey, string[]> = {
-  summary: ["summary", "events", "pages"],
+  summary: ["summary", "daily", "events", "pages"],
   content: ["pages", "landings", "lists", "categoryClicks", "juiceClicks"],
   conversion: [
     "events",
@@ -366,6 +367,14 @@ export default async function AdminAnalyticsPage({ searchParams }: { searchParam
         { name: "engagementRate" },
       ],
     },
+    // 날짜별 추이. 표로는 "어느 날 몇 명"이 눈에 안 들어와서 선으로 그린다.
+    daily: {
+      dateRanges,
+      dimensions: [{ name: "date" }],
+      metrics: [{ name: "activeUsers" }, { name: "sessions" }],
+      orderBys: [{ dimension: { dimensionName: "date" } }],
+      limit: 400,
+    },
     pages: {
       dateRanges,
       dimensions: [{ name: "pagePath" }],
@@ -647,6 +656,17 @@ export default async function AdminAnalyticsPage({ searchParams }: { searchParam
             hint="총 참여 시간 ÷ 방문자"
           />
         </div>
+
+        <TrendChart
+          title="날짜별 방문 추이"
+          hint="점 위에 마우스를 올리면 그 날의 숫자가 나와요. (모바일은 길게 누르기)"
+          labels={rows("daily").map((row) => row.keys[0])}
+          series={[
+            { name: "방문자", color: "#8a6eea", values: rows("daily").map((row) => row.values[0] ?? 0) },
+            { name: "방문 횟수", color: "#E5486B", values: rows("daily").map((row) => row.values[1] ?? 0) },
+          ]}
+          empty="아직 데이터가 없어요."
+        />
 
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
           <StatCard
