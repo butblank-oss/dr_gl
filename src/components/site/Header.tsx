@@ -83,7 +83,26 @@ export function Header() {
           <nav className="hidden items-center gap-8 lg:flex">{navLinks}</nav>
         </div>
 
-        <LangSwitch />
+        {/*
+          검색은 본문으로 내렸지만 제보는 헤더에 남긴다.
+          작품을 보다가 "이거 없네" 싶을 때 바로 닿아야 하는 버튼이라 화면마다 있어야 한다.
+        */}
+        <div className="flex flex-none items-center gap-2">
+          <TrackedLink
+            href={withLang(lang, "/submit")}
+            event={EVENTS.nav}
+            params={{ label: "제보하기", nav_to: "/submit", nav_from: pathname, nav_source: "헤더" }}
+            className={
+              bare === "/submit"
+                ? "btn-grad h-9 whitespace-nowrap px-3.5 text-[13px]"
+                : "inline-flex h-9 cursor-pointer items-center whitespace-nowrap rounded-[10px] border border-[rgba(155,126,232,0.4)] bg-accent-soft8 px-3.5 text-[13px] font-bold text-accent"
+            }
+          >
+            <span className="lg:hidden">{t.submitShort}</span>
+            <span className="hidden lg:inline">{t.submitLong}</span>
+          </TrackedLink>
+          <LangSwitch />
+        </div>
       </div>
 
       {/* 모바일에서는 nav 를 두 번째 줄로 내리고, 넘치면 가로로 스크롤한다 */}

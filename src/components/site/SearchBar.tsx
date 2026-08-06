@@ -2,16 +2,14 @@
 
 import { useRouter, usePathname } from "next/navigation";
 import { useState } from "react";
-import { TrackedLink } from "@/components/analytics/TrackedLink";
 import { SearchIcon } from "@/components/icons";
-import { EVENTS } from "@/lib/analytics";
 import { dict, langFromPath, withLang } from "@/lib/i18n";
 
 /**
- * 본문에 놓는 검색창 + 제보 버튼.
+ * 본문에 놓는 검색창.
  *
- * 헤더에 로고·검색·제보·언어를 다 얹으니 위쪽이 꽉 막혀 보였다.
- * 검색과 제보는 "찾으러 온 사람"이 쓰는 것이라, 작품 목록 바로 위가 더 자연스러운 자리다.
+ * 검색 버튼은 항상 보인다. 한때 좁은 화면에서 숨겼더니, 검색어를 치고 나서
+ * 옆에 있던 제보 버튼을 누르는 사람이 생겼다. 입력칸 옆의 버튼은 그 입력을 처리하는 것이어야 한다.
  */
 export function SearchBar({ initialQuery = "" }: { initialQuery?: string }) {
   const router = useRouter();
@@ -43,20 +41,11 @@ export function SearchBar({ initialQuery = "" }: { initialQuery?: string }) {
           type="button"
           onClick={go}
           aria-label={t.searchAria}
-          className="hidden flex-none cursor-pointer rounded-lg bg-surface6 px-3 py-1.5 text-xs font-bold text-fg70 hover:text-fg sm:block"
+          className="flex-none cursor-pointer rounded-lg bg-accent px-3.5 py-2 text-xs font-bold text-white hover:brightness-110"
         >
           {t.searchTitle}
         </button>
       </div>
-      <TrackedLink
-        href={withLang(lang, "/submit")}
-        event={EVENTS.nav}
-        params={{ label: "제보하기", nav_to: "/submit", nav_from: pathname, nav_source: "본문 검색줄" }}
-        className="inline-flex h-12 flex-none items-center justify-center whitespace-nowrap rounded-xl border border-[rgba(155,126,232,0.4)] bg-accent-soft8 px-4 text-sm font-bold text-accent sm:px-5"
-      >
-        <span className="sm:hidden">{t.submitShort}</span>
-        <span className="hidden sm:inline">{t.submitLong}</span>
-      </TrackedLink>
     </div>
   );
 }

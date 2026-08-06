@@ -221,3 +221,19 @@
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
+
+/*
+ * iOS 사파리는 글자가 16px 보다 작은 입력칸에 커서를 두면 화면을 확대한다.
+ * 확대되는 순간 레이아웃이 밀려서 보고 있던 자리를 잃는다.
+ *
+ * 레이어 밖에 두는 이유: Tailwind 의 text-sm 은 utilities 레이어에 있어서
+ * 레이어 안에 적으면 무조건 진다. 레이어에 속하지 않은 규칙이 모든 레이어를 이긴다.
+ * 데스크톱은 건드리지 않는다 — 확대가 없는 환경이라 원래 크기가 더 어울린다.
+ */
+@media (max-width: 767px) {
+  input,
+  select,
+  textarea {
+    font-size: 16px;
+  }
+}
