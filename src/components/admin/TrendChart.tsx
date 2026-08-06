@@ -63,8 +63,10 @@ export function TrendChart({
       </div>
 
       {/*
-        폭이 좁으면 그래프를 통째로 줄이는 대신 옆으로 밀어 본다(min-w).
-        그냥 줄이면 날짜 글자가 4px까지 작아져 읽을 수가 없다.
+        SVG는 통째로 늘고 줄어서 글자 크기도 같이 따라간다. 그래서 폭을 위아래로 묶어둔다.
+        - min-w: 좁은 화면에서 줄이는 대신 옆으로 밀리게 (안 그러면 날짜가 4px)
+        - max-w: 넓은 화면에서 무한정 커지지 않게 (안 그러면 날짜가 27px)
+        결과적으로 어느 폭에서든 축 글자가 10~15px 사이에 머문다.
       */}
       {labels.length === 0 ? (
         <div className="py-10 text-center text-[13px] text-fg35">{empty}</div>
@@ -72,7 +74,7 @@ export function TrendChart({
         <div className="h-scroll">
         <svg
           viewBox={`0 0 ${W} ${H}`}
-          className="h-auto w-full min-w-[620px]"
+          className="mx-auto h-auto w-full min-w-[620px] max-w-[1000px]"
           role="img"
           aria-label={title}
         >
@@ -88,7 +90,7 @@ export function TrendChart({
                   stroke="rgba(255,255,255,0.07)"
                   strokeWidth="1"
                 />
-                <text x={PAD.left - 7} y={y(value) + 3.5} textAnchor="end" fontSize="10" fill="rgba(255,255,255,0.32)">
+                <text x={PAD.left - 7} y={y(value) + 3.5} textAnchor="end" fontSize="11" fill="rgba(255,255,255,0.32)">
                   {value}
                 </text>
               </g>
@@ -97,7 +99,7 @@ export function TrendChart({
 
           {labels.map((key, i) =>
             i % tickEvery === 0 || i === labels.length - 1 ? (
-              <text key={key} x={x(i)} y={H - 8} textAnchor="middle" fontSize="10" fill="rgba(255,255,255,0.32)">
+              <text key={key} x={x(i)} y={H - 8} textAnchor="middle" fontSize="11" fill="rgba(255,255,255,0.32)">
                 {shortDate(key)}
               </text>
             ) : null,
