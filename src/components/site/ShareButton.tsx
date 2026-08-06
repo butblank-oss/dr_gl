@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { EVENTS, track } from "@/lib/analytics";
+import { dict, langFromPath } from "@/lib/i18n";
+import { usePathname } from "next/navigation";
 
 /** 공유 링크에 붙이는 표시 — 이 링크로 들어온 방문을 유입 경로에서 구분할 수 있게 한다. */
 const SHARE_SOURCE = "drgl_share";
@@ -32,6 +34,7 @@ type Props = {
  * 휴대폰에서는 기본 공유창(카카오톡·메시지 등)을 열고, PC에서는 링크를 복사한다.
  */
 export function ShareButton({ path, title, contentId, campaign, className }: Props) {
+  const t = dict(langFromPath(usePathname()));
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
@@ -82,11 +85,11 @@ export function ShareButton({ path, title, contentId, campaign, className }: Pro
     <button
       type="button"
       onClick={share}
-      aria-label={`${title} 공유하기`}
+      aria-label={t.shareAria(title)}
       className={className ?? "btn-grad gap-1.5 px-[18px] py-2.5 text-[13px]"}
     >
       <ShareIcon />
-      {copied ? "링크를 복사했어요" : "공유하기"}
+      {copied ? t.shareCopied : t.share}
     </button>
   );
 }

@@ -6,26 +6,32 @@ import { TrackedLink } from "@/components/analytics/TrackedLink";
 import { SearchIcon } from "@/components/icons";
 import { useGoBack } from "@/components/site/useGoBack";
 import { EVENTS, track } from "@/lib/analytics";
+import { LangSwitch } from "@/components/site/LangSwitch";
+import { dict, langFromPath, stripLang, withLang } from "@/lib/i18n";
 
 const ACTIVE = "text-fg font-bold";
 const INACTIVE = "text-fg55 font-medium";
 
-const NAV = [
-  { href: "/", label: "홈" },
-  { href: "/category", label: "카테고리" },
-  { href: "/board", label: "게시판", badge: "OPEN 예정" },
-];
 
 export function Header() {
   const pathname = usePathname();
+  const lang = langFromPath(pathname);
+  const t = dict(lang);
+  // 주소 판정은 /en 을 뗀 경로로 한다. 그래야 한국어·영어 화면이 같은 규칙을 쓴다.
+  const bare = stripLang(pathname);
+  const NAV = [
+    { href: "/", label: t.navHome },
+    { href: "/category", label: t.navCategory },
+    { href: "/board", label: t.navBoard, badge: t.navBoardBadge },
+  ];
   const searchParams = useSearchParams();
   const router = useRouter();
 
   const goBack = useGoBack();
-  const isSearch = pathname === "/search";
+  const isSearch = bare === "/search";
   // 상세 화면에서는 스크롤 위치와 상관없이 항상 닿는 뒤로가기를 헤더에 둔다.
   // (iOS 사파리의 스와이프 뒤로가기는 화면 맨 왼쪽 가장자리에서만 동작한다)
-  const isDetail = pathname.startsWith("/content/");
+  const isDetail = bare.startsWith("/content/");
   const [query, setQuery] = useState(isSearch ? (searchParams.get("q") ?? "") : "");
   const debounce = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -39,20 +45,20 @@ export function Header() {
   // 검색어 자체(search 이벤트)는 결과 건수까지 같이 남길 수 있는 검색 화면에서 한 번만 기록한다.
   const goSearch = (value: string) => {
     const term = value.trim();
-    router.push(term ? `/search?q=${encodeURIComponent(term)}` : "/search");
+    router.push(withLang(lang, term ? `/search?q=${encodeURIComponent(term)}` : "/search"));
   };
 
   const onChange = (value: string) => {
     setQuery(value);
     // 상세·게시판 화면 위에서 입력을 시작하면 자동으로 검색 화면으로 전환된다.
-    const autoSwitch = isSearch || pathname.startsWith("/content/") || pathname === "/board";
+    const autoSwitch = isSearch || bare.startsWith("/content/") || bare === "/board";
     if (!autoSwitch) return;
     if (debounce.current) clearTimeout(debounce.current);
     debounce.current = setTimeout(() => goSearch(value), 300);
   };
 
   const navClass = (active: boolean) => `whitespace-nowrap text-sm ${active ? ACTIVE : INACTIVE}`;
-  const isSubmit = pathname === "/submit";
+  const isSubmit = bare === "/submit";
 
   const searchBox = (
     <div className="flex h-10 min-w-0 items-center gap-2.5 rounded-[10px] border border-line8 bg-search px-3.5">
@@ -66,8 +72,8 @@ export function Header() {
             goSearch(query);
           }
         }}
-        placeholder="작품, 감독, 작가로 검색"
-        aria-label="작품 검색"
+        placeholder={t.searchPlaceholder}
+        aria-label={t.searchAria}
         className="min-w-0 flex-1 border-none bg-transparent text-[13px] text-fg outline-none"
       />
     </div>
@@ -76,8 +82,8 @@ export function Header() {
   const navLinks = NAV.map((nav) => (
     <TrackedLink
       key={nav.href}
-      href={nav.href}
-      className={navClass(pathname === nav.href)}
+      href={withLang(lang, nav.href)}
+      className={navClass(bare === nav.href)}
       event={EVENTS.nav}
       params={{ label: nav.label, nav_to: nav.href, nav_from: pathname }}
     >
@@ -105,7 +111,7 @@ export function Header() {
                 track(EVENTS.nav, { label: "뒤로가기", nav_from: pathname });
                 goBack();
               }}
-              aria-label="뒤로가기"
+              aria-label={t.back}
               className="-ml-1 flex h-9 w-9 flex-none cursor-pointer items-center justify-center rounded-full text-fg75 hover:bg-surface6 lg:hidden"
             >
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
@@ -114,7 +120,7 @@ export function Header() {
             </button>
           ) : null}
           <TrackedLink
-            href="/"
+            href={withLang(lang, "/")}
             className="flex flex-none gap-px text-xl font-extrabold tracking-[-0.5px] text-fg hover:text-fg lg:text-[22px]"
             event={EVENTS.nav}
             params={{ label: "로고", nav_to: "/", nav_from: pathname }}
@@ -128,7 +134,7 @@ export function Header() {
         <div className="flex min-w-0 flex-1 items-center justify-end gap-2 lg:flex-none lg:gap-6">
           <div className="min-w-0 flex-1 lg:w-[280px] lg:flex-none">{searchBox}</div>
           <TrackedLink
-            href="/submit"
+            href={withLang(lang, "/submit")}
             event={EVENTS.nav}
             params={{ label: "제보하기", nav_to: "/submit", nav_from: pathname, nav_source: "헤더" }}
             className={
@@ -137,9 +143,10 @@ export function Header() {
                 : "inline-flex h-10 flex-none cursor-pointer items-center whitespace-nowrap rounded-[10px] border border-[rgba(155,126,232,0.4)] bg-accent-soft8 px-3 text-[13px] font-bold text-accent lg:px-4"
             }
           >
-            <span className="lg:hidden">+ 제보</span>
-            <span className="hidden lg:inline">+ 제보하기</span>
+            <span className="lg:hidden">{t.submitShort}</span>
+            <span className="hidden lg:inline">{t.submitLong}</span>
           </TrackedLink>
+          <LangSwitch />
         </div>
       </div>
 

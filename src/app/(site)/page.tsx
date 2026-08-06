@@ -6,6 +6,8 @@ import { ContentCard } from "@/components/site/ContentCard";
 import { SiteJsonLd } from "@/components/site/JsonLd";
 import { ShareButton } from "@/components/site/ShareButton";
 import { getFeaturedContent, getHomeRows } from "@/lib/queries";
+import { dict, withLang } from "@/lib/i18n";
+import { currentLang } from "@/lib/lang-server";
 
 // 어드민에서 바꾼 내용이 사이트에 바로 보이도록 매 요청마다 최신 데이터를 읽는다.
 export const dynamic = "force-dynamic";
@@ -17,8 +19,10 @@ export default async function HomePage({
 }) {
   // 프로토타입의 `?detail=<id>` 딥링크를 그대로 받아 /content/<id> 라우트로 넘겨준다.
   const detail = Number((await searchParams).detail);
-  if (Number.isInteger(detail) && detail > 0) redirect(`/content/${detail}`);
+  if (Number.isInteger(detail) && detail > 0) redirect(withLang(await currentLang(), `/content/${detail}`));
 
+  const lang = await currentLang();
+  const t = dict(lang);
   const [hero, rows] = await Promise.all([getFeaturedContent(), getHomeRows()]);
 
   if (!hero) {
@@ -44,7 +48,7 @@ export default async function HomePage({
             <span className="rounded-pill border border-line16 bg-surface10 px-[11px] py-1 text-xs font-semibold text-fg">
               {hero.category}
             </span>
-            {hero.juice ? <span className="badge-juice px-[11px] py-1 text-xs">착즙</span> : null}
+            {hero.juice ? <span className="badge-juice px-[11px] py-1 text-xs">{t.juice}</span> : null}
             <span className="text-xs text-fg55">
               {hero.countryDetail} · {hero.year}
             </span>
@@ -62,16 +66,16 @@ export default async function HomePage({
           */}
           <div className="mt-1 flex flex-wrap gap-2.5">
             <TrackedLink
-              href={`/content/${hero.id}`}
+              href={withLang(lang, `/content/${hero.id}`)}
               className="btn-grad px-[22px] py-3 text-sm"
               event={EVENTS.selectContent}
               params={{ content_id: hero.id, content_title: hero.title, list_name: "히어로", cta: "시청 가능한 곳" }}
             >
-              시청 가능한 곳
+              {t.heroWatch}
             </TrackedLink>
             {/* 홈 주소를 공유한다 — 특정 작품이 아니라 사이트를 알리는 쪽 */}
             <ShareButton
-              path="/"
+              path={withLang(lang, "/")}
               title="Dr. GL"
               campaign="home"
               className="btn-ghost gap-1.5 px-[22px] py-3 text-sm text-fg75"
@@ -89,7 +93,7 @@ export default async function HomePage({
             <div className="h-scroll flex gap-[18px] pb-1.5">
               {row.items.map((item, index) => (
                 <div key={item.id} className="w-[132px] flex-none md:w-[170px]">
-                  <ContentCard item={item} listName={row.title} position={index + 1} />
+                  <ContentCard item={item} listName={row.title} position={index + 1} lang={lang} />
                 </div>
               ))}
             </div>

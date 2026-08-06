@@ -5,14 +5,21 @@ import { SpinnerIcon } from "@/components/icons";
 import { EVENTS, track } from "@/lib/analytics";
 import { formatDate } from "@/lib/format";
 import type { CommentDTO } from "@/lib/types";
+import { dict, type Lang } from "@/lib/i18n";
 
-type Props = { itemId: number; initialComments: CommentDTO[] };
+type Props = {
+  itemId: number;
+  initialComments: CommentDTO[];
+  /** 영어 화면이면 문구도 영어로 */
+  lang?: Lang;
+};
 
 /**
  * 한줄평 — 로그인 없이 누구나 남길 수 있고, 5개를 넘으면 처음 5개만 보이고 더보기로 펼친다.
  * 콘텐츠가 바뀌면(다른 상세로 이동) 펼침 상태는 초기화된다.
  */
-export function CommentSection({ itemId, initialComments }: Props) {
+export function CommentSection({ itemId, initialComments, lang = "ko" }: Props) {
+  const t = dict(lang);
   const [comments, setComments] = useState(initialComments);
   const [draft, setDraft] = useState("");
   const [showAll, setShowAll] = useState(false);
@@ -58,7 +65,7 @@ export function CommentSection({ itemId, initialComments }: Props) {
   return (
     <div>
       {/* 줄거리·출연·태그와 같은 층위의 절이라 제목 태그도 맞춘다. */}
-      <h2 className="mb-2.5 text-base font-bold">한줄평</h2>
+      <h2 className="mb-2.5 text-base font-bold">{t.comments}</h2>
       <div className="mb-3.5 flex gap-2">
         <input
           value={draft}
@@ -66,9 +73,9 @@ export function CommentSection({ itemId, initialComments }: Props) {
           onKeyDown={(e) => {
             if (e.key === "Enter") submit();
           }}
-          placeholder="한줄평을 남겨보세요"
+          placeholder={t.commentPlaceholder}
           maxLength={300}
-          aria-label="한줄평 입력"
+          aria-label={t.commentAria}
           className="field h-11 flex-1 px-3.5 text-[13px]"
         />
         <button
@@ -77,7 +84,7 @@ export function CommentSection({ itemId, initialComments }: Props) {
           disabled={pending || !draft.trim()}
           className="btn-grad h-11 whitespace-nowrap px-[18px] text-[13px]"
         >
-          {pending ? <SpinnerIcon /> : "남기기"}
+          {pending ? <SpinnerIcon /> : t.commentSubmit}
         </button>
       </div>
 
@@ -104,12 +111,12 @@ export function CommentSection({ itemId, initialComments }: Props) {
               }}
               className="btn-ghost mt-3 px-[18px] py-2.5 text-[13px] text-fg75"
             >
-              {showAll ? "접기" : `더보기 (${comments.length - 5})`}
+              {showAll ? (lang === "en" ? "Show less" : "접기") : `${t.commentMore} (${comments.length - 5})`}
             </button>
           ) : null}
         </>
       ) : (
-        <div className="text-[13px] text-fg35">아직 한줄평이 없어요. 첫 한줄평을 남겨보세요.</div>
+        <div className="text-[13px] text-fg35">{t.commentEmpty}</div>
       )}
     </div>
   );

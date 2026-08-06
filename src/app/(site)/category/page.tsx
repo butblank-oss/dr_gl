@@ -4,6 +4,8 @@ import type { Metadata } from "next";
 import { ContentCard } from "@/components/site/ContentCard";
 import { ContentListJsonLd } from "@/components/site/JsonLd";
 import { getCategories, getFilteredContents } from "@/lib/queries";
+import { dict, withLang, type Lang } from "@/lib/i18n";
+import { currentLang } from "@/lib/lang-server";
 import { COUNTRY_FILTERS } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -17,7 +19,7 @@ export const metadata: Metadata = {
 
 type SearchParams = Promise<{ category?: string; country?: string; juice?: string }>;
 
-function chipHref(params: Record<string, string | undefined>) {
+function chipHref(params: Record<string, string | undefined>, lang: Lang = "ko") {
   const query = new URLSearchParams();
   for (const [key, value] of Object.entries(params)) {
     if (value && value !== "전체" && value !== "false") query.set(key, value);
@@ -32,6 +34,8 @@ export default async function CategoryPage({ searchParams }: { searchParams: Sea
   const country = params.country ?? "전체";
   const juiceOnly = params.juice === "true";
 
+  const lang = await currentLang();
+  const t = dict(lang);
   const [categories, items] = await Promise.all([
     getCategories(),
     getFilteredContents({ category, country, juiceOnly }),
@@ -46,19 +50,19 @@ export default async function CategoryPage({ searchParams }: { searchParams: Sea
         name={`카테고리 탐색 — ${category}${country === "전체" ? "" : ` · ${country}`}`}
         path="/category"
       />
-      <h1 className="mb-1.5 text-[28px] font-extrabold">카테고리 탐색</h1>
-      <p className="mb-7 text-sm text-fg55">장르와 형식을 넘나들며, 원하는 콘텐츠를 찾아보세요.</p>
+      <h1 className="mb-1.5 text-[28px] font-extrabold">{t.categoryTitle}</h1>
+      <p className="mb-7 text-sm text-fg55">{t.categoryLead}</p>
 
       <div className="mb-3.5 flex flex-wrap gap-2">
         {["전체", ...categories.map((c) => c.name)].map((name) => (
           <TrackedLink
             key={name}
-            href={chipHref({ category: name, country, juice: juiceOnly ? "true" : undefined })}
+            href={chipHref({ category: name, country, juice: juiceOnly ? "true" : undefined }, lang)}
             className={`chip ${category === name ? "chip-on" : "chip-off"}`}
             event={EVENTS.filter}
             params={{ filter_type: "category", filter_value: name }}
           >
-            {name}
+            {name === "전체" ? t.filterAll : name}
           </TrackedLink>
         ))}
       </div>
@@ -67,33 +71,33 @@ export default async function CategoryPage({ searchParams }: { searchParams: Sea
         {COUNTRY_FILTERS.map((name) => (
           <TrackedLink
             key={name}
-            href={chipHref({ category, country: name, juice: juiceOnly ? "true" : undefined })}
+            href={chipHref({ category, country: name, juice: juiceOnly ? "true" : undefined }, lang)}
             className={`chip ${country === name ? "chip-on" : "chip-off"}`}
             event={EVENTS.filter}
             params={{ filter_type: "country", filter_value: name }}
           >
-            {name}
+            {{ 전체: t.filterAll, 국내: t.filterDomestic, 해외: t.filterOverseas }[name] ?? name}
           </TrackedLink>
         ))}
         <div className="mx-1.5 h-5 w-px bg-line12" />
         <TrackedLink
-          href={chipHref({ category, country, juice: juiceParam })}
+          href={chipHref({ category, country, juice: juiceParam }, lang)}
           className={`chip ${juiceOnly ? "chip-juice-on" : "chip-off"}`}
           event={EVENTS.filter}
           params={{ filter_type: "juice", filter_value: juiceOnly ? "off" : "on" }}
         >
-          착즙만 보기
+          {t.juiceOnly}
         </TrackedLink>
       </div>
 
       {items.length > 0 ? (
         <div className="grid gap-[22px] [grid-template-columns:repeat(auto-fill,minmax(140px,1fr))] md:[grid-template-columns:repeat(auto-fill,minmax(170px,1fr))]">
           {items.map((item, index) => (
-            <ContentCard key={item.id} item={item} listName="카테고리 탐색" position={index + 1} />
+            <ContentCard key={item.id} item={item} listName="카테고리 탐색" position={index + 1} lang={lang} />
           ))}
         </div>
       ) : (
-        <div className="py-20 text-center text-sm text-fg45">조건에 맞는 작품이 없어요. 필터를 조정해보세요.</div>
+        <div className="py-20 text-center text-sm text-fg45">{t.emptyList}</div>
       )}
     </div>
   );

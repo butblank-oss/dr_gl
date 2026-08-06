@@ -3,12 +3,13 @@ import { ImageWithFallback } from "@/components/ImageWithFallback";
 import { EVENTS } from "@/lib/analytics";
 import { leadsText } from "@/lib/format";
 import type { ContentDTO } from "@/lib/types";
+import { dict, withLang, type Lang } from "@/lib/i18n";
 
 /** 포스터가 없을 때 쓰는 "포스터 준비중" 텍스트 타일 */
-function PosterPlaceholder({ item, leads }: { item: ContentDTO; leads: string }) {
+function PosterPlaceholder({ item, leads, lang }: { item: ContentDTO; leads: string; lang: Lang }) {
   return (
     <div className="poster-empty absolute inset-0 flex flex-col items-center justify-center gap-1.5 p-3.5 text-center">
-      <div className="text-[9px] font-semibold uppercase tracking-[1.2px] text-fg28">포스터 준비중</div>
+      <div className="text-[9px] font-semibold uppercase tracking-[1.2px] text-fg28">{dict(lang).cardNoPoster}</div>
       <div className="line-clamp-2-box text-[13px] font-bold leading-tight text-fg72">{item.title}</div>
       <div className="text-[10px] text-fg32">{leads}</div>
     </div>
@@ -24,20 +25,24 @@ export function ContentCard({
   item,
   listName,
   position,
+  lang = "ko",
 }: {
   item: ContentDTO;
+  /** 영어 화면에서 그린 카드는 영어 화면으로 이어져야 한다 */
+  lang?: Lang;
   /** 어느 목록에서 눌렀는지 (예: "이번 주 추천", "검색결과") */
   listName?: string;
   /** 목록 안에서 몇 번째였는지 (1부터) */
   position?: number;
 }) {
+  const t = dict(lang);
   const leads = leadsText(item.leads);
   const image = item.poster ? item.posterUrl : null;
-  const placeholder = <PosterPlaceholder item={item} leads={leads} />;
+  const placeholder = <PosterPlaceholder item={item} leads={leads} lang={lang} />;
 
   return (
     <TrackedLink
-      href={`/content/${item.id}`}
+      href={withLang(lang, `/content/${item.id}`)}
       className="group flex w-full flex-col gap-2.5 text-fg"
       event={EVENTS.selectContent}
       params={{
@@ -65,7 +70,7 @@ export function ContentCard({
           <span className="rounded-pill border border-line14 bg-[rgba(11,10,15,0.6)] px-2.5 py-[3px] text-[11px] font-semibold text-fg backdrop-blur-[4px]">
             {item.category}
           </span>
-          {item.juice ? <span className="badge-juice px-2.5 py-[3px] text-[11px]">착즙</span> : null}
+          {item.juice ? <span className="badge-juice px-2.5 py-[3px] text-[11px]">{t.juice}</span> : null}
         </div>
       </div>
       <div className="flex flex-col gap-[3px]">
@@ -74,7 +79,7 @@ export function ContentCard({
         <div className="truncate text-xs text-fg50">
           {item.year} · {item.creatorName}
         </div>
-        <div className="truncate text-[11px] text-fg40">출연 {leads}</div>
+        <div className="truncate text-[11px] text-fg40">{t.cardCast} {leads}</div>
       </div>
     </TrackedLink>
   );

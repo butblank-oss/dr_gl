@@ -47,5 +47,22 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.9,
   }));
 
-  return [...staticPages, ...categoryPages, ...contentPages];
+  const korean = [...staticPages, ...categoryPages, ...contentPages];
+
+  /*
+   * 영어판(/en)도 같은 목록으로 함께 알린다.
+   * alternates 로 "이 둘은 같은 페이지의 다른 언어"라고 짝지어 줘야
+   * 구글이 둘을 중복 문서로 보지 않고 검색하는 사람의 언어에 맞춰 골라 보여준다.
+   */
+  return korean.flatMap((entry) => {
+    // 홈(`.../`)은 `.../en/` 이 아니라 `.../en` 으로 맞춘다. 실제 주소와 같아야 짝이 성립한다.
+    const enUrl = entry.url === `${SITE_URL}/`
+      ? `${SITE_URL}/en`
+      : entry.url.replace(SITE_URL, `${SITE_URL}/en`);
+    const languages = { ko: entry.url, en: enUrl };
+    return [
+      { ...entry, alternates: { languages } },
+      { ...entry, url: enUrl, priority: (entry.priority ?? 0.5) * 0.9, alternates: { languages } },
+    ];
+  });
 }

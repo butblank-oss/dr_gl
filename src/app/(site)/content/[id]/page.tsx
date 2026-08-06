@@ -16,6 +16,8 @@ import {
   getVisibleComments,
 } from "@/lib/queries";
 import { absoluteUrl } from "@/lib/site";
+import { dict, withLang } from "@/lib/i18n";
+import { currentLang } from "@/lib/lang-server";
 
 export const dynamic = "force-dynamic";
 
@@ -27,6 +29,10 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
   if (!item) return { title: "Dr. GL" };
 
   const path = `/content/${item.id}`;
+  // canonical 은 "이 주소가 원본"이라는 선언이다. 영어판이 한국어를 가리키면
+  // 구글은 영어판을 중복으로 보고 아예 색인하지 않는다. 각자 자기 주소를 가리켜야 한다.
+  const lang = await currentLang();
+  const canonical = withLang(lang, path);
   const image = item.poster && item.posterUrl ? absoluteUrl(item.posterUrl) : undefined;
   // 검색 결과에 그대로 노출되는 문장. 작품만 보고도 무엇인지 알 수 있게 앞에 정보를 붙인다.
   const description =
@@ -43,7 +49,10 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
     title: `${displayTitle} (${item.year}) — 줄거리·출연·어디서 볼까`,
     description: watchAt ? `${description} 시청 가능한 곳: ${watchAt}.` : description,
     keywords: [item.title, ...(item.titleEn ? [item.titleEn] : []), ...item.leads, ...item.tags, item.category, "GL", "백합", "yuri"],
-    alternates: { canonical: path },
+    alternates: {
+      canonical,
+      languages: { ko: path, en: `/en${path}`, "x-default": path },
+    },
     openGraph: {
       type: "article",
       url: absoluteUrl(path),
@@ -67,6 +76,8 @@ export default async function ContentDetailPage({ params }: { params: Params }) 
   const item = await getContentById(id);
   if (!item) notFound();
 
+  const lang = await currentLang();
+  const t = dict(lang);
   const [related, byLead, comments] = await Promise.all([
     getRelatedByCategory(item),
     getRelatedByLead(item),
@@ -79,7 +90,7 @@ export default async function ContentDetailPage({ params }: { params: Params }) 
       <div className="page-shell flex items-center justify-between gap-3 pb-1 pt-5">
         <BackButton />
         <ShareButton
-          path={`/content/${item.id}`}
+          path={withLang(lang, `/content/${item.id}`)}
           title={item.title}
           contentId={item.id}
           campaign={`content_${item.id}`}
@@ -97,7 +108,7 @@ export default async function ContentDetailPage({ params }: { params: Params }) 
             <span className="rounded-pill border border-line16 bg-surface10 px-[11px] py-1 text-xs font-semibold text-fg">
               {item.category}
             </span>
-            {item.juice ? <span className="badge-juice px-[11px] py-1 text-xs">착즙</span> : null}
+            {item.juice ? <span className="badge-juice px-[11px] py-1 text-xs">{t.juice}</span> : null}
             <span className="text-xs text-fg55">
               {item.countryDetail} · {item.year}
             </span>
@@ -129,10 +140,10 @@ export default async function ContentDetailPage({ params }: { params: Params }) 
           id="watch"
           className="flex h-fit flex-col gap-3 lg:sticky lg:top-[88px] lg:col-start-2 lg:row-start-1 lg:gap-3.5 lg:rounded-2xl lg:border lg:border-line8 lg:bg-card lg:p-[22px]"
         >
-          <h2 className="text-base font-bold lg:text-[15px]">시청·감상 가능한 곳</h2>
+          <h2 className="text-base font-bold lg:text-[15px]">{t.watchAt}</h2>
           <div className="flex flex-wrap gap-2 lg:flex-col lg:gap-2.5">
             {item.platforms.length === 0 ? (
-              <div className="text-[13px] text-fg35">등록된 시청처가 아직 없어요.</div>
+              <div className="text-[13px] text-fg35">{t.noWatchAt}</div>
             ) : null}
             {item.platforms.map((platform, index) => {
               const inner = (
@@ -173,12 +184,12 @@ export default async function ContentDetailPage({ params }: { params: Params }) 
 
         <div className="flex flex-col gap-7 lg:col-start-1 lg:row-start-1">
           <section>
-            <h2 className="mb-2.5 text-base font-bold">줄거리</h2>
+            <h2 className="mb-2.5 text-base font-bold">{t.synopsis}</h2>
             <p className="text-[15px] leading-[1.75] text-fg72">{item.synopsis}</p>
           </section>
 
           <section>
-            <h2 className="mb-2.5 text-base font-bold">출연</h2>
+            <h2 className="mb-2.5 text-base font-bold">{t.cast}</h2>
             <div className="flex flex-wrap gap-2">
               {item.leads.map((name) => (
                 <span
@@ -192,7 +203,7 @@ export default async function ContentDetailPage({ params }: { params: Params }) 
           </section>
 
           <section>
-            <h2 className="mb-2.5 text-base font-bold">태그</h2>
+            <h2 className="mb-2.5 text-base font-bold">{t.tags}</h2>
             <div className="flex flex-wrap gap-2">
               {item.tags.map((tag) => (
                 <span key={tag} className="rounded-pill bg-surface6 px-3 py-1.5 text-xs text-fg70">
@@ -206,7 +217,7 @@ export default async function ContentDetailPage({ params }: { params: Params }) 
             한줄평이 추천 줄보다 위에 온다. 지금 보고 있는 작품에 대한 이야기가 먼저고,
             다른 작품으로 넘어가는 길은 그 뒤에 두는 편이 순서에 맞다.
           */}
-          <CommentSection itemId={item.id} initialComments={comments} />
+          <CommentSection itemId={item.id} initialComments={comments} lang={lang} />
 
           {/*
             추천 줄은 홈과 같은 가로 스크롤. 그리드로 깔면 모바일에서 카드가 화면 절반씩 차지해
@@ -214,12 +225,13 @@ export default async function ContentDetailPage({ params }: { params: Params }) 
           */}
           {related.length > 0 ? (
             <section>
-              <h2 className="mb-3.5 text-base font-bold">이런 작품은 어때요?</h2>
+              <h2 className="mb-3.5 text-base font-bold">{t.related}</h2>
               <div className="h-scroll flex gap-3.5 pb-1.5">
                 {related.map((entry, index) => (
                   <div key={entry.id} className="w-[112px] flex-none md:w-[144px]">
                     <ContentCard
                       item={entry}
+                      lang={lang}
                       listName="이런 작품은 어때요"
                       position={index + 1}
                     />
@@ -231,12 +243,13 @@ export default async function ContentDetailPage({ params }: { params: Params }) 
 
           {byLead.items.length > 0 ? (
             <section>
-              <h2 className="mb-3.5 text-base font-bold">{byLead.sharedLeadName}의 다른 작품</h2>
+              <h2 className="mb-3.5 text-base font-bold">{t.moreByLead(byLead.sharedLeadName)}</h2>
               <div className="h-scroll flex gap-3.5 pb-1.5">
                 {byLead.items.map((entry, index) => (
                   <div key={entry.id} className="w-[112px] flex-none md:w-[144px]">
                     <ContentCard
                       item={entry}
+                      lang={lang}
                       listName="배우의 다른 작품"
                       position={index + 1}
                     />

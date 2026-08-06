@@ -1,9 +1,11 @@
 import { ImageWithFallback } from "@/components/ImageWithFallback";
 import type { ContentDTO } from "@/lib/types";
+import { dict } from "@/lib/i18n";
+import { currentLang } from "@/lib/lang-server";
 
-const emptyBackdrop = (
+const emptyBackdrop = (label: string) => (
   <div className="banner-empty absolute inset-0 flex items-center justify-center">
-    <div className="text-[13px] font-semibold uppercase tracking-[2px] text-fg22">포스터 준비중</div>
+    <div className="text-[13px] font-semibold uppercase tracking-[2px] text-fg22">{label}</div>
   </div>
 );
 
@@ -18,8 +20,9 @@ const FADE_MASK = "linear-gradient(90deg, transparent 0%, rgba(0,0,0,0.45) 26%, 
  *   ② 오른쪽에 원래 비율 그대로 크게 놓은 포스터 — 가장자리를 서서히 지워 배경에 녹인다
  *   세로 이미지를 초광폭 배너에 그냥 object-cover 하면 얼굴 일부만 남기 때문에 이렇게 나눈다.
  */
-export function BannerBackdrop({ item }: { item: ContentDTO }) {
-  if (!item.poster) return emptyBackdrop;
+export async function BannerBackdrop({ item }: { item: ContentDTO }) {
+  const empty = emptyBackdrop(dict(await currentLang()).cardNoPoster);
+  if (!item.poster) return empty;
 
   if (item.backdropUrl) {
     return (
@@ -27,7 +30,7 @@ export function BannerBackdrop({ item }: { item: ContentDTO }) {
         src={item.backdropUrl}
         alt={`${item.title} 배경 이미지`}
         className="absolute inset-0 h-full w-full object-cover"
-        fallback={emptyBackdrop}
+        fallback={empty}
       />
     );
   }
@@ -43,7 +46,7 @@ export function BannerBackdrop({ item }: { item: ContentDTO }) {
           src={item.posterUrl}
           alt=""
           className="absolute inset-0 h-full w-full scale-125 object-cover object-top opacity-95 blur-[22px] saturate-125 sm:opacity-70 sm:blur-[36px]"
-          fallback={emptyBackdrop}
+          fallback={empty}
         />
         {/* 좁은 화면에서는 글자와 겹치므로 더 옅게 깐다 */}
         <div
@@ -62,7 +65,7 @@ export function BannerBackdrop({ item }: { item: ContentDTO }) {
     );
   }
 
-  return emptyBackdrop;
+  return empty;
 }
 
 /**
