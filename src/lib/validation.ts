@@ -90,6 +90,11 @@ export const categoryCreateSchema = z.object({
   name: z.string().trim().min(1, "카테고리 이름을 입력해주세요.").max(30),
 });
 
+/** 드래그로 바뀐 카테고리 순서 — 화면에 보이는 전부를 순서대로 보낸다. */
+export const categoryOrderSchema = z.object({
+  ids: z.array(z.coerce.number().int().positive()).min(1, "순서를 바꿀 카테고리가 없어요."),
+});
+
 export const categoryUpdateSchema = z.object({
   name: z.string().trim().min(1, "카테고리 이름을 입력해주세요.").max(30).optional(),
   sortOrder: z.coerce.number().int().optional(),
