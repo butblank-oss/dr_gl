@@ -40,6 +40,7 @@ export function withLang(lang: Lang, path: string): string {
 const KO = {
   navHome: "홈",
   navCategory: "카테고리",
+  navSearch: "검색",
   navBoard: "게시판",
   navBoardBadge: "OPEN 예정",
   searchPlaceholder: "작품, 감독, 작가로 검색",
@@ -82,6 +83,8 @@ const KO = {
   searchLead: "작품 제목, 감독·작가, 출연, 태그로 찾을 수 있어요.",
   searchEmptyQuery: "검색어를 입력해보세요.",
   searchNoResult: (q: string) => `"${q}"에 대한 결과가 없어요.`,
+  searchSuggestSubmit: "찾으시는 작품이 아직 없나요? 알려주시면 등록할게요.",
+  searchSubmitCta: "이 작품 제보하기",
   searchCount: (n: number) => `${n}개의 작품을 찾았어요.`,
 
   comments: "한줄평",
@@ -111,6 +114,7 @@ type Dict = typeof KO;
 const EN: Dict = {
   navHome: "Home",
   navCategory: "Browse",
+  navSearch: "Search",
   navBoard: "Community",
   navBoardBadge: "COMING SOON",
   searchPlaceholder: "Search titles, directors, authors",
@@ -153,6 +157,8 @@ const EN: Dict = {
   searchLead: "Search by title, director, author, cast or tag.",
   searchEmptyQuery: "Type something to search.",
   searchNoResult: (q: string) => `No results for "${q}".`,
+  searchSuggestSubmit: "Not here yet? Tell us and we will add it.",
+  searchSubmitCta: "Submit this title",
   searchCount: (n: number) => `${n} title${n === 1 ? "" : "s"} found.`,
 
   comments: "Reviews",

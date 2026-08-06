@@ -2,18 +2,18 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { TrackedButton, TrackedExternalLink, TrackedLink } from "@/components/analytics/TrackedLink";
+import { TrackedButton, TrackedLink } from "@/components/analytics/TrackedLink";
 import { CheckIcon, SpinnerIcon } from "@/components/icons";
 import { EVENTS, track } from "@/lib/analytics";
-import { COUNTRIES } from "@/lib/types";
+import { COUNTRIES, PLATFORM_OTHER, SUBMIT_PLATFORMS } from "@/lib/types";
 
 /** 중복 안내에 쓰는 최소 정보 — /api/content/duplicate 응답과 같다. */
 type DuplicateMatch = { id: number; title: string; category: string; year: number };
 
 type Props = { categories: string[] };
 
-const emptyForm = (firstCategory: string) => ({
-  title: "",
+const emptyForm = (firstCategory: string, title = "") => ({
+  title,
   category: firstCategory,
   country: "국내" as (typeof COUNTRIES)[number],
   juice: false,
@@ -27,7 +27,13 @@ export function SubmitForm({ categories }: Props) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const firstCategory = categories[0] ?? "";
-  const [form, setForm] = useState(emptyForm(firstCategory));
+  // 검색해도 없던 작품이면 그 검색어를 제목에 미리 채워 준다. 두 번 적게 하지 않는다.
+  const [form, setForm] = useState(() =>
+    emptyForm(firstCategory, searchParams.get("title") ?? ""),
+  );
+  // 드롭다운에서 고른 값과, '기타'일 때 직접 적은 값을 따로 들고 있는다.
+  const [platformChoice, setPlatformChoice] = useState("");
+  const [platformOther, setPlatformOther] = useState("");
   const [error, setError] = useState("");
   const [pending, setPending] = useState(false);
 
@@ -73,13 +79,18 @@ export function SubmitForm({ categories }: Props) {
 
   const reset = () => {
     setForm(emptyForm(firstCategory));
+    setPlatformChoice("");
+    setPlatformOther("");
     setError("");
     router.replace("/submit");
   };
 
+  const platformValue =
+    platformChoice === PLATFORM_OTHER ? platformOther.trim() : platformChoice;
+
   const submit = async () => {
-    if (!form.title.trim() || !form.url.trim()) {
-      setError("제목과 링크는 꼭 입력해주세요.");
+    if (!form.title.trim()) {
+      setError("작품 제목은 꼭 입력해주세요. 나머지는 모르시면 비워두셔도 됩니다.");
       track(EVENTS.submitError, { reason: "필수값 누락" });
       return;
     }
@@ -89,7 +100,7 @@ export function SubmitForm({ categories }: Props) {
       const res = await fetch("/api/submissions", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify({ ...form, platform: platformValue }),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -101,7 +112,7 @@ export function SubmitForm({ categories }: Props) {
         submit_category: form.category,
         submit_country: form.country,
         juice: form.juice,
-        has_platform: Boolean(form.platform.trim()),
+        has_platform: Boolean(platformValue),
         has_contact: Boolean(form.contact.trim()),
       });
       router.replace("/submit?done=1");
@@ -153,11 +164,15 @@ export function SubmitForm({ categories }: Props) {
         <div className="mb-2 text-[26px] font-extrabold">콘텐츠 제보하기</div>
         <div className="text-sm leading-relaxed text-fg55">
           놓치기 아까운 작품이 있다면 알려주세요. 제보된 콘텐츠는 운영팀 검토 후 목록에 등록돼요.
+          <br />
+          <strong className="text-fg70">작품 제목만 있으면 됩니다.</strong> 나머지는 모르시면 비워두세요.
         </div>
       </div>
 
       <label className="flex flex-col gap-2">
-        <span className="text-[13px] font-semibold text-fg75">작품 제목</span>
+        <span className="text-[13px] font-semibold text-fg75">
+          작품 제목 <span className="text-danger">*</span>
+        </span>
         <input
           value={form.title}
           onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
@@ -235,18 +250,44 @@ export function SubmitForm({ categories }: Props) {
 
       <label className="flex flex-col gap-2">
         <span className="text-[13px] font-semibold text-fg75">
-          어디서 볼 수 있나요? <span className="font-normal text-fg40">(플랫폼 이름)</span>
+          어디서 볼 수 있나요? <span className="font-normal text-fg40">(선택)</span>
         </span>
-        <input
-          value={form.platform}
-          onChange={(e) => setForm((f) => ({ ...f, platform: e.target.value }))}
-          placeholder="예: 왓챠, 네이버웹툰, 카카오페이지"
-          className="field h-11 px-3.5 text-sm"
-        />
+        <select
+          value={platformChoice}
+          onChange={(e) => setPlatformChoice(e.target.value)}
+          className="field h-11 px-3 text-sm"
+        >
+          <option value="">모르겠어요 · 선택 안 함</option>
+          {SUBMIT_PLATFORMS.map((group) => (
+            <optgroup key={group.group} label={group.group}>
+              {group.names.map((name) => (
+                <option key={name} value={name}>
+                  {name}
+                </option>
+              ))}
+            </optgroup>
+          ))}
+          <option value={PLATFORM_OTHER}>{PLATFORM_OTHER} (직접 입력)</option>
+        </select>
+        {platformChoice === PLATFORM_OTHER ? (
+          <input
+            value={platformOther}
+            onChange={(e) => setPlatformOther(e.target.value)}
+            placeholder="플랫폼 이름을 적어주세요"
+            autoFocus
+            className="field h-11 px-3.5 text-sm"
+          />
+        ) : null}
+        <span className="text-xs leading-relaxed text-fg40">
+          <strong className="text-fg60">모르시면 비워두세요.</strong> 확실하지 않은 정보를 적는 것보다,
+          비워두시면 저희가 확인해서 채워 넣습니다.
+        </span>
       </label>
 
       <label className="flex flex-col gap-2">
-        <span className="text-[13px] font-semibold text-fg75">시청/감상 링크</span>
+        <span className="text-[13px] font-semibold text-fg75">
+          시청 · 감상 링크 <span className="font-normal text-fg40">(선택)</span>
+        </span>
         <input
           value={form.url}
           onChange={(e) => setForm((f) => ({ ...f, url: e.target.value }))}
@@ -254,16 +295,8 @@ export function SubmitForm({ categories }: Props) {
           className="field h-11 px-3.5 text-sm"
         />
         <span className="text-xs leading-relaxed text-fg40">
-          공식 링크가 없다면 구글 드라이브에 자료를 올리고 폴더 링크를 붙여넣어도 돼요.{" "}
-          <TrackedExternalLink
-            href="https://drive.google.com"
-            target="_blank"
-            rel="noreferrer"
-            event={EVENTS.nav}
-            params={{ label: "구글 드라이브 열기", nav_source: "제보 폼" }}
-          >
-            구글 드라이브 열기 →
-          </TrackedExternalLink>
+          <strong className="text-fg60">모르시면 비워두세요.</strong> 작품 제목만 있어도 제보할 수 있어요 —
+          어디서 볼 수 있는지는 저희가 찾아서 채웁니다.
         </span>
       </label>
 

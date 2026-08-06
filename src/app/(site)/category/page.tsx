@@ -2,6 +2,7 @@ import { TrackedLink } from "@/components/analytics/TrackedLink";
 import { EVENTS } from "@/lib/analytics";
 import type { Metadata } from "next";
 import { ContentCard } from "@/components/site/ContentCard";
+import { SearchBar } from "@/components/site/SearchBar";
 import { ContentListJsonLd } from "@/components/site/JsonLd";
 import { getCategories, getFilteredContents } from "@/lib/queries";
 import { dict, withLang, type Lang } from "@/lib/i18n";
@@ -51,7 +52,10 @@ export default async function CategoryPage({ searchParams }: { searchParams: Sea
         path="/category"
       />
       <h1 className="mb-1.5 text-[28px] font-extrabold">{t.categoryTitle}</h1>
-      <p className="mb-7 text-sm text-fg55">{t.categoryLead}</p>
+      <p className="mb-5 text-sm text-fg55">{t.categoryLead}</p>
+      <div className="mb-7">
+        <SearchBar />
+      </div>
 
       <div className="mb-3.5 flex flex-wrap gap-2">
         {["전체", ...categories.map((c) => c.name)].map((name) => (

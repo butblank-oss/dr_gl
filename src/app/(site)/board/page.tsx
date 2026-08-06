@@ -42,8 +42,11 @@ export default function BoardPage() {
         <ChatIcon className="text-accent" />
       </div>
       <div className="text-[26px] font-extrabold">게시판, 곧 열립니다</div>
-      <div className="max-w-[420px] text-sm leading-[1.65] text-fg55">
-        회원들과 작품 취향을 나누고, 후기와 추천을 주고받는 공간을 준비하고 있어요.
+      {/* 한 문장을 폭에 맡기면 "있어\n요." 처럼 어색하게 끊긴다. 끊을 자리를 직접 정한다. */}
+      <div className="text-sm leading-[1.7] text-fg55">
+        회원들과 작품 취향을 나누고,
+        <br />
+        후기와 추천을 주고받는 공간을 준비하고 있어요.
       </div>
       <div className="pointer-events-none flex flex-wrap justify-center gap-2.5 opacity-40">
         {PREVIEW_CATEGORIES.map((name) => (
@@ -59,7 +62,7 @@ export default function BoardPage() {
         </div>
       ) : (
         <>
-          <div className="mt-1.5 flex gap-2.5">
+          <div className="mt-1.5 flex w-full max-w-[420px] flex-col gap-2.5 sm:flex-row">
             <input
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -68,9 +71,14 @@ export default function BoardPage() {
               }}
               placeholder="이메일 주소"
               aria-label="오픈 알림 받을 이메일"
-              className="field h-11 w-[220px] px-4 text-[13px]"
+              className="field h-11 min-w-0 flex-1 px-4 text-[13px]"
             />
-            <button type="button" onClick={submit} disabled={pending} className="btn-grad h-11 px-5 text-sm">
+            <button
+              type="button"
+              onClick={submit}
+              disabled={pending}
+              className="btn-grad h-11 flex-none whitespace-nowrap px-5 text-sm"
+            >
               {pending ? <SpinnerIcon /> : "오픈 알림 받기"}
             </button>
           </div>

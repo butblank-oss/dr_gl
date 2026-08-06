@@ -132,6 +132,48 @@ export type SessionUser = {
   role: AdminRole;
 };
 
+/**
+ * 제보 폼의 플랫폼 선택지.
+ * 자주 들어오는 곳을 골라 두면 오타와 표기 흔들림("왓차"·"WATCHA")이 줄어 중복 판정도 정확해진다.
+ * 목록에 없으면 '기타'를 골라 직접 적는다.
+ */
+export const SUBMIT_PLATFORMS = [
+  {
+    group: "영상",
+    names: [
+      "넷플릭스",
+      "왓챠",
+      "웨이브",
+      "티빙",
+      "쿠팡플레이",
+      "디즈니+",
+      "애플TV",
+      "프라임비디오",
+      "라프텔",
+      "유튜브",
+    ],
+  },
+  {
+    group: "웹툰 · 웹소설 · 만화",
+    names: [
+      "네이버웹툰",
+      "네이버시리즈",
+      "카카오페이지",
+      "카카오웹툰",
+      "리디",
+      "레진코믹스",
+      "봄툰",
+      "탑툰",
+      "조아라",
+      "문피아",
+    ],
+  },
+  { group: "그 밖에", names: ["교보문고", "알라딘", "밀리의 서재"] },
+] as const;
+
+/** 목록에 없는 곳을 직접 적을 때 고르는 값 */
+export const PLATFORM_OTHER = "기타";
+
 /** 제보 상태 <-> 어드민 필터 탭 라벨 */
 export const SUBMISSION_FILTER_LABELS = ["대기중", "승인됨", "반려됨", "전체"] as const;
 export const SUBMISSION_STATUS_TEXT: Record<SubmissionStatus, string> = {

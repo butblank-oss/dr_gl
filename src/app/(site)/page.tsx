@@ -5,6 +5,7 @@ import { BannerBackdrop, PosterCard } from "@/components/site/Banner";
 import { ContentCard } from "@/components/site/ContentCard";
 import { SiteJsonLd } from "@/components/site/JsonLd";
 import { ShareButton } from "@/components/site/ShareButton";
+import { SearchBar } from "@/components/site/SearchBar";
 import { getFeaturedContent, getHomeRows } from "@/lib/queries";
 import { dict, withLang } from "@/lib/i18n";
 import { currentLang } from "@/lib/lang-server";
@@ -86,7 +87,9 @@ export default async function HomePage({
         </div>
       </section>
 
-      <div className="page-shell flex flex-col gap-9 pb-15 pt-10">
+      <div className="page-shell flex flex-col gap-9 pb-15 pt-8">
+        {/* 헤더에서 뺀 검색·제보를 작품 목록 바로 위에 둔다 */}
+        <SearchBar />
         {rows.map((row) => (
           <section key={row.id} className="flex flex-col gap-4">
             <h2 className="text-[19px] font-bold text-fg">{row.title}</h2>

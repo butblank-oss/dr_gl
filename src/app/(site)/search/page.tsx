@@ -3,6 +3,7 @@ import { TrackedLink } from "@/components/analytics/TrackedLink";
 import { EVENTS } from "@/lib/analytics";
 import { ContentCard } from "@/components/site/ContentCard";
 import { SearchTracker } from "@/components/site/SearchTracker";
+import { SearchBar } from "@/components/site/SearchBar";
 import { searchContents } from "@/lib/queries";
 import { dict, withLang } from "@/lib/i18n";
 import { currentLang } from "@/lib/lang-server";
@@ -30,6 +31,10 @@ export default async function SearchPage({
   return (
     <div className="page-shell py-10">
       <SearchTracker query={query} results={results.length} />
+      {/* 헤더에 검색창이 없으니 이 화면에서는 맨 위에 둔다 */}
+      <div className="mb-7">
+        <SearchBar initialQuery={query} />
+      </div>
       {query ? (
         <>
           <div className="mb-5 text-[15px] text-fg60">
@@ -42,8 +47,18 @@ export default async function SearchPage({
               ))}
             </div>
           ) : (
-            <div className="py-20 text-center text-sm text-fg45">
-              {t.searchNoResult(query)}
+            <div className="flex flex-col items-center gap-4 py-20 text-center">
+              <div className="text-sm text-fg45">{t.searchNoResult(query)}</div>
+              <div className="text-[13px] text-fg35">{t.searchSuggestSubmit}</div>
+              {/* 찾다가 없으면 그 자리에서 제보로 이어지게 한다 — 검색어를 제목으로 미리 채워서 */}
+              <TrackedLink
+                href={withLang(lang, `/submit?title=${encodeURIComponent(query)}`)}
+                className="btn-grad px-[22px] py-3 text-sm"
+                event={EVENTS.nav}
+                params={{ label: "검색 결과 없음에서 제보", nav_to: "/submit", nav_source: "검색 결과 없음", search_term: query }}
+              >
+                {t.searchSubmitCta}
+              </TrackedLink>
             </div>
           )}
         </>

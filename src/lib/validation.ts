@@ -63,16 +63,20 @@ export const contentWithRowsSchema = contentInputSchema.extend({
 });
 
 export const submissionInputSchema = z.object({
-  title: z.string().trim().min(1, "제목과 링크는 꼭 입력해주세요."),
+  title: z.string().trim().min(1, "작품 제목은 꼭 입력해주세요."),
   category: z.string().trim().min(1, "형식을 선택해주세요."),
   country: z.enum(COUNTRIES).default("국내"),
   juice: z.boolean().default(false),
   platform: z.string().trim().max(40).default(""),
+  // 링크는 선택. 모르면 비워두는 편이 낫다 — 틀린 링크가 없느니만 못하다.
   url: z
     .string()
     .trim()
-    .min(1, "제목과 링크는 꼭 입력해주세요.")
-    .refine((v) => /^https?:\/\//i.test(v), "시청/감상 링크는 http(s):// 로 시작해야 해요."),
+    .refine(
+      (v) => v === "" || /^https?:\/\//i.test(v),
+      "링크를 넣으실 거면 http(s):// 로 시작해야 해요. 모르시면 비워두세요.",
+    )
+    .default(""),
   note: z.string().trim().max(2000).default(""),
   contact: z
     .string()
