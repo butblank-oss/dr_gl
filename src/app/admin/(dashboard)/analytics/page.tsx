@@ -44,7 +44,7 @@ const TAB_REPORTS: Record<TabKey, string[]> = {
     "sharedContents",
     "shareVisits",
   ],
-  audience: ["countries", "channels", "devices", "visitors", "weekdays", "hours"],
+  audience: ["countries", "channels", "sources", "devices", "visitors", "weekdays", "hours"],
   behavior: ["events", "buttons", "filters", "scrolls", "submitCategories"],
   settings: [],
 };
@@ -489,6 +489,14 @@ export default async function AdminAnalyticsPage({ searchParams }: { searchParam
       orderBys: top("sessions"),
       limit: 8,
     },
+    // 채널은 "Referral"까지만 알려준다. 어느 사이트에서 왔는지는 이 표에서 본다.
+    sources: {
+      dateRanges,
+      dimensions: [{ name: "sessionSourceMedium" }],
+      metrics: [{ name: "sessions" }],
+      orderBys: top("sessions"),
+      limit: 12,
+    },
     devices: {
       dateRanges,
       dimensions: [{ name: "deviceCategory" }],
@@ -849,8 +857,16 @@ export default async function AdminAnalyticsPage({ searchParams }: { searchParam
         />
         <Table
           title="유입 경로"
+          hint="Direct = 주소 직접 입력·즐겨찾기·앱 안에서 열기 / Referral = 다른 사이트의 링크 / Organic Search = 검색 결과"
           columns={["경로", "방문"]}
           rows={simpleRows(rows("channels"))}
+          empty="아직 데이터가 없어요."
+        />
+        <Table
+          title="어느 사이트에서 왔나"
+          hint="'출처 / 매체' 형식이에요. (direct)/(none)은 출처가 안 남은 방문, drgl_share는 공유 버튼으로 나간 링크예요"
+          columns={["출처 / 매체", "방문"]}
+          rows={simpleRows(rows("sources"))}
           empty="아직 데이터가 없어요."
         />
         <Table

@@ -5,6 +5,12 @@ import { EVENTS, track } from "@/lib/analytics";
 
 /** 공유 링크에 붙이는 표시 — 이 링크로 들어온 방문을 유입 경로에서 구분할 수 있게 한다. */
 const SHARE_SOURCE = "drgl_share";
+/**
+ * GA4 는 매체 이름이 자기가 아는 목록에 없으면 그 방문을 통째로 "Unassigned" 로 던져버린다.
+ * 처음에 쓰던 "link" 가 딱 그랬다 — 공유로 들어온 방문이 유입 경로에서 정체불명으로 쌓였다.
+ * "social" 은 GA4 가 아는 이름이라 Organic Social 로 분류된다. 공유는 대부분 메신저·SNS를 타니 실제와도 맞다.
+ */
+const SHARE_MEDIUM = "social";
 
 type Props = {
   /** 공유할 사이트 내 주소 (예: /content/12) */
@@ -37,7 +43,7 @@ export function ShareButton({ path, title, contentId, campaign, className }: Pro
   const share = async () => {
     const url = new URL(path, window.location.origin);
     url.searchParams.set("utm_source", SHARE_SOURCE);
-    url.searchParams.set("utm_medium", "link");
+    url.searchParams.set("utm_medium", SHARE_MEDIUM);
     url.searchParams.set("utm_campaign", campaign);
     const shareUrl = url.toString();
 
