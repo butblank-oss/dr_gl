@@ -34,6 +34,7 @@ const currentYear = new Date().getFullYear();
 
 export const contentInputSchema = z.object({
   title: z.string().trim().min(1, "제목과 카테고리는 필수예요."),
+  titleEn: z.string().trim().max(200).default(""),
   category: z.string().trim().min(1, "제목과 카테고리는 필수예요."),
   country: z.enum(COUNTRIES).default("국내"),
   countryDetail: z.string().trim().default(""),

@@ -87,6 +87,8 @@ export function ContentJsonLd({ item }: { item: ContentDTO }) {
     "@type": type,
     "@id": `${url}#work`,
     name: item.title,
+    // 구글에 "이 작품은 이 이름으로도 불린다"고 알려준다 — 영어 제목으로 검색해도 걸리도록.
+    alternateName: item.titleEn && item.titleEn !== item.title ? item.titleEn : undefined,
     url,
     description: item.synopsis || undefined,
     image,

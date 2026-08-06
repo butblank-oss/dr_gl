@@ -22,6 +22,7 @@ export type ContentDraft = {
   sourceUrl: string;
   sourceContact: string;
   title: string;
+  titleEn: string;
   category: string;
   country: Country;
   countryDetail: string;
@@ -47,6 +48,7 @@ export function makeAddDraft(categories: string[]): ContentDraft {
     sourceUrl: "",
     sourceContact: "",
     title: "",
+    titleEn: "",
     category: categories[0] ?? "",
     country: "국내",
     countryDetail: "한국",
@@ -71,6 +73,7 @@ export function makeEditDraft(item: ContentDTO): ContentDraft {
     sourceUrl: "",
     sourceContact: "",
     title: item.title,
+    titleEn: item.titleEn,
     category: item.category,
     country: (item.country === "해외" ? "해외" : "국내") as Country,
     countryDetail: item.countryDetail,
@@ -100,6 +103,7 @@ export function makeSubmissionDraft(submission: SubmissionDTO, categories: strin
     sourceUrl: submission.url,
     sourceContact: submission.contact,
     title: submission.title,
+    titleEn: "",
     category: categories.includes(submission.category) ? submission.category : (categories[0] ?? ""),
     country: (submission.country === "해외" ? "해외" : "국내") as Country,
     countryDetail: submission.country === "국내" ? "한국" : "",
@@ -191,6 +195,7 @@ export function ContentModal({ draft: initial, categories, onClose, onSaved }: P
 
     const payload = {
       title: draft.title.trim(),
+      titleEn: draft.titleEn.trim(),
       category: draft.category,
       country: draft.country,
       countryDetail: draft.countryDetail,
@@ -251,6 +256,20 @@ export function ContentModal({ draft: initial, categories, onClose, onSaved }: P
           <input
             value={draft.title}
             onChange={(e) => patch({ title: e.target.value })}
+            className="field h-[42px] px-[13px] text-[13px]"
+          />
+        </label>
+
+        <label className="flex flex-col gap-[7px]">
+          <span className="text-xs font-semibold text-fg70">영어 제목 (선택)</span>
+          <span className="text-[11px] text-fg40">
+            해외에서 검색해 들어올 수 있게 하는 칸이에요. 제목 칸에 괄호로 같이 적지 말고 여기에
+            따로 넣어주세요. 카드에는 한국어 제목만 보이고, 검색엔진에는 둘 다 알려줍니다.
+          </span>
+          <input
+            value={draft.titleEn}
+            onChange={(e) => patch({ titleEn: e.target.value })}
+            placeholder="The Handmaiden"
             className="field h-[42px] px-[13px] text-[13px]"
           />
         </label>

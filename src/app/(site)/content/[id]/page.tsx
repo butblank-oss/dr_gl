@@ -35,21 +35,25 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
     (item.synopsis ? ` — ${item.synopsis}` : "");
   const watchAt = item.platforms.map((platform) => platform.name).join(", ");
 
+  // 영어 제목을 따로 두게 되면서, 검색 결과에 보이는 문장에는 다시 합쳐서 넣는다.
+  // 카드에는 한국어만 보이되 구글에는 두 이름 모두 알려주려는 것.
+  const displayTitle = item.titleEn ? `${item.title} (${item.titleEn})` : item.title;
+
   return {
-    title: `${item.title} (${item.year}) — 줄거리·출연·어디서 볼까`,
+    title: `${displayTitle} (${item.year}) — 줄거리·출연·어디서 볼까`,
     description: watchAt ? `${description} 시청 가능한 곳: ${watchAt}.` : description,
-    keywords: [item.title, ...item.leads, ...item.tags, item.category, "GL", "백합", "yuri"],
+    keywords: [item.title, ...(item.titleEn ? [item.titleEn] : []), ...item.leads, ...item.tags, item.category, "GL", "백합", "yuri"],
     alternates: { canonical: path },
     openGraph: {
       type: "article",
       url: absoluteUrl(path),
-      title: `${item.title} · Dr. GL`,
+      title: `${displayTitle} · Dr. GL`,
       description,
       images: image ? [{ url: image, alt: `${item.title} 포스터` }] : undefined,
     },
     twitter: {
       card: image ? "summary_large_image" : "summary",
-      title: `${item.title} · Dr. GL`,
+      title: `${displayTitle} · Dr. GL`,
       description,
       images: image ? [image] : undefined,
     },
@@ -99,6 +103,9 @@ export default async function ContentDetailPage({ params }: { params: Params }) 
             </span>
           </div>
           <h1 className="text-[26px] font-extrabold tracking-[-0.5px] md:text-[38px]">{item.title}</h1>
+          {item.titleEn && item.titleEn !== item.title ? (
+            <div className="-mt-1.5 text-[15px] font-semibold text-fg50">{item.titleEn}</div>
+          ) : null}
           <div className="text-[13px] text-fg60">
             {item.creatorLabel} {item.creatorName}
           </div>

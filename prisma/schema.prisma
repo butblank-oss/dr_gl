@@ -18,6 +18,8 @@ datasource db {
 model Content {
   id            Int      @id @default(autoincrement())
   title         String
+  /// 영어(원어) 제목. 해외 검색 유입과 영어 화면에 쓴다. 없으면 빈 문자열.
+  titleEn       String   @default("")
   /// 카테고리 관리에서 정의한 값 중 하나 (Category.name)
   category      String
   /// '국내' | '해외'

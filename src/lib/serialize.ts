@@ -35,6 +35,7 @@ export function serializeContent(row: ContentRow): ContentDTO {
   return {
     id: row.id,
     title: row.title,
+    titleEn: row.titleEn,
     category: row.category,
     country: row.country,
     countryDetail: row.countryDetail,

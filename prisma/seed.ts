@@ -2,6 +2,7 @@
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import { LEGAL_DOCUMENTS, LEGAL_REVISIONS } from "./legal-seed";
+import { splitBilingualTitle } from "../src/lib/title";
 
 const prisma = new PrismaClient();
 
@@ -170,9 +171,33 @@ async function ensureLegalRevisions() {
   }
 }
 
+/**
+ * 제목 한 칸에 "한국어 (English)" 로 같이 적어 둔 작품들을 두 칸으로 나눈다.
+ * 이미 영어 제목이 채워진 행은 건드리지 않으므로, 배포 때마다 돌아도 안전하다.
+ */
+async function backfillTitleEn() {
+  const rows = await prisma.content.findMany({
+    where: { titleEn: "" },
+    select: { id: true, title: true },
+  });
+
+  let moved = 0;
+  for (const row of rows) {
+    const split = splitBilingualTitle(row.title);
+    if (!split.titleEn) continue;
+    await prisma.content.update({
+      where: { id: row.id },
+      data: { title: split.title, titleEn: split.titleEn },
+    });
+    moved += 1;
+  }
+  if (moved > 0) console.log(`· 영어 제목 ${moved}건을 별도 칸으로 옮겼습니다.`);
+}
+
 async function main() {
   await ensureLegalDocuments();
   await ensureLegalRevisions();
+  await backfillTitleEn();
 
   // 이미 운영 중인 DB에 배포할 때마다 시드가 덮어쓰지 않도록,
   // 콘텐츠가 하나라도 있으면 데모 데이터 시드는 건너뛴다.

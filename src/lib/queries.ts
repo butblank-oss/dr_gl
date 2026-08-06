@@ -56,6 +56,7 @@ export async function searchContents(rawQuery: string): Promise<ContentDTO[]> {
     where: {
       OR: [
         { title: { contains: q, mode: "insensitive" } },
+        { titleEn: { contains: q, mode: "insensitive" } },
         { creatorName: { contains: q, mode: "insensitive" } },
         { category: { contains: q, mode: "insensitive" } },
         { tags: { has: q } },

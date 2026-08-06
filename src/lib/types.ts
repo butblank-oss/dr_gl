@@ -25,6 +25,8 @@ export type Platform = {
 export type ContentDTO = {
   id: number;
   title: string;
+  /** 영어(원어) 제목. 해외 검색·영어 화면용. 없으면 빈 문자열. */
+  titleEn: string;
   category: string;
   country: string;
   countryDetail: string;
