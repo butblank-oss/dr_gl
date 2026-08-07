@@ -5,6 +5,7 @@ import { SpinnerIcon } from "@/components/icons";
 import { ImageUrlField } from "@/components/admin/ImageUrlField";
 import { ApiError, api } from "@/lib/client-api";
 import { COUNTRIES, CREATOR_LABELS } from "@/lib/types";
+import { toDraft, type ResearchDraft } from "@/lib/research";
 import type {
   ContentDTO,
   Country,
@@ -95,34 +96,70 @@ export function makeEditDraft(item: ContentDTO): ContentDraft {
   };
 }
 
-/** 제보 데이터를 미리 채운 초안 — 콘텐츠 추가/수정과 완전히 동일한 폼을 쓴다. */
+/** "2024 (06.09~09.01)" 같은 값에서 연도만 뽑는다. */
+function yearOf(raw: string, fallback: number): string {
+  const matched = /(19|20)\d{2}/.exec(raw);
+  return matched ? matched[0] : String(fallback);
+}
+
+/** "감독 폰 까니타 / GMMTV" 처럼 슬래시로 이어진 값에서 첫 사람만 쓴다. */
+function creatorOf(raw: string): string {
+  return (raw.split("/")[0] ?? "").trim();
+}
+
+/**
+ * 제보 데이터를 미리 채운 초안 — 콘텐츠 추가/수정과 완전히 동일한 폼을 쓴다.
+ * 조사 초안(research)이 있으면 그쪽 값을 우선한다. 제보 원문은 조사로 확인된 값의 대체재일 뿐이다.
+ */
 export function makeSubmissionDraft(submission: SubmissionDTO, categories: string[]): ContentDraft {
+  const r: ResearchDraft = toDraft(submission.research);
+  const thisYear = new Date().getFullYear();
+  const platformNames = r.platforms
+    .split(/[,·]/)
+    .map((x) => x.trim())
+    .filter(Boolean);
+  // "넷플릭스 - https://..." 형태를 이름과 주소로 가른다.
+  const linked = r.links
+    .split(/\r?\n/)
+    .map((line) => /^\s*(.+?)\s*[-–]\s*(https?:\/\/\S+)\s*$/.exec(line))
+    .filter((m): m is RegExpExecArray => Boolean(m))
+    .map((m) => ({ name: m[1].trim(), url: m[2].trim() }));
+  const platforms: PlatformDraft[] = linked.length
+    ? linked
+    : platformNames.map((name) => ({ name, url: "" }));
+  if (!platforms.length && submission.url) {
+    platforms.push({ name: submission.platform?.trim() || "제보된 링크", url: submission.url });
+  }
+
+  const category = r.category && categories.includes(r.category)
+    ? r.category
+    : categories.includes(submission.category)
+      ? submission.category
+      : (categories[0] ?? "");
+
   return {
     id: null,
     sourceSubmissionId: submission.id,
     sourceUrl: submission.url,
     sourceContact: submission.contact,
-    title: submission.title,
-    titleEn: "",
-    category: categories.includes(submission.category) ? submission.category : (categories[0] ?? ""),
-    country: (submission.country === "해외" ? "해외" : "국내") as Country,
-    countryDetail: submission.country === "국내" ? "한국" : "",
-    year: String(new Date().getFullYear()),
+    title: r.titleKo.trim() || submission.title,
+    titleEn: r.titleEn.trim(),
+    category,
+    country: ((r.country || submission.country) === "해외" ? "해외" : "국내") as Country,
+    countryDetail: r.countryDetail.trim() || (submission.country === "국내" ? "한국" : ""),
+    year: yearOf(r.year, thisYear),
     creatorLabel: "감독",
-    creatorName: "",
-    leadsInput: "",
-    tagsInput: "",
-    juice: submission.juice,
-    // 발행 전에 썸네일을 넣을 수 있도록 업로드 칸을 처음부터 열어둔다.
+    creatorName: creatorOf(r.creator),
+    leadsInput: r.leads.trim(),
+    tagsInput: r.tags.trim(),
+    // 층위가 "착즙"이면 착즙 토글을 켠다. 본편·부분 서사는 지금 데이터 모델에 자리가 없다.
+    juice: r.glLayer.includes("착즙") || submission.juice,
+    // 발행 전에 썸네일을 넣을 수 있도록 주소 칸을 처음부터 열어둔다.
     poster: true,
-    posterUrl: null,
+    posterUrl: r.posterUrl.trim() || null,
     backdropUrl: null,
-    synopsis: submission.note ?? "",
-    platforms: submission.url
-      ? [
-          { name: submission.platform?.trim() || "제보된 링크", url: submission.url },
-        ]
-      : [emptyPlatform()],
+    synopsis: r.synopsis.trim() || submission.note || "",
+    platforms: platforms.length ? platforms : [emptyPlatform()],
   };
 }
 

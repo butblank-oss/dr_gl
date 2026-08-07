@@ -98,8 +98,7 @@ export function Header() {
                 : "inline-flex h-9 cursor-pointer items-center whitespace-nowrap rounded-[10px] border border-[rgba(155,126,232,0.4)] bg-accent-soft8 px-3.5 text-[13px] font-bold text-accent"
             }
           >
-            <span className="lg:hidden">{t.submitShort}</span>
-            <span className="hidden lg:inline">{t.submitLong}</span>
+            {t.submitLong}
           </TrackedLink>
           <LangSwitch />
         </div>

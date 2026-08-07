@@ -19,8 +19,9 @@ export function LangSwitch({ className = "" }: { className?: string }) {
   const target = (lang === "ko" ? `${EN_PREFIX}${bare === "/" ? "" : bare}` || EN_PREFIX : bare) +
     (query ? `?${query}` : "");
 
-  // 지금 화면의 반대쪽 국기를 보여준다 — 누르면 그 언어로 간다는 뜻이 되도록.
-  const flag = lang === "ko" ? "🇺🇸" : "🇰🇷";
+  // 지금 보고 있는 화면의 국기를 보여준다.
+  // 반대쪽(갈 곳) 국기를 걸었더니 한국어 화면에 성조기가 떠서 "여기가 영어인가" 하고 헷갈렸다.
+  const flag = lang === "ko" ? "🇰🇷" : "🇺🇸";
 
   return (
     // 언어 전환은 늘 서버를 한 번 더 거친다 (TrackedLink 의 설명과 같은 이유)

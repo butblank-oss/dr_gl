@@ -62,6 +62,9 @@ export type SubmissionDTO = {
   note: string;
   contact: string;
   status: SubmissionStatus;
+  /** 템플릿 규격으로 조사해 둔 초안 (src/lib/research.ts) */
+  research: Record<string, string> | null;
+  researchedAt: string | null;
   rejectReason: string;
   rejectNote: string;
   contentId: number | null;

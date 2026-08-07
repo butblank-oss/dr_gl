@@ -8,6 +8,7 @@ import {
   type ContentDraft,
 } from "@/components/admin/ContentModal";
 import { RejectDialog } from "@/components/admin/RejectDialog";
+import { ResearchPanel } from "@/components/admin/ResearchPanel";
 import { Toast, useToast } from "@/components/admin/Toast";
 import { ApiError, api } from "@/lib/client-api";
 import { formatDateTime } from "@/lib/format";
@@ -200,6 +201,22 @@ export function SubmissionManager({
                   그대로 &quot;검토 · 발행&quot;으로 새로 등록하시면 됩니다.
                 </div>
               </div>
+            ) : null}
+
+            {/*
+              제보 원문(아래)과 조사 초안(위)을 한 화면에 둔다.
+              제목 하나만 들어온 제보를 콘텐츠로 옮기려면 결국 나머지를 찾아야 하는데,
+              그 결과를 제보에 붙여 두면 검토할 때 창을 옮겨 다니지 않아도 된다.
+            */}
+            {submission.status === "pending" ? (
+              <ResearchPanel
+                submission={submission}
+                onSaved={async (message) => {
+                  await reload();
+                  show(message);
+                }}
+                onUseDraft={() => setDraft(makeSubmissionDraft(submission, categories))}
+              />
             ) : null}
 
             {/* 제보자가 입력한 값을 하나도 빠뜨리지 않고 보여준다 */}

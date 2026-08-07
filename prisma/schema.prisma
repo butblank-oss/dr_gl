@@ -81,6 +81,10 @@ model Submission {
   contact   String   @default("")
   /// 'pending' | 'approved' | 'rejected'
   status    String   @default("pending")
+  /// 템플릿 규격에 맞춰 조사해 둔 초안. 검토 화면에서 제보 원문과 나란히 본다.
+  research     Json?
+  /// 초안을 마지막으로 채운 시각
+  researchedAt DateTime?
   /// 반려 사유 코드 (REJECT_REASONS). 반려가 아니면 빈 문자열.
   rejectReason String @default("")
   /// 반려 사유 보충 설명. '기타'일 때는 필수.
