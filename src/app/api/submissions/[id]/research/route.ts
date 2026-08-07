@@ -24,7 +24,7 @@ export async function POST(_req: Request, { params }: Params) {
     const id = parseId((await params).id);
     if (!autoResearchEnabled()) {
       return fail(
-        "자동 조사가 꺼져 있어요. Vercel 환경변수에 ANTHROPIC_API_KEY 를 넣으면 켜집니다.",
+        "자동 조사가 꺼져 있어요. Vercel 환경변수에 TMDB_API_KEY(무료) 또는 ANTHROPIC_API_KEY 를 넣으면 켜집니다.",
         503,
       );
     }

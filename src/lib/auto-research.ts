@@ -1,7 +1,8 @@
 import "server-only";
 
 import { prisma } from "@/lib/prisma";
-import { buildResearchPrompt, hasDraftContent, parseResearchOutput, toDraft } from "@/lib/research";
+import { EMPTY_DRAFT, buildResearchPrompt, hasDraftContent, parseResearchOutput, toDraft, type ResearchDraft } from "@/lib/research";
+import { tmdbEnabled, tmdbResearch } from "@/lib/tmdb";
 
 /**
  * 제보가 들어오면 서버가 알아서 작품을 조사해 초안을 채운다.
@@ -18,8 +19,22 @@ const DEFAULT_MODEL = "claude-sonnet-5";
 /** 검색 없이 답하면 지어낼 위험이 커서, 웹 검색 도구를 붙여 보낸다. */
 const WEB_SEARCH_TOOL = { type: "web_search_20250305", name: "web_search", max_uses: 8 };
 
+/** 둘 중 하나만 있어도 자동 조사는 돈다. */
 export function autoResearchEnabled(): boolean {
+  return tmdbEnabled() || claudeEnabled();
+}
+
+function claudeEnabled(): boolean {
   return Boolean(process.env.ANTHROPIC_API_KEY);
+}
+
+/** 앞의 값을 이기지 않고 빈 칸만 채운다. */
+function fillGaps(base: ResearchDraft, extra: ResearchDraft): ResearchDraft {
+  const merged = { ...base };
+  for (const key of Object.keys(EMPTY_DRAFT) as (keyof ResearchDraft)[]) {
+    if (!merged[key].trim() && extra[key].trim()) merged[key] = extra[key];
+  }
+  return merged;
 }
 
 type ContentBlock = { type: string; text?: string };
@@ -69,27 +84,46 @@ export async function autoResearchSubmission(id: number, force = false): Promise
     if (!submission) return false;
     if (!force && hasDraftContent(toDraft(submission.research))) return false;
 
-    const prompt = buildResearchPrompt({
-      title: submission.title,
-      category: submission.category,
-      country: submission.country,
-      platform: submission.platform,
-      url: submission.url,
-      note: submission.note,
-    });
-
-    let text: string;
-    try {
-      text = await callClaude(prompt, true);
-    } catch (error) {
-      // 웹 검색 도구를 못 쓰는 계정·요금제일 수 있다. 검색 없이 한 번 더 시도한다.
-      console.warn(`[auto-research] 검색 도구 호출 실패, 검색 없이 재시도: ${String(error)}`);
-      text = await callClaude(prompt, false);
+    // 먼저 TMDB. 공짜이고, 제목·연도·포스터 같은 사실은 검색으로 추정하는 것보다 정확하다.
+    let draft: ResearchDraft = { ...EMPTY_DRAFT };
+    if (tmdbEnabled()) {
+      try {
+        const found = await tmdbResearch(submission.title);
+        if (found) draft = found;
+        else console.warn(`[auto-research] #${id} TMDB에서 "${submission.title}" 을 못 찾음`);
+      } catch (error) {
+        console.warn(`[auto-research] #${id} TMDB 실패: ${String(error)}`);
+      }
     }
 
-    const draft = parseResearchOutput(text);
+    // 남은 빈 칸은 Claude 로 채운다. 키가 없으면 이 단계는 건너뛴다.
+    if (claudeEnabled()) {
+      const prompt = buildResearchPrompt({
+        title: submission.title,
+        category: submission.category,
+        country: submission.country,
+        platform: submission.platform,
+        url: submission.url,
+        note: submission.note,
+      });
+
+      let text = "";
+      try {
+        text = await callClaude(prompt, true);
+      } catch (error) {
+        // 웹 검색 도구를 못 쓰는 계정·요금제일 수 있다. 검색 없이 한 번 더 시도한다.
+        console.warn(`[auto-research] 검색 도구 호출 실패, 검색 없이 재시도: ${String(error)}`);
+        try {
+          text = await callClaude(prompt, false);
+        } catch (retry) {
+          console.warn(`[auto-research] #${id} Claude 조사 실패: ${String(retry)}`);
+        }
+      }
+      if (text) draft = fillGaps(draft, parseResearchOutput(text));
+    }
+
     if (!hasDraftContent(draft)) {
-      console.warn(`[auto-research] #${id} 응답에서 알아볼 항목이 없음`);
+      console.warn(`[auto-research] #${id} 채울 수 있는 항목이 없음`);
       return false;
     }
 
