@@ -19,6 +19,16 @@ export const GL_LAYER_DESC: Record<GlLayer, string> = {
   착즙: "텍스트상 관계는 없고 해석·팬 시점으로 즐기는 관계",
 };
 
+/**
+ * 사이트에는 "착즙" 배지 하나뿐이고, 그 뜻은 "GL이 메인이 아닌 작품"이다.
+ * 그래서 세 층위 중 본편이 아닌 둘(부분 서사·착즙)을 착즙으로 묶어 내보낸다.
+ * 조사 초안에는 세 값이 그대로 남아 있으니, 나중에 갈라 쓰고 싶으면 그때 꺼내면 된다.
+ */
+export function isJuiceLayer(glLayer: string): boolean {
+  const value = glLayer.trim();
+  return value !== "" && !value.includes("본편");
+}
+
 /** 조사 초안 한 건. 모든 값은 문자열이고, 확인 못 한 것은 빈 문자열로 둔다. */
 export type ResearchDraft = {
   titleKo: string;
@@ -67,7 +77,7 @@ export const DRAFT_FIELDS: { key: keyof ResearchDraft; label: string; hint?: str
   { key: "titleEn", label: "영어 제목" },
   { key: "titleOriginal", label: "원어 제목", hint: "태국어·일본어 등 현지 표기" },
   { key: "category", label: "카테고리" },
-  { key: "glLayer", label: "GL 층위", hint: "본편 · 부분 서사 · 착즙" },
+  { key: "glLayer", label: "GL 층위", hint: "본편 · 부분 서사 · 착즙 (본편이 아니면 사이트에 '착즙'으로 표시)" },
   { key: "glLayerReason", label: "층위 판정 근거" },
   { key: "year", label: "연도", hint: "2024 (06.09~09.01, 12부작)" },
   { key: "country", label: "국내/해외" },

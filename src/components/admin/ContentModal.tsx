@@ -5,7 +5,7 @@ import { SpinnerIcon } from "@/components/icons";
 import { ImageUrlField } from "@/components/admin/ImageUrlField";
 import { ApiError, api } from "@/lib/client-api";
 import { COUNTRIES, CREATOR_LABELS } from "@/lib/types";
-import { toDraft, type ResearchDraft } from "@/lib/research";
+import { isJuiceLayer, toDraft, type ResearchDraft } from "@/lib/research";
 import type {
   ContentDTO,
   Country,
@@ -152,8 +152,10 @@ export function makeSubmissionDraft(submission: SubmissionDTO, categories: strin
     creatorName: creatorOf(r.creator),
     leadsInput: r.leads.trim(),
     tagsInput: r.tags.trim(),
-    // 층위가 "착즙"이면 착즙 토글을 켠다. 본편·부분 서사는 지금 데이터 모델에 자리가 없다.
-    juice: r.glLayer.includes("착즙") || submission.juice,
+    // 사이트의 "착즙" 배지는 "GL이 메인이 아닌 작품"이라는 뜻으로 쓴다.
+    // 그래서 층위가 본편이 아니면 — 부분 서사든 착즙이든 — 착즙으로 묶는다.
+    // 셋을 구분한 값 자체는 조사 초안에 그대로 남아 있어서, 나중에 갈라 쓰고 싶으면 꺼내면 된다.
+    juice: isJuiceLayer(r.glLayer) || submission.juice,
     // 발행 전에 썸네일을 넣을 수 있도록 주소 칸을 처음부터 열어둔다.
     poster: true,
     posterUrl: r.posterUrl.trim() || null,
