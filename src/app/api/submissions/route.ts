@@ -1,9 +1,11 @@
+import { after } from "next/server";
 import { clientIp, fail, handle, ok } from "@/lib/api";
 import { requireAdmin } from "@/lib/auth";
 import { duplicatesFor } from "@/lib/duplicate";
 import { prisma } from "@/lib/prisma";
 import { checkSubmissionRateLimit, hashIp } from "@/lib/rate-limit";
 import { serializeSubmission } from "@/lib/serialize";
+import { autoResearchSubmission } from "@/lib/auto-research";
 import { SUBMISSION_FILTER_TO_STATUS } from "@/lib/types";
 import { submissionInputSchema } from "@/lib/validation";
 
@@ -41,6 +43,9 @@ export async function POST(req: Request) {
     }
 
     const row = await prisma.submission.create({ data: { ...input, status: "pending", ipHash } });
+    // 제보자를 기다리게 하지 않는다. 조사가 늦거나 실패해도 제보는 이미 저장돼 있다.
+    // after() 로 넘겨야 서버리스에서 응답 직후 함수가 얼어붙어도 조사가 끝까지 돈다.
+    after(() => autoResearchSubmission(row.id));
     return ok({ submission: serializeSubmission(row) }, 201);
   });
 }

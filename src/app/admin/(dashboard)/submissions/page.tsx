@@ -3,6 +3,7 @@ import { duplicatesFor } from "@/lib/duplicate";
 import { prisma } from "@/lib/prisma";
 import { getCategories } from "@/lib/queries";
 import { serializeSubmission } from "@/lib/serialize";
+import { autoResearchEnabled } from "@/lib/auto-research";
 
 export const dynamic = "force-dynamic";
 
@@ -20,6 +21,7 @@ export default async function AdminSubmissionsPage() {
       initialSubmissions={rows.map(serializeSubmission)}
       initialDuplicates={duplicates}
       categories={categories.map((c) => c.name)}
+      autoResearch={autoResearchEnabled()}
     />
   );
 }

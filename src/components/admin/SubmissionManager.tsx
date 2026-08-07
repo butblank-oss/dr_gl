@@ -44,10 +44,13 @@ export function SubmissionManager({
   initialSubmissions,
   initialDuplicates,
   categories,
+  autoResearch,
 }: {
   initialSubmissions: SubmissionDTO[];
   initialDuplicates: Record<number, DuplicateMatch[]>;
   categories: string[];
+  /** 서버에 조사용 키가 있는지 — 없으면 손으로 채우는 길만 보여준다 */
+  autoResearch: boolean;
 }) {
   const router = useRouter();
   const [submissions, setSubmissions] = useState(initialSubmissions);
@@ -211,6 +214,7 @@ export function SubmissionManager({
             {submission.status === "pending" ? (
               <ResearchPanel
                 submission={submission}
+                autoEnabled={autoResearch}
                 onSaved={async (message) => {
                   await reload();
                   show(message);
